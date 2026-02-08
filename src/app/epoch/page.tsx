@@ -7,8 +7,10 @@ import { cn } from '@/lib/utils'
 
 export default function EpochConverter() {
   const [currentEpoch, setCurrentEpoch] = useState<number>(Math.floor(Date.now() / 1000))
+  const [displayUnit, setDisplayUnit] = useState<'seconds' | 'milliseconds'>('seconds')
   const [inputValue, setInputValue] = useState<string>('')
   const [convertedDate, setConvertedDate] = useState<Date | null>(null)
+  const [detectedUnit, setDetectedUnit] = useState<'seconds' | 'milliseconds' | null>(null)
   const [humanDateInput, setHumanDateInput] = useState<{
       year: number,
       month: number,
@@ -24,50 +26,59 @@ export default function EpochConverter() {
       minute: new Date().getMinutes(),
       second: new Date().getSeconds()
   })
-  const [humanToEpochOutput, setHumanToEpochOutput] = useState<number | null>(null)
+  const [humanToEpochOutput, setHumanToEpochOutput] = useState<{ seconds: number, milliseconds: number } | null>(null)
 
-  // Update current epoch every second
+  // Update current epoch every second (or faster for ms)
   useEffect(() => {
     const timer = setInterval(() => {
-        setCurrentEpoch(Math.floor(Date.now() / 1000))
-    }, 1000)
+        if (displayUnit === 'seconds') {
+            setCurrentEpoch(Math.floor(Date.now() / 1000))
+        } else {
+            setCurrentEpoch(Date.now())
+        }
+    }, displayUnit === 'seconds' ? 1000 : 50) // Update faster for ms
     return () => clearInterval(timer)
-  }, [])
+  }, [displayUnit])
 
   // Provide initial input value matching current slightly for demo if empty?
-  // Or just let user type.
   useEffect(() => {
       if (!inputValue) {
            setInputValue(Math.floor(Date.now() / 1000).toString())
       }
-  }, []) // Start with something
+  }, []) 
 
   useEffect(() => {
      if (inputValue) {
-         // Check if it's seconds or milliseconds
-         // Most epoch converters handle both.
-         // If length > 11, likely ms.
          let ts = parseInt(inputValue)
          if (!isNaN(ts)) {
+            // Simple heuristic: > 10000000000 indicates ms (valid for dates after 1970-04-26)
+            // Or typically 13 chars vs 10 chars.
+            // 2024 is ~1700000000 (10 digits)
+            // 2024 in ms is ~1700000000000 (13 digits)
             if (inputValue.length > 11) {
-                // assume ms
+                setDetectedUnit('milliseconds')
             } else {
                 ts = ts * 1000
+                setDetectedUnit('seconds')
             }
             setConvertedDate(new Date(ts))
          } else {
              setConvertedDate(null)
+             setDetectedUnit(null)
          }
      } else {
          setConvertedDate(null)
+         setDetectedUnit(null)
      }
   }, [inputValue])
 
   const handleHumanDateConvert = () => {
       const { year, month, day, hour, minute, second } = humanDateInput
-      // Date constructor is 0-indexed for month
       const date = new Date(year, month - 1, day, hour, minute, second)
-      setHumanToEpochOutput(Math.floor(date.getTime() / 1000))
+      setHumanToEpochOutput({
+          seconds: Math.floor(date.getTime() / 1000),
+          milliseconds: date.getTime()
+      })
   }
 
   const copyToClipboard = (text: string) => {
@@ -75,8 +86,6 @@ export default function EpochConverter() {
   }
 
   const formatWithTimezone = (date: Date) => {
-      // Manual formatting to match design or use intl
-      // Design shows: "Mon, 11 Dec 2023 14:30:00 GMT" and Local
       return {
           gmt: date.toUTCString(),
           local: date.toLocaleString() + ' ' + /\((.*)\)/.exec(new Date().toString())?.[1] || '',
@@ -88,10 +97,10 @@ export default function EpochConverter() {
   const getRelativeTime = (date: Date) => {
       const now = new Date()
       const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
-      if (diff < 60) return `${diff} seconds ago`
-      if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`
-      if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`
-      return `${Math.floor(diff / 86400)} days ago`
+      if (diff < 60 && diff > -60) return `${Math.abs(diff)} seconds ${diff < 0 ? 'from now' : 'ago'}`
+      if (diff < 3600 && diff > -3600) return `${Math.floor(Math.abs(diff) / 60)} minutes ${diff < 0 ? 'from now' : 'ago'}`
+      if (diff < 86400 && diff > -86400) return `${Math.floor(Math.abs(diff) / 3600)} hours ${diff < 0 ? 'from now' : 'ago'}`
+      return `${Math.floor(Math.abs(diff) / 86400)} days ${diff < 0 ? 'from now' : 'ago'}`
   }
 
   const dateInfo = convertedDate ? formatWithTimezone(convertedDate) : null
@@ -109,13 +118,38 @@ export default function EpochConverter() {
         </div>
 
         <div className="max-w-4xl mx-auto mb-16">
-            <div className="bg-black dark:bg-white text-white dark:text-black p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+            <div className="bg-black dark:bg-white text-white dark:text-black p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] relative">
+                <div className="absolute top-4 right-4 flex gap-2">
+                    <button 
+                         onClick={() => setDisplayUnit('seconds')}
+                         className={cn(
+                             "text-[10px] uppercase font-bold tracking-wider px-2 py-1 transition-colors border",
+                             displayUnit === 'seconds' 
+                                ? "bg-white text-black border-white" 
+                                : "text-gray-500 border-transparent hover:text-white dark:hover:text-black"
+                         )}
+                    >
+                         Seconds
+                    </button>
+                    <button 
+                         onClick={() => setDisplayUnit('milliseconds')}
+                         className={cn(
+                             "text-[10px] uppercase font-bold tracking-wider px-2 py-1 transition-colors border",
+                             displayUnit === 'milliseconds' 
+                                ? "bg-white text-black border-white" 
+                                : "text-gray-500 border-transparent hover:text-white dark:hover:text-black"
+                         )}
+                    >
+                         Milliseconds
+                    </button>
+                </div>
+
                 <p className="text-xs font-bold uppercase tracking-widest mb-4 opacity-75">Current Unix Epoch</p>
                 <div className="text-5xl md:text-7xl font-bold tracking-tighter tabular-nums font-mono select-all">
                     {currentEpoch}
                 </div>
                 <div className="mt-4 text-sm opacity-50 font-mono">
-                    seconds since Jan 01 1970 (UTC)
+                    {displayUnit} since Jan 01 1970 (UTC)
                 </div>
             </div>
         </div>
@@ -134,17 +168,22 @@ export default function EpochConverter() {
                 </div>
 
                 <div className="bg-white dark:bg-black border border-black dark:border-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                    <div className="flex items-center border border-black dark:border-white p-1 mb-6">
+                    <div className="flex items-center border border-black dark:border-white p-1 mb-6 relative">
                         <input 
                             type="text" 
                             value={inputValue} 
                             onChange={(e) => setInputValue(e.target.value)}
-                            className="flex-1 border-none focus:ring-0 font-mono text-lg p-2 bg-white dark:bg-black text-black dark:text-white"
+                            className="flex-1 border-none focus:ring-0 font-mono text-lg p-2 bg-white dark:bg-black text-black dark:text-white pr-20"
                             placeholder="Epoch timestamp..." 
                         />
+                         {inputValue && detectedUnit && (
+                            <span className="absolute right-24 text-[10px] uppercase font-bold text-gray-400 pointer-events-none">
+                                {detectedUnit === 'seconds' ? 'Sec' : 'Ms'}
+                            </span>
+                        )}
                         <button 
                             onClick={() => setInputValue(currentEpoch.toString())}
-                            className="text-xs uppercase font-bold tracking-wider px-3 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                            className="text-xs uppercase font-bold tracking-wider px-3 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors border-l border-gray-100 dark:border-gray-800"
                         >
                             Current
                         </button>
@@ -253,12 +292,21 @@ export default function EpochConverter() {
                     </button>
 
                     {humanToEpochOutput && (
-                        <div className="bg-gray-50 dark:bg-gray-900 p-4 border border-black dark:border-white flex justify-between items-center group cursor-pointer" onClick={() => copyToClipboard(humanToEpochOutput.toString())}>
-                             <div>
-                                <span className="text-xs text-gray-400 uppercase tracking-widest block mb-1">Epoch Timestamp</span>
-                                <div className="font-mono font-bold text-xl">{humanToEpochOutput}</div>
-                             </div>
-                             <span className="material-symbols-outlined text-gray-400 group-hover:text-black dark:group-hover:text-white">content_copy</span>
+                        <div className="flex flex-col gap-2">
+                             <div className="bg-gray-50 dark:bg-gray-900 p-3 border border-gray-200 dark:border-gray-800 flex justify-between items-center group cursor-pointer hover:border-black dark:hover:border-white transition-colors" onClick={() => copyToClipboard(humanToEpochOutput.seconds.toString())}>
+                                 <div>
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Epoch (Seconds)</span>
+                                    <div className="font-mono font-bold text-sm">{humanToEpochOutput.seconds}</div>
+                                 </div>
+                                 <span className="material-symbols-outlined text-sm text-gray-400 group-hover:text-black dark:group-hover:text-white">content_copy</span>
+                            </div>
+                            <div className="bg-gray-50 dark:bg-gray-900 p-3 border border-gray-200 dark:border-gray-800 flex justify-between items-center group cursor-pointer hover:border-black dark:hover:border-white transition-colors" onClick={() => copyToClipboard(humanToEpochOutput.milliseconds.toString())}>
+                                 <div>
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Epoch (Milliseconds)</span>
+                                    <div className="font-mono font-bold text-sm">{humanToEpochOutput.milliseconds}</div>
+                                 </div>
+                                 <span className="material-symbols-outlined text-sm text-gray-400 group-hover:text-black dark:group-hover:text-white">content_copy</span>
+                            </div>
                         </div>
                     )}
                 </div>
