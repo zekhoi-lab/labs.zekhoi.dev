@@ -2,14 +2,14 @@ import { Metadata } from 'next'
 import RegexTester from './client'
 
 export const metadata: Metadata = {
-  title: 'Regex Tester & Debugger',
-  description: 'Test and validate regular expressions against text strings in real-time. Includes regex cheat sheet and highlighting.',
-  keywords: ['regex tester', 'regex debugger', 'regular expression', 'regex playground', 'js regex'],
+  title: 'Regex Tester | Debug & Test Regular Expressions',
+  description: 'Test regular expressions in real-time. Features syntax highlighting, match detection, and a built-in cheat sheet. Perfect for learning and debugging.',
+  keywords: ['regex tester', 'regex debugger', 'regular expression tester', 'regex cheat sheet', 'javascript regex'],
   openGraph: {
-    title: 'Regex Tester & Debugger',
-    description: 'Test and validate regular expressions against text strings in real-time. Includes regex cheat sheet and highlighting.',
+    title: 'Regex Tester | Debug & Test Regular Expressions',
+    description: 'Valid, test, and debug regex patterns instantly. Includes a helpful cheat sheet and real-time matching.',
     url: 'https://labs.zekhoi.dev/regex',
-    siteName: 'labs.zekhoi.dev',
+    siteName: 'Labs by zekhoi',
     locale: 'en_US',
     type: 'website',
   },

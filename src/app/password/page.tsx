@@ -2,14 +2,14 @@ import { Metadata } from 'next'
 import PasswordGenerator from './client'
 
 export const metadata: Metadata = {
-  title: 'Secure Password Generator',
-  description: 'Create strong, secure passwords locally in your browser. Customize length, characters, and complexity settings.',
-  keywords: ['password generator', 'secure password', 'random password', 'strong password maker'],
+  title: 'Strong Password Generator | Secure & Random',
+  description: 'Generate uncrackable, cryptographically strong passwords instantly. Customize length, symbols, and ambiguity. 100% client-side for maximum security.',
+  keywords: ['password generator', 'strong password', 'random password', 'secure password', 'password creator', 'client-side password'],
   openGraph: {
-    title: 'Secure Password Generator',
-    description: 'Create strong, secure passwords locally in your browser. Customize length, characters, and complexity settings.',
+    title: 'Strong Password Generator | Secure & Random',
+    description: 'Create military-grade passwords locally in your browser. No servers, no logs, just security. Fully customizable.',
     url: 'https://labs.zekhoi.dev/password',
-    siteName: 'labs.zekhoi.dev',
+    siteName: 'Labs by zekhoi',
     locale: 'en_US',
     type: 'website',
   },

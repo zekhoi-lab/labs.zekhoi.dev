@@ -37,34 +37,44 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Labs | Developer Utilities",
-    template: "%s | labs.zekhoi.dev"
+    default: "Labs by zekhoi | Essential Developer Utilities",
+    template: "%s | Labs by zekhoi"
   },
-  description: "Essential offline-first developer utilities. UUID generator, JSON formatter, JWT debugger, and more. Optimized for speed, privacy, and minimalism.",
-  keywords: ["developer tools", "json formatter", "jwt debugger", "uuid generator", "web utilities", "offline tools", "privacy focused"],
-  authors: [{ name: "Zekhoi", url: "https://zekhoi.dev" }],
-  creator: "Zekhoi",
+  description: "A curate suite of offline-first developer tools. Generate UUIDs, format JSON, debug JWTs, and more—instantly and securely. No ads, no tracking.",
+  keywords: [
+    "developer tools",
+    "web utilities",
+    "json formatter",
+    "jwt debugger",
+    "uuid generator",
+    "base64 converter",
+    "offline tools",
+    "privacy focused",
+    "open source"
+  ],
+  authors: [{ name: "zekhoi", url: "https://zekhoi.dev" }],
+  creator: "zekhoi",
   metadataBase: new URL("https://labs.zekhoi.dev"),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://labs.zekhoi.dev",
-    title: "labs.zekhoi.dev | Developer Utilities",
-    description: "Fast, privacy-focused developer tools. No ads, no tracking, just utilities.",
-    siteName: "labs.zekhoi.dev",
+    title: "Labs by zekhoi | Essential Developer Utilities",
+    description: "Fast, privacy-focused developer tools. No ads, no tracking, just utilities built for speed.",
+    siteName: "Labs by zekhoi",
     images: [
       {
-        url: "/og-image.png", // Assuming an OG image exists or will be added, otherwise this acts as a placeholder
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "labs.zekhoi.dev - Developer Tools",
+        alt: "Labs by zekhoi - Developer Tools",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "labs.zekhoi.dev | Developer Utilities",
-    description: "Fast, privacy-focused developer tools. No ads, no tracking, just utilities.",
+    title: "Labs by zekhoi | Essential Developer Utilities",
+    description: "Fast, privacy-focused developer tools. No ads, no tracking, just utilities built for speed.",
     creator: "@zekhoi",
     images: ["/og-image.png"],
   },
@@ -81,7 +91,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({

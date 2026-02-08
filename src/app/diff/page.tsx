@@ -2,14 +2,14 @@ import { Metadata } from 'next'
 import DiffViewer from './client'
 
 export const metadata: Metadata = {
-  title: 'Text & Code Diff Viewer',
-  description: 'Compare two text/code snippets to find differences. Highlights additions and deletions in side-by-side or unified view.',
-  keywords: ['diff viewer', 'text compare', 'code comparison', 'diff checker', 'file difference'],
+  title: 'Diff Viewer & Text Compare Tool',
+  description: 'Compare text and code files to find differences instantly. Supports side-by-side and unified views. Highlight syntax for better readability.',
+  keywords: ['diff viewer', 'text compare', 'code comparison', 'diff checker', 'file difference', 'online diff tool'],
   openGraph: {
-    title: 'Text & Code Diff Viewer',
-    description: 'Compare two text/code snippets to find differences. Highlights additions and deletions in side-by-side or unified view.',
+    title: 'Diff Viewer & Text Compare Tool',
+    description: 'The easiest way to compare text and code. Spot differences in seconds with our privacy-focused diff tool.',
     url: 'https://labs.zekhoi.dev/diff',
-    siteName: 'labs.zekhoi.dev',
+    siteName: 'Labs by zekhoi',
     locale: 'en_US',
     type: 'website',
   },

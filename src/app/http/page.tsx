@@ -2,14 +2,14 @@ import { Metadata } from 'next'
 import HttpClient from './client'
 
 export const metadata: Metadata = {
-  title: 'Online HTTP Client',
-  description: 'Test REST API endpoints. Send GET, POST, PUT, DELETE requests with custom headers and payloads directly from your browser.',
-  keywords: ['http client', 'api tester', 'rest client', 'online postman', 'send api request'],
+  title: 'Online HTTP Client | Test API Endpoints',
+  description: 'Test REST APIs directly in your browser. Send GET, POST, PUT, DELETE requests. Inspect headers, JSON payloads, and response times.',
+  keywords: ['http client', 'api tester', 'rest client', 'postman alternative', 'send api request', 'debug api'],
   openGraph: {
-    title: 'Online HTTP Client',
-    description: 'Test REST API endpoints. Send GET, POST, PUT, DELETE requests with custom headers and payloads directly from your browser.',
+    title: 'Online HTTP Client | Test API Endpoints',
+    description: 'The lightweight way to test APIs. Debug endpoints, analyze responses, and fix issues faster. Free and open source.',
     url: 'https://labs.zekhoi.dev/http',
-    siteName: 'labs.zekhoi.dev',
+    siteName: 'Labs by zekhoi',
     locale: 'en_US',
     type: 'website',
   },

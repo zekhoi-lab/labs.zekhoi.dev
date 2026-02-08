@@ -1,18 +1,30 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: 'https://labs.zekhoi.dev',
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: 'https://labs.zekhoi.dev/login',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-  ]
+  const routes = [
+    '',
+    '/uuid',
+    '/password',
+    '/json',
+    '/base64',
+    '/jwt',
+    '/epoch',
+    '/hash',
+    '/regex',
+    '/diff',
+    '/url',
+    '/color',
+    '/editor',
+    '/http',
+    '/crontab',
+    '/image',
+    '/sql',
+  ].map((route) => ({
+    url: `https://labs.zekhoi.dev${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: route === '' ? 1 : 0.8,
+  }))
+
+  return routes
 }
