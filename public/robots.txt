@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://labs.zekhoi.dev
+
+# Sitemaps
+Sitemap: https://labs.zekhoi.dev/sitemap.xml
