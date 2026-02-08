@@ -181,22 +181,24 @@ export default function EpochConverter() {
                 </div>
 
                 <div className="bg-white dark:bg-black border border-black dark:border-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                    <div className="flex items-center border border-black dark:border-white p-1 mb-6 relative">
-                        <input 
-                            type="text" 
-                            value={inputValue} 
-                            onChange={(e) => setInputValue(e.target.value)}
-                            className="flex-1 border-none focus:ring-0 font-mono text-lg p-2 bg-white dark:bg-black text-black dark:text-white pr-20"
-                            placeholder="Epoch timestamp..." 
-                        />
-                         {inputValue && detectedUnit && (
-                            <span className="absolute right-24 text-[10px] uppercase font-bold text-gray-400 pointer-events-none">
-                                {detectedUnit === 'seconds' ? 'Sec' : 'Ms'}
-                            </span>
-                        )}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center border border-black dark:border-white p-1 mb-6 gap-1">
+                        <div className="flex-1 flex items-center min-w-0">
+                            <input 
+                                type="text" 
+                                value={inputValue} 
+                                onChange={(e) => setInputValue(e.target.value)}
+                                className="flex-1 border-none focus:ring-0 font-mono text-lg p-2 bg-white dark:bg-black text-black dark:text-white min-w-0"
+                                placeholder="Epoch timestamp..." 
+                            />
+                            {inputValue && detectedUnit && (
+                                <span className="px-3 text-[10px] uppercase font-bold text-gray-400 whitespace-nowrap">
+                                    {detectedUnit === 'seconds' ? 'Sec' : 'Ms'}
+                                </span>
+                            )}
+                        </div>
                         <button 
                             onClick={() => setInputValue(currentEpoch.toString())}
-                            className="text-xs uppercase font-bold tracking-wider px-3 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors border-l border-gray-100 dark:border-gray-800"
+                            className="text-xs uppercase font-bold tracking-wider px-4 py-3 sm:py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors bg-gray-50 dark:bg-gray-900 sm:bg-transparent border-t sm:border-t-0 sm:border-l border-black dark:border-white sm:border-gray-100 dark:sm:border-gray-800 whitespace-nowrap"
                         >
                             Current
                         </button>
