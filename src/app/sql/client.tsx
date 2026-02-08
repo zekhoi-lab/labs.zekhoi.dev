@@ -61,16 +61,14 @@ export default function SqlFormatter() {
       />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
-              <GlitchText text="SQL Formatter" />
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 max-w-xl text-sm leading-relaxed">
-              Beautify, indent, and minify your SQL queries. Supports multiple dialects including PostgreSQL and MySQL.
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
+        <div className="mb-12 space-y-4">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="SQL Formatter" />
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+            Beautify, indent, and minify your SQL queries. Supports multiple dialects including PostgreSQL and MySQL.
+          </p>
+          <div className="flex items-center gap-4 pt-4">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] uppercase font-bold text-gray-400">SQL Dialect</label>
               <select 

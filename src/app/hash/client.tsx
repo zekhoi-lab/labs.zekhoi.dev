@@ -75,11 +75,11 @@ export default function HashGenerator() {
       />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-12 text-center space-y-4">
+        <div className="mb-12 space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="Hash Generator" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
             Generate cryptographic hashes (SHA) securely in your browser.
           </p>
         </div>

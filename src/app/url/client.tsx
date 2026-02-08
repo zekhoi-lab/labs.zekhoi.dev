@@ -123,12 +123,12 @@ export default function UrlParser() {
         ]}
       />
       
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+        <div className="mb-12 space-y-4">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="URL Parser" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-4 text-sm max-w-xl">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
             Input a complex URL to break it down into its constituent parts. Edit any component to rebuild the URL in real-time.
           </p>
         </div>

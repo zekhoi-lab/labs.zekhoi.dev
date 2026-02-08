@@ -120,12 +120,12 @@ export default function HttpClient() {
       
 
 
-      <main className="flex-1 w-full max-w-[1600px] mx-auto px-6 py-8 flex flex-col gap-6 h-[calc(100vh-100px)]">
-        <div className="shrink-0 text-center space-y-2">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col gap-6 h-[calc(100vh-100px)]">
+        <div className="shrink-0 space-y-4 mb-6">
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
               <GlitchText text="HTTP Client" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-xs tracking-tight">Test API endpoints directly from your browser.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Test API endpoints directly from your browser.</p>
         </div>
         {/* Request Bar */}
         <div className="flex flex-col md:flex-row gap-0 border border-black dark:border-white bg-white dark:bg-black shrink-0">

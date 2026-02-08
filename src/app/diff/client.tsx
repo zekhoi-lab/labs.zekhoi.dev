@@ -75,13 +75,15 @@ export default function DiffViewer() {
         ]}
       />
       
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-2">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
+        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4">
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
               <GlitchText text="Diff Viewer" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-xs tracking-tight">Compare text or code blocks. Highlighting changes in monochrome shades.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+              Compare text or code blocks. Highlighting changes in monochrome shades.
+            </p>
           </div>
           <div className="flex gap-4">
             <input 
