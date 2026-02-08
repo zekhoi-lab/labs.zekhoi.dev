@@ -81,7 +81,7 @@ export default function JwtDebugger() {
 
             const key = await window.crypto.subtle.importKey(
                 'raw',
-                keyData as any, // Cast to any to avoid ArrayBufferLike vs ArrayBuffer mismatch
+                keyData as unknown as BufferSource, // Type assertion for compatibility
                 { name: 'HMAC', hash: 'SHA-256' },
                 false,
                 ['verify']
