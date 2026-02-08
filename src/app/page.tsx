@@ -2,6 +2,16 @@ import { Navbar } from '@/components/navbar'
 import { ToolCard } from '@/components/tool-card'
 import { Footer } from '@/components/footer'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Access essential developer tools including UUID generator, Password generator, JSON formatter, and more.",
+  alternates: {
+    canonical: '/',
+  },
+}
+
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative">
