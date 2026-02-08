@@ -24,24 +24,30 @@ export default function UuidGenerator() {
   const [v5Name, setV5Name] = useState<string>('labs.zekhoi.dev')
   const [v5Namespace, setV5Namespace] = useState<string>('6ba7b810-9dad-11d1-80b4-00c04fd430c8') // DNS namespace default
 
-  // Load history from localStorage on mount
+  const [isLoaded, setIsLoaded] = useState(false)
+  
+  // 1. Load history from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('uuid-history')
     if (saved) {
         try {
             const parsed = JSON.parse(saved)
-            // Use setTimeout to avoid 'setState in effect' lint error (updates state asynchronously)
-            setTimeout(() => setHistory(parsed), 0)
+            if (Array.isArray(parsed)) {
+                setHistory(parsed)
+            }
         } catch {
             // Ignore invalid json
         }
     }
+    setIsLoaded(true)
   }, [])
 
-  // Save history to localStorage whenever it changes
+  // 2. Save history to localStorage whenever it changes, but ONLY AFTER loading
   useEffect(() => {
+    if (isLoaded) {
       localStorage.setItem('uuid-history', JSON.stringify(history))
-  }, [history])
+    }
+  }, [history, isLoaded])
 
   const generateUuid = useCallback(() => {
     let newUuid = ''
@@ -84,14 +90,12 @@ export default function UuidGenerator() {
     setCopied(false)
   }, [version, v5Name, v5Namespace])
 
-  // Generate on mount or inputs change
+  // 3. Generate initial UUID ONLY AFTER history is loaded to prevent overwriting
   useEffect(() => {
-    // Use setTimeout to avoid 'setState in effect' lint error
-    const timer = setTimeout(() => {
-        generateUuid()
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [generateUuid])
+    if (isLoaded) {
+      generateUuid()
+    }
+  }, [isLoaded, generateUuid])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
