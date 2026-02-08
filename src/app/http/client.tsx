@@ -5,7 +5,6 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 import { GlitchText } from '@/components/glitch-text'
-import Link from 'next/link'
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 type Tab = 'params' | 'headers' | 'auth' | 'body'

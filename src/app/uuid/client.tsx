@@ -33,13 +33,13 @@ export default function UuidGenerator() {
         try {
             const parsed = JSON.parse(saved)
             if (Array.isArray(parsed)) {
-                setHistory(parsed)
+                setTimeout(() => setHistory(parsed), 0)
             }
         } catch {
             // Ignore invalid json
         }
     }
-    setIsLoaded(true)
+    setTimeout(() => setIsLoaded(true), 0)
   }, [])
 
   // 2. Save history to localStorage whenever it changes, but ONLY AFTER loading
@@ -93,7 +93,10 @@ export default function UuidGenerator() {
   // 3. Generate initial UUID ONLY AFTER history is loaded to prevent overwriting
   useEffect(() => {
     if (isLoaded) {
-      generateUuid()
+      const timer = setTimeout(() => {
+        generateUuid()
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [isLoaded, generateUuid])
 
