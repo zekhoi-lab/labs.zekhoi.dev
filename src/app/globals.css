@@ -1,6 +1,6 @@
+
+
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -44,76 +44,96 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  /* Custom Login Animations */
+  --animate-flicker: flicker 3s infinite;
+  --animate-flicker-intense: flicker 0.15s infinite;
+  --animate-cursor: cursor .75s step-end infinite;
+  --animate-border-pulse: border-pulse 0.2s infinite;
+  --animate-glitch-text: glitch-text 0.4s infinite;
+  --animate-pulse-fast: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  /* Custom Fonts */
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-noto-sans);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0.00 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.371 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+.scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.02) 50%,
+    rgba(0,0,0,0.02)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+@keyframes flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+}
+
+@keyframes cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes border-pulse {
+  0%, 100% { border-color: #ef4444; }
+  50% { border-color: #b91c1c; }
+}
+
+@keyframes glitch-text {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes glitch-1 {
+  0% { clip-path: inset(20% 0 80% 0); }
+  20% { clip-path: inset(60% 0 1% 0); }
+  40% { clip-path: inset(40% 0 50% 0); }
+  60% { clip-path: inset(80% 0 5% 0); }
+  80% { clip-path: inset(10% 0 70% 0); }
+  100% { clip-path: inset(30% 0 50% 0); }
+}
+
+@keyframes glitch-2 {
+  0% { clip-path: inset(10% 0 60% 0); }
+  20% { clip-path: inset(30% 0 20% 0); }
+  40% { clip-path: inset(70% 0 10% 0); }
+  60% { clip-path: inset(50% 0 30% 0); }
+  80% { clip-path: inset(20% 0 50% 0); }
+  100% { clip-path: inset(40% 0 80% 0); }
 }
 
 @layer base {
@@ -122,5 +142,188 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
   }
+  .dark body {
+    background-image: radial-gradient(#333 1px, transparent 1px);
+  }
+}
+
+/* Dashboard Fragment Card */
+.fragment-card {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.fragment-card::before,
+.fragment-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid transparent;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: -1;
+}
+
+.fragment-card:hover {
+  transform: translate(-2px, -2px);
+}
+
+.fragment-card:hover::before {
+  border-color: rgba(0,0,0,0.3);
+  transform: translate(4px, 4px);
+}
+
+.fragment-card:hover::after {
+  border-color: rgba(0,0,0,0.1);
+  transform: translate(8px, 8px);
+}
+
+.dark .fragment-card:hover::after {
+  border-color: rgba(255,255,255,0.1);
+}
+
+/* Error Page Glitch Wrapper (404) */
+.glitch-wrapper {
+  position: relative;
+}
+.glitch-wrapper::before,
+.glitch-wrapper::after {
+  content: "404";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+.glitch-wrapper::before {
+  color: #ff0000;
+  z-index: -1;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  transform: translate(-2px, -2px);
+  animation: flicker 2s infinite linear alternate-reverse;
+}
+.glitch-wrapper::after {
+  color: #0000ff;
+  z-index: -2;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+  transform: translate(2px, 2px);
+  animation: flicker 2s infinite linear alternate-reverse;
+}
+
+/* Error Page Glitch Text (500) */
+.glitch-text {
+  position: relative;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+}
+.dark .glitch-text::before,
+.dark .glitch-text::after {
+  background: #000;
+}
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 #000;
+  animation: glitch-1 2s infinite linear alternate-reverse;
+}
+.dark .glitch-text::before {
+  text-shadow: -1px 0 #fff;
+}
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 #999; 
+  animation: glitch-2 3s infinite linear alternate-reverse;
+}
+/* Secrets Page Button */
+.fragment-btn {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+.fragment-btn::before,
+.fragment-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid transparent;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: -1;
+}
+.fragment-btn:hover {
+  transform: translate(-1px, -1px);
+}
+.fragment-btn:hover::before {
+  border-color: rgba(0,0,0,0.5);
+  transform: translate(2px, 2px);
+}
+.fragment-btn:hover::after {
+  border-color: rgba(0,0,0,0.2);
+  transform: translate(4px, 4px);
+}
+.dark .fragment-btn:hover::before {
+  border-color: rgba(255,255,255,0.5);
+}
+.dark .fragment-btn:hover::after {
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* Secrets Page Glitch */
+.glitch-text-anim {
+  position: relative;
+}
+.glitch-text-anim::before,
+.glitch-text-anim::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+.glitch-text-anim::before {
+  color: #ff0000;
+  z-index: -1;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+}
+.glitch-text-anim::after {
+  color: #00ff00;
+  z-index: -2;
+  clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+  animation: glitch-anim-2 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
+@keyframes glitch-anim-2 {
+  0% { transform: translate(0) }
+  20% { transform: translate(2px, -2px) }
+  40% { transform: translate(2px, 2px) }
+  60% { transform: translate(-2px, -2px) }
+  80% { transform: translate(-2px, 2px) }
+  100% { transform: translate(0) }
 }
