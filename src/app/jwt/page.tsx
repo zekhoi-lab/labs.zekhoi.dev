@@ -1,24 +1,24 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { cn } from '@/lib/utils'
+// import { cn } from '@/lib/utils'
 
 export default function JwtDebugger() {
   const [token, setToken] = useState<string>('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
   const [header, setHeader] = useState<object | null>(null)
   const [payload, setPayload] = useState<object | null>(null)
-  const [signature, setSignature] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
+  // const [signature, setSignature] = useState<string>('') // Unused locally in demo
+  // const [error, setError] = useState<string | null>(null) // Unused
 
   // Logic to decode JWT
   useEffect(() => {
     if (!token) {
         setHeader(null)
         setPayload(null)
-        setSignature('')
-        setError(null)
+        // setSignature('')
+        // setError(null)
         return
     }
 
@@ -36,7 +36,7 @@ export default function JwtDebugger() {
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                 }).join(''));
                 return JSON.parse(jsonPayload)
-            } catch (e) {
+            } catch { 
                 throw new Error('Failed to decode part')
             }
         }
@@ -46,25 +46,20 @@ export default function JwtDebugger() {
 
         setHeader(decodedHeader)
         setPayload(decodedPayload)
-        setSignature(parts[2])
-        setError(null)
-    } catch (e) {
+        // setSignature(parts[2])
+        // setError(null)
+    } catch { 
         // setError((e as Error).message)
         // Keep previous valid state or just show error?
         // Let's show empty states if invalid to match "debugger" feel where it breaks
         // But maybe keep format if partial? For now, simplistic approach.
         setHeader(null)
         setPayload(null)
-        setSignature('')
+        // setSignature('')
         // Actually, let's not clear everything, just don't update if it crashes?
         // Or show error message.
     }
   }, [token])
-
-  const prettyJson = (obj: object | null) => {
-    if (!obj) return ''
-    return JSON.stringify(obj, null, 2)
-  }
 
   // Helper to colorize JSON
   const ColorizedJson = ({ data, colorClass }: { data: object | null, colorClass: string }) => {
@@ -190,7 +185,7 @@ export default function JwtDebugger() {
                     <div className="space-y-2">
                         <p className="uppercase text-[10px] tracking-widest text-black dark:text-white mb-2">HMACSHA256</p>
                         <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 font-mono text-xs break-all text-gray-400 select-all">
-                            base64UrlEncode(header) + "." +<br/>
+                            base64UrlEncode(header) + &quot;.&quot; +<br/>
                             base64UrlEncode(payload),<br/>
                             <span className="text-blue-500 dark:text-blue-400 font-bold">your-256-bit-secret</span>
                         </div>

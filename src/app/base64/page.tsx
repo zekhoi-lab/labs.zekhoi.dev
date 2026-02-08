@@ -18,7 +18,7 @@ export default function Base64Converter() {
             function toSolidBytes(match, p1) {
                 return String.fromCharCode(parseInt(p1, 16));
         }));
-      } catch (e) {
+      } catch {
         throw new Error('Encoding failed')
       }
   }
@@ -28,7 +28,7 @@ export default function Base64Converter() {
         return decodeURIComponent(window.atob(str).split('').map(function(c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
-      } catch (e) {
+      } catch {
         throw new Error('Invalid Base64 string')
       }
   }
@@ -51,12 +51,12 @@ export default function Base64Converter() {
     navigator.clipboard.writeText(text)
   }
 
-  const switchMode = (newMode: 'encode' | 'decode') => {
-      setMode(newMode)
-      setInput(output) // Swap input/output for convenience
-      setOutput('')
-      setError(null)
-  }
+  // const switchMode = (newMode: 'encode' | 'decode') => { // Unused
+  //     setMode(newMode)
+  //     setInput(output) // Swap input/output for convenience
+  //     setOutput('')
+  //     setError(null)
+  // }
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">

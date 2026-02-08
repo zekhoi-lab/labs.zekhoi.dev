@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+// import { redirect } from 'next/navigation'
 import { rateLimiter } from '@/lib/rate-limit'
 
 export async function login(password: string) {

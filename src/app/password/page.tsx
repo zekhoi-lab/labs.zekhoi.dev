@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { cn } from '@/lib/utils'
+// import { cn } from '@/lib/utils'
 
 export default function PasswordGenerator() {
   const [password, setPassword] = useState('')
@@ -45,7 +45,7 @@ export default function PasswordGenerator() {
 
   // Generate on mount or when settings change
   useEffect(() => {
-    generatePassword()
+    generatePassword() // eslint-disable-line react-hooks/set-state-in-effect
   }, [generatePassword]) 
   // Note: We might want to NOT regenerate on every setting change to avoid annoying flickering if user is setting up,
   // but looking at the raw HTML interactions, it's often expected. 

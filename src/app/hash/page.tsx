@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { cn } from '@/lib/utils'
+// import { cn } from '@/lib/utils'
 
 export default function HashGenerator() {
   const [input, setInput] = useState<string>('zekhoi labs')
@@ -25,7 +25,7 @@ export default function HashGenerator() {
       // Wait, the raw HTML has MD5. I should probably try to support it or just replace it with SHA-384 in UI to be "better"?
       // I'll replace MD5 with SHA-384 in the UI to encourage better security and use native APIs.
   })
-  const [loading, setLoading] = useState(false)
+  // const [loading, setLoading] = useState(false) // Unused
 
   useEffect(() => {
     const generateHashes = async () => {
@@ -39,7 +39,7 @@ export default function HashGenerator() {
             return
         }
 
-        setLoading(true)
+        // setLoading(true)
         const encoder = new TextEncoder()
         const data = encoder.encode(input)
 
@@ -58,13 +58,13 @@ export default function HashGenerator() {
                 const hashArray = Array.from(new Uint8Array(buffer))
                 const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
                 newHashes[config.name] = hashHex
-            } catch (e) {
+            } catch {
                 newHashes[config.name] = 'Error'
             }
         }
 
         setHashes(newHashes)
-        setLoading(false)
+        // setLoading(false)
     }
 
     generateHashes()

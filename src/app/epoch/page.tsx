@@ -6,7 +6,8 @@ import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 export default function EpochConverter() {
-  const [currentEpoch, setCurrentEpoch] = useState<number>(Math.floor(Date.now() / 1000))
+  // Fix: Use lazy initializer for Date.now() to avoid impurity error
+  const [currentEpoch, setCurrentEpoch] = useState<number>(() => Math.floor(Date.now() / 1000))
   const [displayUnit, setDisplayUnit] = useState<'seconds' | 'milliseconds'>('seconds')
   const [inputValue, setInputValue] = useState<string>('')
   const [convertedDate, setConvertedDate] = useState<Date | null>(null)
@@ -42,9 +43,11 @@ export default function EpochConverter() {
 
   // Provide initial input value matching current slightly for demo if empty?
   useEffect(() => {
-      if (!inputValue) {
-           setInputValue(Math.floor(Date.now() / 1000).toString())
-      }
+    // Only run once on mount
+    if (!inputValue) {
+         setInputValue(Math.floor(Date.now() / 1000).toString())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) 
 
   useEffect(() => {
