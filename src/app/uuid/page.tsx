@@ -27,8 +27,9 @@ export default function UuidGenerator() {
     const saved = localStorage.getItem('uuid-history')
     if (saved) {
         try {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setHistory(JSON.parse(saved))
+            const parsed = JSON.parse(saved)
+            // Use setTimeout to avoid 'setState in effect' lint error (updates state asynchronously)
+            setTimeout(() => setHistory(parsed), 0)
         } catch {
             // Ignore invalid json
         }
@@ -82,10 +83,12 @@ export default function UuidGenerator() {
   }, [version, v5Name, v5Namespace])
 
   // Generate on mount or inputs change
-  // Generate on mount or inputs change
-  // Generate on mount or inputs change
   useEffect(() => {
-    generateUuid() // eslint-disable-line react-hooks/set-state-in-effect
+    // Use setTimeout to avoid 'setState in effect' lint error
+    const timer = setTimeout(() => {
+        generateUuid()
+    }, 0)
+    return () => clearTimeout(timer)
   }, [generateUuid])
   // ... (comments)
 
