@@ -9,7 +9,7 @@ export function Footer() {
             <Link href="https://github.com/zekhoi" target="_blank" rel="noopener noreferrer" className="hover:text-black dark:hover:text-white transition-colors">
                 GitHub
             </Link>
-            <Link href="https://linkedin.com/in/zekhoi" target="_blank" rel="noopener noreferrer" className="hover:text-black dark:hover:text-white transition-colors">
+            <Link href="https://linkedin.com/in/khoironiks" target="_blank" rel="noopener noreferrer" className="hover:text-black dark:hover:text-white transition-colors">
                 LinkedIn
             </Link>
         </div>
