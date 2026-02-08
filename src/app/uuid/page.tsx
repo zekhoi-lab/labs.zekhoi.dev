@@ -22,6 +22,23 @@ export default function UuidGenerator() {
   const [v5Name, setV5Name] = useState<string>('labs.zekhoi.dev')
   const [v5Namespace, setV5Namespace] = useState<string>('6ba7b810-9dad-11d1-80b4-00c04fd430c8') // DNS namespace default
 
+  // Load history from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('uuid-history')
+    if (saved) {
+        try {
+            setHistory(JSON.parse(saved))
+        } catch {
+            // Ignore invalid json
+        }
+    }
+  }, [])
+
+  // Save history to localStorage whenever it changes
+  useEffect(() => {
+      localStorage.setItem('uuid-history', JSON.stringify(history))
+  }, [history])
+
   const generateUuid = useCallback(() => {
     let newUuid = ''
     try {
@@ -54,7 +71,7 @@ export default function UuidGenerator() {
         setHistory(prev => {
           const newItem: HistoryItem = { id: newUuid, version }
           const filtered = prev.filter(item => item.id !== newUuid)
-          return [newItem, ...filtered].slice(0, 5)
+          return [newItem, ...filtered].slice(0, 10) // Keep last 10
         })
     } else if (newUuid === "Invalid Input") {
         setUuid("Invalid Input")
@@ -69,23 +86,7 @@ export default function UuidGenerator() {
   useEffect(() => {
     generateUuid() // eslint-disable-line react-hooks/set-state-in-effect
   }, [generateUuid])
-  // actually, the error is 'react-hooks/set-state-in-effect' not exhaustive-deps or just generic logic one? 
-  // It says: "Calling setState synchronously within an effect". 
-  // This is often not suppressable by simple disable line if it's a logic check, but let's try.
-  // Or better, wrap with a tiny timeout if acceptable, but that causes flash.
-  // Standard workaround: 
-  /* 
-     useEffect(() => {
-        let active = true;
-        if(active) generateUuid();
-        return () => { active = false; }
-     }, [generateUuid])
-     No, that's still sync.
-  */
-  // Actually, if we just suppress it for the line.
-  
-  // Trying to fix by wrapping int requestAnimationFrame or similar to make it async-ish but not really invalidating strict mode?
-  // Let's try simple suppression first. If it fails, I'll refactor slightly.
+  // ... (comments)
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -95,6 +96,7 @@ export default function UuidGenerator() {
 
   const clearHistory = () => {
     setHistory([])
+    localStorage.removeItem('uuid-history')
   }
 
   const getVersionLabel = (v: string) => {
