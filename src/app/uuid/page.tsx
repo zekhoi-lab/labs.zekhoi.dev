@@ -1,56 +1,72 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { v4 as uuidv4, v1 as uuidv1, v6 as uuidv6, v7 as uuidv7 } from 'uuid'
+import { v4 as uuidv4, v5 as uuidv5, v6 as uuidv6, v7 as uuidv7 } from 'uuid'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 interface HistoryItem {
   id: string
-  version: 'v4' | 'v1' | 'v6' | 'v7'
+  version: 'v4' | 'v5' | 'v6' | 'v7'
 }
 
 export default function UuidGenerator() {
   const [uuid, setUuid] = useState<string>('')
-  const [version, setVersion] = useState<'v4' | 'v1' | 'v6' | 'v7'>('v4')
+  const [version, setVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4')
   const [quantity, setQuantity] = useState<number>(1)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [copied, setCopied] = useState(false)
+  
+  // v5 specific state
+  const [v5Name, setV5Name] = useState<string>('labs.zekhoi.dev')
+  const [v5Namespace, setV5Namespace] = useState<string>('6ba7b810-9dad-11d1-80b4-00c04fd430c8') // DNS namespace default
 
   const generateUuid = useCallback(() => {
-    // For single generation (simulated as array of 1 for now based on UI)
-    // The UI shows "Quantity" input but the display is single. 
-    // Assuming the "Quantity" might produce a list or just be for bulk generation in future.
-    // For now, let's just generate one to match the main display.
-    // If the user wants bulk, we might need a different UI view or Modal.
-    // Current UI design has a large single display. 
-    // I will generate one "primary" UUID for the display.
-    
     let newUuid = ''
-    switch (version) {
-        case 'v1': newUuid = uuidv1(); break;
-        case 'v4': newUuid = uuidv4(); break;
-        case 'v6': newUuid = uuidv6(); break;
-        case 'v7': newUuid = uuidv7(); break;
-        default: newUuid = uuidv4();
+    try {
+        switch (version) {
+            case 'v4': newUuid = uuidv4(); break;
+            case 'v5': 
+                if (!v5Name || !v5Namespace) {
+                    // Don't generate if inputs missing, or maybe show error?
+                    // For now, let's just return early or use defaults if empty?
+                    // Best to default or return.
+                    if (v5Namespace && v5Name) {
+                         newUuid = uuidv5(v5Name, v5Namespace); 
+                    }
+                } else {
+                     newUuid = uuidv5(v5Name, v5Namespace);
+                }
+                break;
+            case 'v6': newUuid = uuidv6(); break;
+            case 'v7': newUuid = uuidv7(); break;
+            default: newUuid = uuidv4();
+        }
+    } catch (e) {
+        console.error("UUID Generation Error", e)
+        newUuid = "Invalid Input" // Fallback display
     }
-    setUuid(newUuid)
-    
-    setHistory(prev => {
-      // Add to history, keep top 5
-      const newItem: HistoryItem = { id: newUuid, version }
-      // Filter out duplicates if any (though unlikely for UUIDs)
-      const filtered = prev.filter(item => item.id !== newUuid)
-      return [newItem, ...filtered].slice(0, 5)
-    })
-    setCopied(false)
-  }, [version])
 
-  // Generate on mount
+    if (newUuid && newUuid !== "Invalid Input") {
+        setUuid(newUuid)
+        
+        setHistory(prev => {
+          const newItem: HistoryItem = { id: newUuid, version }
+          const filtered = prev.filter(item => item.id !== newUuid)
+          return [newItem, ...filtered].slice(0, 5)
+        })
+    } else if (newUuid === "Invalid Input") {
+        setUuid("Invalid Input")
+    }
+    
+    setCopied(false)
+  }, [version, v5Name, v5Namespace])
+
+  // Generate on mount or inputs change
   useEffect(() => {
     generateUuid()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [generateUuid])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -64,8 +80,8 @@ export default function UuidGenerator() {
 
   const getVersionLabel = (v: string) => {
       switch(v) {
-          case 'v1': return 'Version 1 (Timestamp)';
           case 'v4': return 'Version 4 (Random)';
+          case 'v5': return 'Version 5 (Name-based MD5)';
           case 'v6': return 'Version 6 (Reordered Time)';
           case 'v7': return 'Version 7 (Unix Epoch)';
           default: return '';
@@ -104,45 +120,60 @@ export default function UuidGenerator() {
             </p>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase font-bold tracking-wider text-gray-500">Version</label>
-              <div className="relative">
-                <select 
-                  value={version}
-                  onChange={(e) => setVersion(e.target.value as any)}
-                  className="w-full appearance-none bg-white dark:bg-black border border-black dark:border-white px-4 py-3 pr-8 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white cursor-pointer font-mono text-sm"
-                >
-                  <option value="v4">Version 4 (Random)</option>
-                  <option value="v1">Version 1 (Timestamp)</option>
-                  <option value="v6">Version 6 (Reordered)</option>
-                  <option value="v7">Version 7 (Unix Epoch)</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-black dark:text-white">
-                  <span className="material-symbols-outlined text-sm">expand_more</span>
+          <div className="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs uppercase font-bold tracking-wider text-gray-500">Version</label>
+                  <div className="relative">
+                    <select 
+                      value={version}
+                      onChange={(e) => setVersion(e.target.value as any)}
+                      className="w-full appearance-none bg-white dark:bg-black border border-black dark:border-white px-4 py-3 pr-8 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white cursor-pointer font-mono text-sm"
+                    >
+                      <option value="v4">Version 4 (Random)</option>
+                      <option value="v5">Version 5 (Name-based)</option>
+                      <option value="v6">Version 6 (Reordered)</option>
+                      <option value="v7">Version 7 (Unix Epoch)</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-black dark:text-white">
+                      <span className="material-symbols-outlined text-sm">expand_more</span>
+                    </div>
+                  </div>
                 </div>
+
+                <button 
+                  onClick={generateUuid}
+                  className="w-full bg-black dark:bg-white text-white dark:text-black border border-black dark:border-white px-6 py-3 font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 group hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-y-0 active:translate-x-0 active:shadow-none h-[46px]"
+                >
+                  <span className="material-symbols-outlined text-lg group-hover:rotate-180 transition-transform duration-500">refresh</span>
+                  Regenerate
+                </button>
               </div>
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase font-bold tracking-wider text-gray-500">Quantity</label>
-              <input 
-                type="number" 
-                min="1" 
-                max="100" 
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
-                className="w-full bg-white dark:bg-black border border-black dark:border-white px-4 py-3 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white font-mono text-sm"
-              />
-            </div>
-
-            <button 
-              onClick={generateUuid}
-              className="w-full bg-black dark:bg-white text-white dark:text-black border border-black dark:border-white px-6 py-3 font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 group hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-y-0 active:translate-x-0 active:shadow-none"
-            >
-              <span className="material-symbols-outlined text-lg group-hover:rotate-180 transition-transform duration-500">refresh</span>
-              Regenerate
-            </button>
+              {version === 'v5' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2 fade-in duration-300">
+                      <div className="flex flex-col gap-2">
+                          <label className="text-xs uppercase font-bold tracking-wider text-gray-500">Namespace (UUID)</label>
+                          <input 
+                              type="text" 
+                              value={v5Namespace}
+                              onChange={(e) => setV5Namespace(e.target.value)}
+                              className="w-full bg-white dark:bg-black border border-black dark:border-white px-4 py-3 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white font-mono text-xs placeholder:text-gray-300"
+                              placeholder="e.g. 6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                          />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                          <label className="text-xs uppercase font-bold tracking-wider text-gray-500">Name</label>
+                          <input 
+                              type="text" 
+                              value={v5Name}
+                              onChange={(e) => setV5Name(e.target.value)}
+                              className="w-full bg-white dark:bg-black border border-black dark:border-white px-4 py-3 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white font-mono text-xs placeholder:text-gray-300"
+                              placeholder="e.g. labs.zekhoi.dev"
+                          />
+                      </div>
+                  </div>
+              )}
           </div>
         </div>
 
