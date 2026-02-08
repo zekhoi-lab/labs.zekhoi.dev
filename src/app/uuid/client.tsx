@@ -115,7 +115,13 @@ export default function UuidGenerator() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar title="labs.zekhoi.dev" icon="terminal" />
+      <Navbar 
+        title="labs.zekhoi.dev" 
+        icon="terminal" 
+        breadcrumbs={[
+            { label: 'UUID Generator', href: '/uuid' }
+        ]}
+      />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
         <div className="mb-12 text-center space-y-4">

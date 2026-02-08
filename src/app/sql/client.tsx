@@ -52,7 +52,12 @@ export default function SqlFormatter() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar title="labs.zekhoi.dev" />
+      <Navbar 
+        title="labs.zekhoi.dev" 
+        breadcrumbs={[
+            { label: 'SQL Formatter', href: '/sql' }
+        ]}
+      />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">

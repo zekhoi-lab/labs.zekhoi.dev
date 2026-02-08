@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useSyncExternalStore } from 'react'
 import { cn } from '@/lib/utils'
 
+import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb'
+
 interface NavbarProps {
   title?: string
   icon?: string
@@ -12,6 +14,7 @@ interface NavbarProps {
   searchPlaceholder?: string
   onSearch?: (value: string) => void
   searchValue?: string
+  breadcrumbs?: BreadcrumbItem[]
 }
 
 export function Navbar({ 
@@ -22,6 +25,7 @@ export function Navbar({
   searchPlaceholder = "Search tools (cmd + k)",
   onSearch,
   searchValue,
+  breadcrumbs,
 }: NavbarProps) {
   const isOnline = useSyncExternalStore(
     () => {
@@ -47,6 +51,11 @@ export function Navbar({
             <span className="material-symbols-outlined text-xl">{icon}</span>
             {title}
           </Link>
+          {breadcrumbs && breadcrumbs.length > 0 && (
+             <div className="hidden sm:flex items-center gap-2 ml-4 pl-4 border-l border-gray-300 dark:border-gray-700 h-6">
+                <Breadcrumb items={breadcrumbs} />
+             </div>
+          )}
         </div>
         
         <div className="hidden md:flex flex-1 max-w-md mx-8">

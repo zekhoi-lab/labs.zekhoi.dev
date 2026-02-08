@@ -110,18 +110,14 @@ export default function HttpClient() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black overflow-hidden">
-      <Navbar title="labs.zekhoi.dev" />
+      <Navbar 
+        title="labs.zekhoi.dev" 
+        breadcrumbs={[
+            { label: 'HTTP Client', href: '/http' }
+        ]}
+      />
       
-       <div className="border-b border-black dark:border-white bg-white dark:bg-black flex items-center justify-between px-6 py-2 sticky top-[64px] z-40">
-        <div className="flex items-center gap-4">
-             <Link href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white inline-flex items-center gap-1 transition-colors">
-                <span className="material-symbols-outlined text-xs">arrow_back</span>
-                Dashboard
-            </Link>
-            <span className="text-gray-300 dark:text-gray-700">/</span>
-            <span className="text-sm font-medium tracking-tight">HTTP Client</span>
-        </div>
-      </div>
+
 
       <main className="flex-1 w-full max-w-[1600px] mx-auto px-6 py-8 flex flex-col gap-6 h-[calc(100vh-100px)]">
         {/* Request Bar */}

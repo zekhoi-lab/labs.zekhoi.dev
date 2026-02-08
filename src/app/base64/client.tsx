@@ -60,7 +60,13 @@ export default function Base64Converter() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar title="labs.zekhoi.dev" icon="terminal" />
+      <Navbar 
+        title="labs.zekhoi.dev" 
+        icon="terminal" 
+        breadcrumbs={[
+            { label: 'Base64 Converter', href: '/base64' }
+        ]}
+      />
 
       <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-12">
         <div className="mb-12 text-center space-y-4">

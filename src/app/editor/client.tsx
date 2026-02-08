@@ -30,18 +30,14 @@ export default function Editor() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black overflow-hidden">
-      <Navbar title="labs.zekhoi.dev" />
+      <Navbar 
+        title="labs.zekhoi.dev" 
+        breadcrumbs={[
+            { label: 'Code Editor', href: '/editor' }
+        ]}
+      />
       
-      <div className="border-b border-black dark:border-white bg-white dark:bg-black flex items-center justify-between px-6 py-2 sticky top-[64px] z-40">
-        <div className="flex items-center gap-4">
-             <Link href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white inline-flex items-center gap-1 transition-colors">
-                <span className="material-symbols-outlined text-xs">arrow_back</span>
-                Dashboard
-            </Link>
-            <span className="text-gray-300 dark:text-gray-700">/</span>
-            <span className="text-sm font-medium tracking-tight">Markdown Preview</span>
-        </div>
-      </div>
+
 
       <main className="flex-1 w-full flex overflow-hidden h-[calc(100vh-110px)]">
         {/* Editor Pane */}

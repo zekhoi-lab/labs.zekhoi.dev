@@ -116,7 +116,12 @@ export default function UrlParser() {
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar title="labs.zekhoi.dev" />
+      <Navbar 
+        title="labs.zekhoi.dev" 
+        breadcrumbs={[
+            { label: 'URL Parser', href: '/url' }
+        ]}
+      />
       
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
         <div className="mb-12">
