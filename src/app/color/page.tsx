@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import * as ColorUtils from '@/lib/color'
@@ -16,22 +16,7 @@ export default function ColorConverter() {
   // We'll use hex as the "committed" color for preview.
   const [activeColor, setActiveColor] = useState({ r: 0, g: 0, b: 0 })
 
-  // Update all derived formats from RGB
-  const syncFromRgb = (r: number, g: number, b: number) => {
-    setActiveColor({ r, g, b })
-    // Only update active input field if it's NOT the one being typed in...
-    // Actually simpler: just update all states. Users might lose cursor position if we re-format continuously?
-    // For specific inputs, we might want to let them type freely until valid.
-    // Let's adopt a "commit on valid" approach.
-    
-    // Convert to Hex
-    const newHex = ColorUtils.rgbToHex(r, g, b)
-    setHex(newHex)
-    setRgb(`rgb(${r}, ${g}, ${b})`)
-    
-    const newHsl = ColorUtils.rgbToHsl(r, g, b)
-    setHsl(`hsl(${newHsl.h}, ${newHsl.s}%, ${newHsl.l}%)`)
-  }
+
 
   const handleHexChange = (val: string) => {
     setHex(val)

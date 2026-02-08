@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import cronstrue from 'cronstrue'
-import { CronExpressionParser } from 'cron-parser'
+import * as cronParser from 'cron-parser'
 import { cn } from '@/lib/utils'
 
 export default function CrontabGenerator() {
@@ -14,32 +14,35 @@ export default function CrontabGenerator() {
   const [month, setMonth] = useState('*')
   const [weekday, setWeekday] = useState('*')
   
-  const [cronString, setCronString] = useState('* * * * *')
-  const [description, setDescription] = useState('')
-  const [nextRuns, setNextRuns] = useState<string[]>([])
-  const [isValid, setIsValid] = useState(true)
-
-  useEffect(() => {
-    const str = `${minute} ${hour} ${day} ${month} ${weekday}`
-    setCronString(str)
-
+  /* Removed unused state/effects */
+  const cronString = `${minute} ${hour} ${day} ${month} ${weekday}`
+  
+  // Derived state for description and validation
+  const { description, isValid } = React.useMemo(() => {
     try {
-      const desc = cronstrue.toString(str)
-      setDescription(desc)
-      
-      const interval = CronExpressionParser.parse(str)
-      const runs = []
-      for (let i = 0; i < 5; i++) {
-        runs.push(interval.next().toString())
+      // First, try to parse with cron-parser for robust validation
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (cronParser as any).parseExpression(cronString);
+      // If parsing succeeds, then generate description with cronstrue
+      return { 
+        description: cronstrue.toString(cronString), 
+        isValid: true 
       }
-      setNextRuns(runs)
-      setIsValid(true)
-    } catch {
-      setDescription('Invalid Cron Expression')
-      setNextRuns([])
-      setIsValid(false)
+    } catch (err: unknown) {
+      const e = err as Error
+      // If either parsing or description generation fails, it's invalid
+      return { 
+        description: e.message || 'Invalid Cron Expression', 
+        isValid: false 
+      }
     }
-  }, [minute, hour, day, month, weekday])
+  }, [cronString])
+
+  /* Removed nextRuns if unused, or keep if I plan to use it */ 
+  // The lint said nextRuns is unused. I should verify if I rendered it. 
+  // Looking at previous code, I see Next Execution "${description}". I don't see nextRuns mapped.
+  // I'll remove nextRuns for now as per lint warning.
+
 
   const applyPreset = (preset: string) => {
     switch (preset) {

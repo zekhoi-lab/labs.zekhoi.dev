@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 type Tab = 'params' | 'headers' | 'auth' | 'body'
@@ -113,10 +114,10 @@ export default function HttpClient() {
       
        <div className="border-b border-black dark:border-white bg-white dark:bg-black flex items-center justify-between px-6 py-2 sticky top-[64px] z-40">
         <div className="flex items-center gap-4">
-             <a href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white inline-flex items-center gap-1 transition-colors">
+             <Link href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white inline-flex items-center gap-1 transition-colors">
                 <span className="material-symbols-outlined text-xs">arrow_back</span>
                 Dashboard
-            </a>
+            </Link>
             <span className="text-gray-300 dark:text-gray-700">/</span>
             <span className="text-sm font-medium tracking-tight">HTTP Client</span>
         </div>
@@ -263,7 +264,10 @@ export default function HttpClient() {
                       <label className="text-[10px] uppercase font-bold text-gray-400">Auth Type</label>
                       <select 
                         value={authType} 
-                        onChange={e => setAuthType(e.target.value as any)}
+                        onChange={e => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          setAuthType(e.target.value as any)
+                        }}
                         className="w-full border border-black dark:border-white bg-transparent p-2 text-sm text-black dark:text-white"
                       >
                         <option value="none">None</option>
@@ -322,6 +326,12 @@ export default function HttpClient() {
                         response.status >= 200 && response.status < 300 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                       )}>{response.status} {response.statusText}</span>
                     </div>
+                    {!(response.status >= 200 && response.status < 300) && (
+                      <div className="text-red-600 dark:text-red-400 font-mono text-sm">
+
+                        {(response.body as unknown as Record<string, unknown>).title as string || (response.body as unknown as Record<string, unknown>).message as string || 'Request failed'}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <span className="opacity-40">Time:</span>
                       <span>{response.time}ms</span>

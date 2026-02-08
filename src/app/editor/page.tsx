@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import ReactMarkdown from 'react-markdown'
-import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 const DEFAULT_MARKDOWN = `# Welcome to Labs Code Editor
 
@@ -34,10 +34,10 @@ export default function Editor() {
       
       <div className="border-b border-black dark:border-white bg-white dark:bg-black flex items-center justify-between px-6 py-2 sticky top-[64px] z-40">
         <div className="flex items-center gap-4">
-             <a href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white inline-flex items-center gap-1 transition-colors">
+             <Link href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white inline-flex items-center gap-1 transition-colors">
                 <span className="material-symbols-outlined text-xs">arrow_back</span>
                 Dashboard
-            </a>
+            </Link>
             <span className="text-gray-300 dark:text-gray-700">/</span>
             <span className="text-sm font-medium tracking-tight">Markdown Preview</span>
         </div>

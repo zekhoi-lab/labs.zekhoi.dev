@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import Compressor from 'compressorjs'
 import { cn } from '@/lib/utils'
+import NextImage from 'next/image'
 
 export default function ImageOptimizer() {
   const [file, setFile] = useState<File | null>(null)
@@ -27,7 +28,7 @@ export default function ImageOptimizer() {
       if (previewOriginal) URL.revokeObjectURL(previewOriginal)
       if (previewResult) URL.revokeObjectURL(previewResult)
     }
-  }, [])
+  }, [previewOriginal, previewResult])
 
   const handleFileSelect = (uploadedFile: File) => {
     if (!uploadedFile.type.startsWith('image/')) return
@@ -138,7 +139,7 @@ export default function ImageOptimizer() {
                     ].map((opt) => (
                       <button 
                         key={opt.v}
-                        onClick={() => setFormat(opt.v as any)}
+                        onClick={() => setFormat(opt.v as 'image/jpeg' | 'image/png' | 'image/webp')}
                         className={cn(
                           "flex-1 border border-black dark:border-white px-3 py-2 text-xs font-bold transition-colors",
                           format === opt.v 
@@ -202,7 +203,13 @@ export default function ImageOptimizer() {
                 </div>
                 <div className="aspect-video bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center overflow-hidden relative">
                   {previewOriginal ? (
-                    <img src={previewOriginal} alt="Original" className="w-full h-full object-contain" />
+                    <NextImage 
+                      src={previewOriginal} 
+                      alt="Original" 
+                      fill
+                      className="object-contain" 
+                      unoptimized
+                    />
                   ) : (
                     <span className="material-symbols-outlined text-gray-200 dark:text-gray-700 text-6xl">image</span>
                   )}
@@ -222,9 +229,15 @@ export default function ImageOptimizer() {
                     <span className="text-gray-500">{result ? formatSize(result.size) : '-'}</span>
                   </div>
                 </div>
-                <div className="aspect-video bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center overflow-hidden">
+                <div className="aspect-video bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 flex items-center justify-center overflow-hidden relative">
                    {previewResult ? (
-                    <img src={previewResult} alt="Optimized" className="w-full h-full object-contain" />
+                    <NextImage 
+                      src={previewResult} 
+                      alt="Optimized" 
+                      fill
+                      className="object-contain" 
+                      unoptimized
+                    />
                   ) : (
                     <span className="material-symbols-outlined text-gray-200 dark:text-gray-700 text-6xl">image</span>
                   )}

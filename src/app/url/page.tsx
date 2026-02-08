@@ -1,60 +1,60 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 export default function UrlParser() {
   const [fullUrl, setFullUrl] = useState('https://api.zekhoi.dev:8080/v1/auth/callback?code=77c92b&state=active#profile')
   const [isValid, setIsValid] = useState(true)
-  
-  // Derived state for parts
-  const [parsed, setParsed] = useState<{
-    protocol: string
-    host: string
-    port: string
-    pathname: string
-    hash: string
-    searchParams: [string, string][]
-  }>({
-    protocol: '',
-    host: '',
-    port: '',
-    pathname: '',
-    hash: '',
-    searchParams: []
-  })
 
-  const parseUrl = useCallback((input: string) => {
+  // Helper to parse URL
+  const parse = (input: string) => {
     try {
       const url = new URL(input)
-      setIsValid(true)
       const params: [string, string][] = []
       url.searchParams.forEach((value, key) => params.push([key, value]))
-      
-      setParsed({
-        protocol: url.protocol.replace(':', ''),
-        host: url.hostname,
-        port: url.port,
-        pathname: url.pathname,
-        hash: url.hash,
-        searchParams: params
-      })
+      return {
+        parsed: {
+            protocol: url.protocol.replace(':', ''),
+            host: url.hostname,
+            port: url.port,
+            pathname: url.pathname,
+            hash: url.hash,
+            searchParams: params
+        },
+        valid: true
+      }
     } catch {
-      setIsValid(false)
+      return {
+          parsed: {
+            protocol: '',
+            host: '',
+            port: '',
+            pathname: '',
+            hash: '',
+            searchParams: [] as [string, string][]
+          },
+          valid: false
+      }
     }
-  }, [])
-
-  // Initial parse
-  useEffect(() => {
-    parseUrl(fullUrl)
-  }, [])
+  }
+  
+  // Initialize state lazily
+  const [parsed, setParsed] = useState(() => parse('https://api.zekhoi.dev:8080/v1/auth/callback?code=77c92b&state=active#profile').parsed)
 
   const handleFullUrlChange = (val: string) => {
     setFullUrl(val)
-    parseUrl(val)
+    const { parsed: newParsed, valid } = parse(val)
+    if (valid) setParsed(newParsed)
+    setIsValid(valid)
   }
+
+  /* Removed useEffect to avoid sync state update lint */
+
+
 
   const updateUrlFromParts = (newParts: Partial<typeof parsed>) => {
     try {
@@ -120,10 +120,10 @@ export default function UrlParser() {
       
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
         <div className="mb-12">
-          <a href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white mb-4 inline-flex items-center gap-1 transition-colors">
+          <Link href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white mb-4 inline-flex items-center gap-1 transition-colors">
             <span className="material-symbols-outlined text-xs">arrow_back</span>
             Back to Dashboard
-          </a>
+          </Link>
           <h1 className="text-5xl font-bold tracking-tighter text-black dark:text-white glitch-text" data-text="URL Parser">URL Parser</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-4 text-sm max-w-xl">
             Input a complex URL to break it down into its constituent parts. Edit any component to rebuild the URL in real-time.

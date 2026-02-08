@@ -38,7 +38,7 @@ export default function SqlFormatter() {
       // sql-formatter doesn't have a "minify" mode.
       // So we'll use a simple regex replacement for now.
       
-      let minified = input
+      const minified = input
         .replace(/--.*$/gm, '') // Remove line comments
         .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
         .replace(/\s+/g, ' ') // Collapse whitespace

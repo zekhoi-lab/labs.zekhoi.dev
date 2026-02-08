@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import * as Diff from 'diff'
@@ -26,9 +26,6 @@ export default function DiffViewer() {
     let rightCount = 1
 
     diffs.forEach(part => {
-      const lineCount = part.count || 0
-      const lines = part.value.split('\n').filter((_, i, arr) => i < arr.length - 1 || _ !== '') // simple split, ignoring trailing newline artifact if strictly followed by nothing
-
       // Handling weird split behavior of diffLines which includes newlines
       // Re-split strictly
       const cleanLines = part.value.replace(/\n$/, '').split('\n')
