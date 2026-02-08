@@ -37,7 +37,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "labs.zekhoi.dev | Developer Utilities",
+    default: "Labs | Developer Utilities",
     template: "%s | labs.zekhoi.dev"
   },
   description: "Essential offline-first developer utilities. UUID generator, JSON formatter, JWT debugger, and more. Optimized for speed, privacy, and minimalism.",
