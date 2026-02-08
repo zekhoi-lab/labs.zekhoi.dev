@@ -49,7 +49,7 @@ export default function NotFound() {
                 <span>STACK: NULL</span>
               </div>
               <div>
-                // END_OF_LINE
+                {'// END_OF_LINE'}
               </div>
             </div>
           </div>

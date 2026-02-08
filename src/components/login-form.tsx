@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 import { login } from '@/app/actions/auth'
 import { cn } from '@/lib/utils'
@@ -13,7 +13,18 @@ export function LoginForm() {
   const [state, setState] = useState<LoginState>('idle')
   const [password, setPassword] = useState('')
   const [attempts, setAttempts] = useState(0)
-  const [isOnline, setIsOnline] = useState(true)
+  const isOnline = useSyncExternalStore(
+    () => {
+      window.addEventListener('online', () => {})
+      window.addEventListener('offline', () => {})
+      return () => {
+        window.removeEventListener('online', () => {})
+        window.removeEventListener('offline', () => {})
+      }
+    },
+    () => navigator.onLine,
+    () => true
+  )
   const [timeLeft, setTimeLeft] = useState(60)
   const [latency, setLatency] = useState(12)
   const [progress, setProgress] = useState(0)
@@ -94,23 +105,11 @@ export function LoginForm() {
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    setIsOnline(navigator.onLine)
 
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
 
   useEffect(() => {
     // Generate static random IDs on mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setErrorId(`ERR-${Math.floor(Math.random() * 9000 + 1000)}`)
     setSessionId(`SID-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.floor(Math.random() * 900 + 100)}`)
 
@@ -176,8 +175,8 @@ export function LoginForm() {
                 </h1>
               </div>
               <p className="text-xs uppercase tracking-[0.1em] text-gray-500 dark:text-gray-400 font-mono leading-relaxed">
-                // Too many failed attempts detected.<br/>
-                // Rate limiter active on IP: {clientIp}
+                {'// Too many failed attempts detected.'}<br/>
+                {'// Rate limiter active on IP:'} {clientIp}
               </p>
             </div>
             
@@ -243,7 +242,7 @@ export function LoginForm() {
                         labs.zekhoi.dev
                     </h1>
                     <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 font-mono">
-                        // HANDSHAKE_INITIATED
+                        {'// HANDSHAKE_INITIATED'}
                     </p>
                 </div>
                 <div className="flex flex-col gap-6">
@@ -311,7 +310,7 @@ export function LoginForm() {
               labs.zekhoi.dev
             </h1>
             <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 font-mono">
-              // Authorized Access Only
+              {'// Authorized Access Only'}
             </p>
           </div>
 
