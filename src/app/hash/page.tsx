@@ -6,7 +6,7 @@ import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 export default function HashGenerator() {
-  const [input, setInput] = useState<string>('Zekhoi Labs')
+  const [input, setInput] = useState<string>('zekhoi labs')
   const [hashes, setHashes] = useState<{ [key: string]: string }>({
       'SHA-1': '',
       'SHA-256': '',

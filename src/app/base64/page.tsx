@@ -6,7 +6,7 @@ import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 export default function Base64Converter() {
-  const [input, setInput] = useState<string>('Zekhoi Labs')
+  const [input, setInput] = useState<string>('zekhoi labs')
   const [output, setOutput] = useState<string>('')
   const [mode, setMode] = useState<'encode' | 'decode'>('encode')
   const [error, setError] = useState<string | null>(null)

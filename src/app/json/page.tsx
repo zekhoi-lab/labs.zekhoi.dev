@@ -6,7 +6,7 @@ import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 export default function JsonFormatter() {
-  const [input, setInput] = useState<string>('{"name":"Zekhoi Labs","type":"Developer Tools","features":["UUID","JSON","JWT"],"active":true,"version":1.0}')
+  const [input, setInput] = useState<string>('{"name":"zekhoi labs","type":"Developer Tools","features":["UUID","JSON","JWT"],"active":true,"version":1.0}')
   const [output, setOutput] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [indent, setIndent] = useState<number>(2)
@@ -106,7 +106,7 @@ export default function JsonFormatter() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)] min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto lg:h-[calc(100vh-12rem)] min-h-[600px]">
             {/* Input Section */}
             <div className="flex flex-col border border-black dark:border-white bg-white dark:bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                 <div className="p-3 border-b border-black dark:border-white bg-gray-50 dark:bg-gray-900 flex justify-between items-center">

@@ -12,7 +12,7 @@ export default function RegexTester() {
     multiline: true,
     insensitive: false
   })
-  const [testString, setTestString] = useState('The quick Brown Fox jumps over the lazy Dog.\nRegex is very powerful.\nZekhoi Labs 2024.')
+  const [testString, setTestString] = useState('The quick Brown Fox jumps over the lazy Dog.\nRegex is very powerful.\nzekhoi labs 2024.')
   const [matchInfo, setMatchInfo] = useState<{ count: number, time: number, error?: string }>({ count: 0, time: 0 })
   const [matches, setMatches] = useState<RegExpMatchArray[]>([])
 
