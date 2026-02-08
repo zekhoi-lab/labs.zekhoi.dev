@@ -125,7 +125,7 @@ export default function UuidGenerator() {
         ]}
       />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <div className="mb-12 space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="UUID Generator" />
@@ -135,7 +135,7 @@ export default function UuidGenerator() {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-black border border-black dark:border-white p-8 md:p-12 mb-12 relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
+        <div className="bg-white dark:bg-black border border-black dark:border-white p-4 sm:p-6 md:p-12 mb-8 relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
           <div className="absolute top-4 right-4 flex gap-2">
             <button 
               onClick={() => copyToClipboard(uuid)}
@@ -146,16 +146,16 @@ export default function UuidGenerator() {
             </button>
           </div>
           
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="font-mono text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center break-all select-all">
+          <div className="flex flex-col items-center justify-center py-4 md:py-8 w-full">
+            <div className="font-mono text-sm sm:text-2xl md:text-4xl font-bold tracking-tight text-center select-all w-full break-all">
                 {uuid}
             </div>
-            <p className="mt-4 text-xs text-gray-400 uppercase tracking-widest">
+            <p className="mt-2 text-xs text-gray-400 uppercase tracking-widest">
               {getVersionLabel(version)}
             </p>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 space-y-6">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs uppercase font-bold tracking-wider text-gray-500">Version</label>
