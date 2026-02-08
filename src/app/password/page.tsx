@@ -179,15 +179,6 @@ export default function PasswordGenerator() {
                             <span className="material-symbols-outlined text-sm">{copied ? 'check' : 'content_copy'}</span>
                             {copied ? 'Copied' : 'Copy'}
                         </button>
-                         {/* QR Code functionality omitted for simplicity as it requires another lib, keeping button for UI consistency but maybe disabled or alert?
-                             Actually, let's just keep the button as purely visual matching the raw HTML or maybe implement later. 
-                             For now, let's remove it to avoid confusion or make it do nothing/alert.
-                             I'll remove it to be safe, or just leave it non-functional? 
-                             The prompt asked to make features *real*. So if I can't do QR easily without a lib, I should probably omit options that aren't working. 
-                             However, looking at the raw html, it's a key part of the UI.
-                             I'll omit it for now to avoid "fake" buttons, or just simple alert "Coming soon".
-                             Let's omit it to keep it clean.
-                          */}
                     </div>
                 </div>
 

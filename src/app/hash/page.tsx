@@ -12,18 +12,6 @@ export default function HashGenerator() {
       'SHA-256': '',
       'SHA-384': '',
       'SHA-512': '',
-      // MD5 is not supported by Web Crypto API natively in some context or requires a lib.
-      // The raw HTML shows MD5, SHA-1, SHA-256, SHA-512.
-      // Since we want to use browser APIs and stay lightweight without extra libs like crypto-js if possible,
-      // we might skip MD5 or add a small implementation.
-      // MD5 is broken anyway. But user asked for "functional" tools based on designs.
-      // Let's implement MD5 using a small helper or just supported SHA variants for now to keep it clean?
-      // Or I can add a small MD5 function.
-      // Given the "lightweight" goal, maybe stick to what `crypto.subtle` offers: SHA-1, SHA-256, SHA-384, SHA-512.
-      // I will omit MD5 for now as it's not standard in SubtleCrypto efficiently without a polyfill.
-      // I'll stick to SHA family which is better.
-      // Wait, the raw HTML has MD5. I should probably try to support it or just replace it with SHA-384 in UI to be "better"?
-      // I'll replace MD5 with SHA-384 in the UI to encourage better security and use native APIs.
   })
   // const [loading, setLoading] = useState(false) // Unused
 
