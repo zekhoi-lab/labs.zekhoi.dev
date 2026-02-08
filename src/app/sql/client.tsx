@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { format as formatSql } from 'sql-formatter'
+import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
 
 type Dialect = 'sql' | 'postgresql' | 'mysql' | 'sqlite' | 'mariadb' | 'bigquery'
@@ -62,7 +63,9 @@ export default function SqlFormatter() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tighter uppercase">SQL Formatter</h1>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+              <GlitchText text="SQL Formatter" />
+            </h1>
             <p className="text-gray-500 dark:text-gray-400 max-w-xl text-sm leading-relaxed">
               Beautify, indent, and minify your SQL queries. Supports multiple dialects including PostgreSQL and MySQL.
             </p>

@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import ReactMarkdown from 'react-markdown'
+import { GlitchText } from '@/components/glitch-text'
 import Link from 'next/link'
 
-const DEFAULT_MARKDOWN = `# Welcome to Labs Code Editor
+const DEFAULT_MARKDOWN = `# Welcome to Labs Markdown Editor
 
 This is a **minimalist** markdown editor with live preview.
 Calculated for speed and focus.
@@ -33,15 +34,16 @@ export default function Editor() {
       <Navbar 
         title="labs.zekhoi.dev" 
         breadcrumbs={[
-            { label: 'Code Editor', href: '/editor' }
+            { label: 'Markdown Editor', href: '/editor' }
         ]}
       />
       
 
 
-      <main className="flex-1 w-full flex overflow-hidden h-[calc(100vh-110px)]">
-        {/* Editor Pane */}
-        <div className="flex-1 flex flex-col border-r border-black dark:border-white">
+      <main className="flex-1 w-full flex flex-col overflow-hidden">
+        <div className="flex-1 w-full flex overflow-hidden">
+          {/* Editor Pane */}
+          <div className="flex-1 flex flex-col border-r border-black dark:border-white">
             <div className="h-10 border-b border-black dark:border-white bg-white dark:bg-black flex items-center px-4 justify-between shrink-0">
                 <div className="flex items-center gap-4 text-[10px] uppercase tracking-wider text-gray-500 font-bold">
                     <span>Editor</span>
@@ -71,10 +73,10 @@ export default function Editor() {
                 placeholder="Type markdown here..."
                 spellCheck={false}
             />
-        </div>
+          </div>
 
-        {/* Preview Pane */}
-        <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
+          {/* Preview Pane */}
+          <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
              <div className="h-10 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex items-center px-4 justify-between shrink-0">
                 <div className="flex items-center gap-4 text-[10px] uppercase tracking-wider text-gray-500 font-bold">
                     <span>Preview</span>
@@ -85,6 +87,7 @@ export default function Editor() {
                     <ReactMarkdown>{markdown}</ReactMarkdown>
                 </div>
             </div>
+          </div>
         </div>
       </main>
     </div>

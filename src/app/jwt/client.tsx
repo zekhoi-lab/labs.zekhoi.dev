@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 
+import { GlitchText } from '@/components/glitch-text'
+
 export default function JwtDebugger() {
   const [token, setToken] = useState<string>('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
   const [secret, setSecret] = useState<string>('')
@@ -118,7 +120,9 @@ export default function JwtDebugger() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 text-center space-y-4">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">JWT Debugger</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="JWT Debugger" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             Decode, inspect, and debug JSON Web Tokens (JWTs) in real-time.
           </p>

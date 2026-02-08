@@ -11,6 +11,8 @@ interface HistoryItem {
   version: 'v4' | 'v5' | 'v6' | 'v7'
 }
 
+import { GlitchText } from '@/components/glitch-text'
+
 export default function UuidGenerator() {
   const [uuid, setUuid] = useState<string>('')
   const [version, setVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4')
@@ -125,7 +127,9 @@ export default function UuidGenerator() {
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
         <div className="mb-12 text-center space-y-4">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">UUID Generator</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="UUID Generator" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             Generate cryptographically strong Universally Unique Identifiers (UUIDs).
           </p>

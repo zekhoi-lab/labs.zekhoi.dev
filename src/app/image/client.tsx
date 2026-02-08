@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import Compressor from 'compressorjs'
+import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
 import NextImage from 'next/image'
 
@@ -86,8 +87,10 @@ export default function ImageOptimizer() {
       />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold tracking-tighter mb-4 text-black dark:text-white">Image Optimizer</h1>
+        <div className="mb-12 space-y-4">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="Image Optimizer" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 max-w-2xl text-sm leading-relaxed">
             Compress, resize, and convert images locally in your browser. No files are uploaded to any server.
           </p>

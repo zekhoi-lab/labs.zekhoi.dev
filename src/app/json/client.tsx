@@ -5,6 +5,8 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils'
 
+import { GlitchText } from '@/components/glitch-text'
+
 export default function JsonFormatter() {
   const [input, setInput] = useState<string>('{"name":"zekhoi labs","type":"Developer Tools","features":["UUID","JSON","JWT"],"active":true,"version":1.0}')
   const [output, setOutput] = useState<string>('')
@@ -106,7 +108,9 @@ export default function JsonFormatter() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 text-center space-y-4">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">JSON Formatter</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="JSON Formatter" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             Validate, format, and minify JSON data with error highlighting.
           </p>

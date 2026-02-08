@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
 
 export default function UrlParser() {
   const [fullUrl, setFullUrl] = useState('https://api.zekhoi.dev:8080/v1/auth/callback?code=77c92b&state=active#profile')
@@ -125,11 +125,9 @@ export default function UrlParser() {
       
       <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-16">
         <div className="mb-12">
-          <Link href="/" className="text-[10px] uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white mb-4 inline-flex items-center gap-1 transition-colors">
-            <span className="material-symbols-outlined text-xs">arrow_back</span>
-            Back to Dashboard
-          </Link>
-          <h1 className="text-5xl font-bold tracking-tighter text-black dark:text-white glitch-text" data-text="URL Parser">URL Parser</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="URL Parser" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-4 text-sm max-w-xl">
             Input a complex URL to break it down into its constituent parts. Edit any component to rebuild the URL in real-time.
           </p>

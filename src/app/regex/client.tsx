@@ -5,6 +5,8 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils' // Unused
 
+import { GlitchText } from '@/components/glitch-text'
+
 export default function RegexTester() {
   const [expression, setExpression] = useState('([A-Z])\\w+')
   const [flags, setFlags] = useState({
@@ -106,7 +108,9 @@ export default function RegexTester() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 text-center space-y-4">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">Regex Tester</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="Regex Tester" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             Test and validate regular expressions with real-time highlighting and reference.
           </p>

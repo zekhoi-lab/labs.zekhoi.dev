@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import cronstrue from 'cronstrue'
 import * as cronParser from 'cron-parser'
+import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
 
 export default function CrontabGenerator() {
@@ -78,7 +79,9 @@ export default function CrontabGenerator() {
            <div className="inline-flex items-center gap-2 px-3 py-1 border border-black dark:border-white text-[10px] font-bold uppercase tracking-widest bg-white dark:bg-black text-black dark:text-white">
             <span className="material-symbols-outlined text-xs">schedule</span> Tool ID: CRON-GEN
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">Crontab Generator</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="Crontab Generator" />
+          </h1>
           <div className="bg-black dark:bg-white text-white dark:text-black p-6 border border-black dark:border-white flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-600">Next Execution</p>

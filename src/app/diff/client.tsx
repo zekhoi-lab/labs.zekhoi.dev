@@ -4,6 +4,7 @@ import { useState, useMemo, useRef } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import * as Diff from 'diff'
+import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
 
 export default function DiffViewer() {
@@ -77,7 +78,9 @@ export default function DiffViewer() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tighter uppercase">Diff Viewer</h1>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+              <GlitchText text="Diff Viewer" />
+            </h1>
             <p className="text-gray-500 dark:text-gray-400 text-xs tracking-tight">Compare text or code blocks. Highlighting changes in monochrome shades.</p>
           </div>
           <div className="flex gap-4">

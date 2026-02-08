@@ -82,8 +82,8 @@ const TOOLS: Tool[] = [
     href: "/color"
   },
   {
-    title: "Code Editor",
-    description: "Lightweight sandbox for writing and testing snippets in various programming languages.",
+    title: "Markdown Editor",
+    description: "Minimalist markdown editor with live preview and distraction-free writing experience.",
     icon: "terminal",
     href: "/editor"
   },

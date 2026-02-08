@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import * as ColorUtils from '@/lib/color'
+import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
 
 export default function ColorConverter() {
@@ -71,7 +72,9 @@ export default function ColorConverter() {
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter uppercase">Color Converter</h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
+            <GlitchText text="Color Converter" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 max-w-2xl text-sm leading-relaxed">
             Minimalist conversion utility for HEX, RGB, and HSL. 
             Conceptual monochrome preview for structural visualization.
