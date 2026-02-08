@@ -33,13 +33,17 @@ export default function EpochConverter() {
 
   // Update current epoch every second (or faster for ms)
   useEffect(() => {
-    const timer = setInterval(() => {
+    const update = () => {
         if (displayUnit === 'seconds') {
             setCurrentEpoch(Math.floor(Date.now() / 1000))
         } else {
             setCurrentEpoch(Date.now())
         }
-    }, displayUnit === 'seconds' ? 1000 : 50) // Update faster for ms
+    }
+    
+    update() // Call immediately on switch
+    
+    const timer = setInterval(update, displayUnit === 'seconds' ? 1000 : 50)
     return () => clearInterval(timer)
   }, [displayUnit])
 
@@ -132,7 +136,7 @@ export default function EpochConverter() {
 
         <div className="max-w-4xl mx-auto mb-16">
             <div className="bg-black dark:bg-white text-white dark:text-black p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] relative">
-                <div className="absolute top-4 right-4 flex gap-2">
+                <div className="flex justify-center md:absolute md:top-4 md:right-4 gap-2 mb-2 md:mb-0">
                     <button 
                          onClick={() => setDisplayUnit('seconds')}
                          className={cn(
@@ -157,8 +161,8 @@ export default function EpochConverter() {
                     </button>
                 </div>
 
-                <p className="text-xs font-bold uppercase tracking-widest mb-4 opacity-75">Current Unix Epoch</p>
-                <div className="text-5xl md:text-7xl font-bold tracking-tighter tabular-nums font-mono select-all">
+                <p className="text-xs font-bold uppercase tracking-widest mb-4 opacity-75 md:pt-0">Current Unix Epoch</p>
+                <div className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter tabular-nums font-mono select-all overflow-hidden text-ellipsis">
                     {currentEpoch}
                 </div>
                 <div className="mt-4 text-sm opacity-50 font-mono">
