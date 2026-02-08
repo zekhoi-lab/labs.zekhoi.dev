@@ -130,16 +130,19 @@ export default function HttpClient() {
         </div>
         {/* Request Bar */}
         <div className="flex flex-col md:flex-row gap-0 border border-black dark:border-white bg-white dark:bg-black shrink-0">
-          <div className="md:w-32 border-b md:border-b-0 md:border-r border-black dark:border-white">
+          <div className="md:w-32 border-b md:border-b-0 md:border-r border-black dark:border-white relative">
             <select 
               value={method}
               onChange={(e) => setMethod(e.target.value as Method)}
-              className="w-full h-12 bg-transparent border-none text-sm font-bold uppercase tracking-widest px-4 cursor-pointer focus:ring-0 text-black dark:text-white"
+              className="w-full h-12 bg-transparent appearance-none border-none text-sm font-bold uppercase tracking-widest px-4 pr-10 cursor-pointer focus:ring-0 text-black dark:text-white"
             >
               {['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map(m => (
                 <option key={m} value={m} className="bg-white dark:bg-black">{m}</option>
               ))}
             </select>
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-black dark:text-white">
+              <span className="material-symbols-outlined text-sm">expand_more</span>
+            </div>
           </div>
           <div className="flex-1 border-b md:border-b-0 md:border-r border-black dark:border-white">
             <input 

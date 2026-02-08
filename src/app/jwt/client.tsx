@@ -201,9 +201,14 @@ export default function JwtDebugger() {
                 <div className="flex-1 p-4 flex flex-col gap-6 overflow-auto">
                     <div className="text-sm font-mono space-y-2 text-gray-500">
                         <p className="uppercase text-[10px] tracking-widest text-black dark:text-white mb-2">Algorithm</p>
-                        <select className="w-full bg-white dark:bg-black border border-black dark:border-white px-3 py-2 text-sm focus:ring-0 focus:border-black dark:focus:border-white opacity-100" disabled>
-                            <option>HS256 (HMAC + SHA-256)</option>
-                        </select>
+                        <div className="relative">
+                            <select className="w-full bg-white dark:bg-black border border-black dark:border-white px-3 py-2 pr-10 text-sm focus:ring-0 focus:border-black dark:focus:border-white opacity-100 appearance-none cursor-default" disabled>
+                                <option>HS256 (HMAC + SHA-256)</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                                <span className="material-symbols-outlined text-sm">expand_more</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-2">

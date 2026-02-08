@@ -71,18 +71,23 @@ export default function SqlFormatter() {
           <div className="flex items-center gap-4 pt-4">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] uppercase font-bold text-gray-400">SQL Dialect</label>
-              <select 
-                value={dialect}
-                onChange={(e) => setDialect(e.target.value as Dialect)}
-                className="appearance-none bg-white dark:bg-black border border-black dark:border-white px-4 py-2 text-sm focus:ring-0 focus:border-black font-mono cursor-pointer outline-none text-black dark:text-white"
-              >
-                <option value="postgresql">PostgreSQL</option>
-                <option value="mysql">MySQL</option>
-                <option value="sqlite">SQLite</option>
-                <option value="sql">Standard SQL</option>
-                <option value="mariadb">MariaDB</option>
-                <option value="bigquery">BigQuery</option>
-              </select>
+              <div className="relative group">
+                <select 
+                  value={dialect}
+                  onChange={(e) => setDialect(e.target.value as Dialect)}
+                  className="appearance-none bg-white dark:bg-black border border-black dark:border-white px-4 py-2 pr-10 text-sm focus:ring-0 focus:border-black font-mono cursor-pointer outline-none text-black dark:text-white w-full"
+                >
+                  <option value="postgresql">PostgreSQL</option>
+                  <option value="mysql">MySQL</option>
+                  <option value="sqlite">SQLite</option>
+                  <option value="sql">Standard SQL</option>
+                  <option value="mariadb">MariaDB</option>
+                  <option value="bigquery">BigQuery</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-black dark:text-white">
+                  <span className="material-symbols-outlined text-sm">expand_more</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

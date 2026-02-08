@@ -215,15 +215,20 @@ export default function JsonFormatter() {
         <div className="mt-8 border border-black dark:border-white bg-white dark:bg-black p-4 flex flex-col md:flex-row gap-6 items-center justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <div className="flex items-center gap-4 w-full md:w-auto">
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Indent:</span>
-                <select 
-                    value={indent}
-                    onChange={(e) => setIndent(parseInt(e.target.value))}
-                    className="bg-gray-50 dark:bg-gray-900 border border-black dark:border-white px-3 py-1.5 text-sm focus:ring-0 focus:border-black dark:focus:border-white cursor-pointer w-full md:w-auto"
-                >
-                    <option value={2}>2 Spaces</option>
-                    <option value={4}>4 Spaces</option>
-                    <option value={8}>8 Spaces</option>
-                </select>
+                <div className="relative w-full md:w-auto">
+                    <select 
+                        value={indent}
+                        onChange={(e) => setIndent(parseInt(e.target.value))}
+                        className="appearance-none bg-gray-50 dark:bg-gray-900 border border-black dark:border-white px-3 py-1.5 pr-10 text-sm focus:ring-0 focus:border-black dark:focus:border-white cursor-pointer w-full md:w-40"
+                    >
+                        <option value={2}>2 Spaces</option>
+                        <option value={4}>4 Spaces</option>
+                        <option value={8}>8 Spaces</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-black dark:text-white">
+                        <span className="material-symbols-outlined text-sm">expand_more</span>
+                    </div>
+                </div>
             </div>
             
             <div className="flex gap-4 w-full md:w-auto">
