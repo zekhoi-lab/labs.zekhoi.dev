@@ -1,29 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 
 export default function JwtDebugger() {
   const [token, setToken] = useState<string>('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
-  const [header, setHeader] = useState<object | null>(null)
-  const [payload, setPayload] = useState<object | null>(null)
-  
   const [secret, setSecret] = useState<string>('')
   const [isSecretBase64, setIsSecretBase64] = useState<boolean>(false)
   const [isValidSignature, setIsValidSignature] = useState<boolean | null>(null)
 
-  // Decode JWT
-  useEffect(() => {
-    if (!token) {
-        setHeader(null)
-        setPayload(null)
-        return
-    }
+  // Use useMemo for derived state to avoid setState in useEffect
+  const { header, payload } = useMemo(() => {
+    if (!token) return { header: null, payload: null }
 
     try {
         const parts = token.split('.')
-        // if (parts.length !== 3) { ... }
         
         const decodePart = (part: string) => {
             try {
@@ -37,11 +29,12 @@ export default function JwtDebugger() {
             }
         }
 
-        if(parts[0]) setHeader(decodePart(parts[0]))
-        if(parts[1]) setPayload(decodePart(parts[1]))
+        return {
+            header: parts[0] ? decodePart(parts[0]) : null,
+            payload: parts[1] ? decodePart(parts[1]) : null
+        }
     } catch { 
-        setHeader(null)
-        setPayload(null)
+        return { header: null, payload: null }
     }
   }, [token])
 
@@ -112,33 +105,6 @@ export default function JwtDebugger() {
 
     verify()
   }, [token, secret, isSecretBase64])
-
-  const ColorizedJson = ({ data, colorClass }: { data: object | null, colorClass: string }) => {
-      if (!data) return null
-      const jsonStr = JSON.stringify(data, null, 2)
-      
-      const html = jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        let cls = 'text-black dark:text-white'
-        if (/^"/.test(match)) {
-            if (/:$/.test(match)) {
-                cls = 'text-black dark:text-white font-bold'
-            } else {
-                cls = colorClass
-            }
-        } else if (/true|false/.test(match)) {
-            cls = 'text-blue-600 dark:text-blue-400'
-        } else if (/null/.test(match)) {
-            cls = 'text-gray-500'
-        } else if (/^-?\d/.test(match)) {
-             cls = colorClass
-        }
-        return `<span class="${cls}">${match}</span>`
-    })
-
-    return (
-        <pre className="text-sm font-mono whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: html }} />
-    )
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -288,5 +254,32 @@ export default function JwtDebugger() {
 
       <Footer />
     </div>
+  )
+}
+
+const ColorizedJson = ({ data, colorClass }: { data: object | null, colorClass: string }) => {
+    if (!data) return null
+    const jsonStr = JSON.stringify(data, null, 2)
+    
+    const html = jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      let cls = 'text-black dark:text-white'
+      if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+              cls = 'text-black dark:text-white font-bold'
+          } else {
+              cls = colorClass
+          }
+      } else if (/true|false/.test(match)) {
+          cls = 'text-blue-600 dark:text-blue-400'
+      } else if (/null/.test(match)) {
+          cls = 'text-gray-500'
+      } else if (/^-?\d/.test(match)) {
+           cls = colorClass
+      }
+      return `<span class="${cls}">${match}</span>`
+  })
+
+  return (
+      <pre className="text-sm font-mono whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: html }} />
   )
 }

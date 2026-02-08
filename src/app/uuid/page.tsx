@@ -27,6 +27,7 @@ export default function UuidGenerator() {
     const saved = localStorage.getItem('uuid-history')
     if (saved) {
         try {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setHistory(JSON.parse(saved))
         } catch {
             // Ignore invalid json
