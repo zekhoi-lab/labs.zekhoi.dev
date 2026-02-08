@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+
 import { Navbar } from '@/components/navbar'
 import { ToolCard } from '@/components/tool-card'
 import { Footer } from '@/components/footer'
@@ -114,19 +114,9 @@ const TOOLS: Tool[] = [
 ]
 
 export default function Home() {
-  const [search, setSearch] = useState('')
-
-  const filteredTools = TOOLS.filter(tool => 
-    tool.title.toLowerCase().includes(search.toLowerCase()) || 
-    tool.description.toLowerCase().includes(search.toLowerCase())
-  )
-
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar 
-        onSearch={setSearch} 
-        searchValue={search} 
-      />
+      <Navbar />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-16 space-y-4">
@@ -138,17 +128,12 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredTools.map((tool) => (
+          {TOOLS.map((tool) => (
             <ToolCard 
               key={tool.href}
               {...tool}
             />
           ))}
-          {filteredTools.length === 0 && (
-            <div className="col-span-full py-12 text-center text-gray-500">
-              No tools found matching &quot;{search}&quot;
-            </div>
-          )}
         </div>
       </main>
 

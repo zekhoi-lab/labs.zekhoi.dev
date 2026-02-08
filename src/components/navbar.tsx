@@ -11,9 +11,6 @@ interface NavbarProps {
   icon?: string
   statusLabel?: string
   statusColor?: string
-  searchPlaceholder?: string
-  onSearch?: (value: string) => void
-  searchValue?: string
   breadcrumbs?: BreadcrumbItem[]
 }
 
@@ -22,9 +19,6 @@ export function Navbar({
   icon = "terminal", 
   statusLabel, 
   statusColor = "green-500",
-  searchPlaceholder = "Search tools (cmd + k)",
-  onSearch,
-  searchValue,
   breadcrumbs,
 }: NavbarProps) {
   const isOnline = useSyncExternalStore(
@@ -59,18 +53,7 @@ export function Navbar({
         </div>
         
         <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full group">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors">
-              <span className="material-symbols-outlined text-lg">search</span>
-            </span>
-            <input 
-              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus:border-black dark:focus:border-white focus:ring-0 pl-10 pr-4 py-1.5 text-sm placeholder:text-gray-400 transition-colors outline-none font-mono rounded-none text-black dark:text-white" 
-              placeholder={searchPlaceholder}
-              type="text"
-              value={searchValue}
-              onChange={(e) => onSearch?.(e.target.value)}
-            />
-          </div>
+          {/* Search removed */}
         </div>
         
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
