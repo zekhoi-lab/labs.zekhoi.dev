@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import cronstrue from 'cronstrue'
-import * as cronParser from 'cron-parser'
+import { CronExpressionParser } from 'cron-parser'
 import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
 
@@ -21,9 +21,8 @@ export default function CrontabGenerator() {
   // Derived state for description and validation
   const { description, isValid } = React.useMemo(() => {
     try {
-      // First, try to parse with cron-parser for robust validation
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (cronParser as any).parseExpression(cronString);
+      // Use CronExpressionParser as suggested by the user
+      CronExpressionParser.parse(cronString);
       // If parsing succeeds, then generate description with cronstrue
       return { 
         description: cronstrue.toString(cronString), 
