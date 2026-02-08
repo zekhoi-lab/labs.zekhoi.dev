@@ -4,6 +4,7 @@
 import { Navbar } from '@/components/navbar'
 import { ToolCard } from '@/components/tool-card'
 import { Footer } from '@/components/footer'
+import { GlitchText } from '@/components/glitch-text'
 
 interface Tool {
   title: string
@@ -120,7 +121,9 @@ export default function Home() {
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-16 space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-black dark:text-white">Developer Tools</h1>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-black dark:text-white uppercase">
+            <GlitchText text="Developer Tools" />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 max-w-2xl text-sm md:text-base leading-relaxed">
             Essential utilities for daily development workflows. 
             Optimized for speed, privacy, and minimalism. No ads, no tracking, just tools.
