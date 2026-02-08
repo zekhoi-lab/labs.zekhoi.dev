@@ -5,7 +5,7 @@ import { Footer } from '@/components/footer'
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative">
-      <Navbar statusLabel="VAULT" statusHref="/secrets" />
+      <Navbar />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-16 space-y-4">

@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { logout } from '@/app/actions/auth'
 import { useSyncExternalStore } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +10,6 @@ interface NavbarProps {
   statusLabel?: string
   statusColor?: string
   searchPlaceholder?: string
-  statusHref?: string
 }
 
 export function Navbar({ 
@@ -20,7 +18,6 @@ export function Navbar({
   statusLabel, 
   statusColor = "green-500",
   searchPlaceholder = "Search tools (cmd + k)",
-  statusHref
 }: NavbarProps) {
   const isOnline = useSyncExternalStore(
     () => {
@@ -35,12 +32,8 @@ export function Navbar({
     () => true
   )
 
-
-
   const currentStatusLabel = statusLabel || (isOnline ? 'System Normal' : 'System Offline')
   const currentStatusColor = isOnline ? statusColor : 'red-500'
-
-
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-black dark:border-white">
@@ -66,28 +59,11 @@ export function Navbar({
         </div>
         
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
-          {statusHref ? (
-            <Link href={statusHref}>
-              <StatusContent 
-                isOnline={isOnline} 
-                currentStatusColor={currentStatusColor} 
-                currentStatusLabel={currentStatusLabel}
-                hasHref={true}
-              />
-            </Link>
-          ) : (
-            <StatusContent 
-              isOnline={isOnline} 
-              currentStatusColor={currentStatusColor} 
-              currentStatusLabel={currentStatusLabel}
-              hasHref={false}
-            />
-          )}
-          <form action={logout}>
-            <button type="submit" className="hover:text-black dark:hover:text-white transition-colors uppercase">
-              Logout
-            </button>
-          </form>
+          <StatusContent 
+            isOnline={isOnline} 
+            currentStatusColor={currentStatusColor} 
+            currentStatusLabel={currentStatusLabel}
+          />
         </div>
       </div>
     </nav>
@@ -98,17 +74,14 @@ function StatusContent({
   isOnline, 
   currentStatusColor, 
   currentStatusLabel,
-  hasHref
 }: { 
   isOnline: boolean
   currentStatusColor: string
   currentStatusLabel: string
-  hasHref: boolean
 }) {
   return (
     <div className={cn(
       "hidden sm:flex items-center gap-2",
-      hasHref && "cursor-pointer hover:opacity-80 transition-opacity"
     )}>
       <div className={cn(
         "w-2 h-2 rounded-full",

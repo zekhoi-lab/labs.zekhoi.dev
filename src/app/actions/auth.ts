@@ -36,8 +36,4 @@ export async function login(password: string) {
   return { success: false, attempts: newAttempts }
 }
 
-export async function logout() {
-  const cookieStore = await cookies()
-  cookieStore.delete('auth_token')
-  redirect('/login')
-}
+
