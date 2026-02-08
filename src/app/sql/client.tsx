@@ -65,7 +65,7 @@ export default function SqlFormatter() {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="SQL Formatter" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Beautify, indent, and minify your SQL queries. Supports multiple dialects including PostgreSQL and MySQL.
           </p>
           <div className="flex items-center gap-4 pt-4">

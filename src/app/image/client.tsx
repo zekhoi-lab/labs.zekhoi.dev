@@ -91,7 +91,7 @@ export default function ImageOptimizer() {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="Image Optimizer" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Compress, resize, and convert images locally in your browser. No files are uploaded to any server.
           </p>
         </div>

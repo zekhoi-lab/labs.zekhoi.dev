@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
+import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 import { GlitchText } from '@/components/glitch-text'
 import Link from 'next/link'
@@ -120,12 +121,12 @@ export default function HttpClient() {
       
 
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col gap-6 h-[calc(100vh-100px)]">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col gap-8 h-[calc(100vh-100px)]">
         <div className="shrink-0 space-y-4 mb-6">
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
               <GlitchText text="HTTP Client" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">Test API endpoints directly from your browser.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">Test API endpoints directly from your browser.</p>
         </div>
         {/* Request Bar */}
         <div className="flex flex-col md:flex-row gap-0 border border-black dark:border-white bg-white dark:bg-black shrink-0">
@@ -373,6 +374,7 @@ export default function HttpClient() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

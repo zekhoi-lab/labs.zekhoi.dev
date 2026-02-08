@@ -75,7 +75,7 @@ export default function ColorConverter() {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="Color Converter" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Minimalist conversion utility for HEX, RGB, and HSL. Conceptual monochrome preview for structural visualization.
           </p>
         </div>

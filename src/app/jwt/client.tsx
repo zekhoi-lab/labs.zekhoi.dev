@@ -123,7 +123,7 @@ export default function JwtDebugger() {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="JWT Debugger" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Decode, inspect, and debug JSON Web Tokens (JWTs) in real-time.
           </p>
         </div>

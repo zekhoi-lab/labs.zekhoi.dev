@@ -92,7 +92,6 @@ export default function UuidGenerator() {
     }, 0)
     return () => clearTimeout(timer)
   }, [generateUuid])
-  // ... (comments)
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -125,12 +124,12 @@ export default function UuidGenerator() {
         ]}
       />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="mb-12 space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="UUID Generator" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Generate cryptographically strong Universally Unique Identifiers (UUIDs) locally in your browser.
           </p>
         </div>

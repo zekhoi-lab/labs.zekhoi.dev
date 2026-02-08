@@ -15,34 +15,23 @@ export default function CrontabGenerator() {
   const [month, setMonth] = useState('*')
   const [weekday, setWeekday] = useState('*')
   
-  /* Removed unused state/effects */
   const cronString = `${minute} ${hour} ${day} ${month} ${weekday}`
   
-  // Derived state for description and validation
   const { description, isValid } = React.useMemo(() => {
     try {
-      // Use CronExpressionParser as suggested by the user
       CronExpressionParser.parse(cronString);
-      // If parsing succeeds, then generate description with cronstrue
       return { 
         description: cronstrue.toString(cronString), 
         isValid: true 
       }
     } catch (err: unknown) {
       const e = err as Error
-      // If either parsing or description generation fails, it's invalid
       return { 
         description: e.message || 'Invalid Cron Expression', 
         isValid: false 
       }
     }
   }, [cronString])
-
-  /* Removed nextRuns if unused, or keep if I plan to use it */ 
-  // The lint said nextRuns is unused. I should verify if I rendered it. 
-  // Looking at previous code, I see Next Execution "${description}". I don't see nextRuns mapped.
-  // I'll remove nextRuns for now as per lint warning.
-
 
   const applyPreset = (preset: string) => {
     switch (preset) {
@@ -73,13 +62,13 @@ export default function CrontabGenerator() {
         ]}
       />
       
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="Crontab Generator" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-            Generate and validate cron schedule expressions for your Linux crontab.
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
+            Generate and validate cron schedules with human-readable descriptions.
           </p>
         </div>
 

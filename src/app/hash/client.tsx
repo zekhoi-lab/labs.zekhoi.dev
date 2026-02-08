@@ -15,7 +15,6 @@ export default function HashGenerator() {
       'SHA-384': '',
       'SHA-512': '',
   })
-  // const [loading, setLoading] = useState(false) // Unused
 
   useEffect(() => {
     const generateHashes = async () => {
@@ -29,7 +28,6 @@ export default function HashGenerator() {
             return
         }
 
-        // setLoading(true)
         const encoder = new TextEncoder()
         const data = encoder.encode(input)
 
@@ -54,7 +52,6 @@ export default function HashGenerator() {
         }
 
         setHashes(newHashes)
-        // setLoading(false)
     }
 
     generateHashes()
@@ -74,13 +71,13 @@ export default function HashGenerator() {
         ]}
       />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="Hash Generator" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-            Generate cryptographic hashes (SHA) securely in your browser.
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
+            Generate secure cryptographic hashes for your sensitive data locally.
           </p>
         </div>
 
@@ -120,19 +117,18 @@ export default function HashGenerator() {
                     </div>
                 ))}
             </div>
-        </div>
 
-        <div className="mt-12 p-6 bg-gray-50 dark:bg-gray-900 border border-black dark:border-white opacity-75">
-             <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-gray-500">security</span>
-                <h3 className="font-bold text-sm uppercase tracking-wider">Security Note</h3>
+            <div className="mt-12 p-6 bg-gray-50 dark:bg-gray-900 border border-black dark:border-white opacity-75">
+                 <div className="flex items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-gray-500">security</span>
+                    <h3 className="font-bold text-sm uppercase tracking-wider">Security Note</h3>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                    All hashing is performed locally using the Web Crypto API. Your data never leaves your browser.
+                    MD5 is not included as it is considered cryptographically broken and not supported by the standard Web Crypto API.
+                </p>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-                All hashing is performed locally using the Web Crypto API. Your data never leaves your browser.
-                MD5 is not included as it is considered cryptographically broken and not supported by the standard Web Crypto API.
-            </p>
         </div>
-
       </main>
 
       <Footer />

@@ -111,7 +111,7 @@ export default function JsonFormatter() {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="JSON Formatter" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Validate, format, and minify JSON data with instant error highlighting.
           </p>
         </div>

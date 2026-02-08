@@ -81,7 +81,7 @@ export default function DiffViewer() {
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
               <GlitchText text="Diff Viewer" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
               Compare text or code blocks. Highlighting changes in monochrome shades.
             </p>
           </div>

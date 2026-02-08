@@ -58,23 +58,22 @@ export default function EpochConverter() {
 
   useEffect(() => {
      if (inputValue) {
-         let ts = parseInt(inputValue)
-         if (!isNaN(ts)) {
-            // Simple heuristic: > 10000000000 indicates ms (valid for dates after 1970-04-26)
-            // Or typically 13 chars vs 10 chars.
-            // 2024 is ~1700000000 (10 digits)
-            // 2024 in ms is ~1700000000000 (13 digits)
-            if (inputValue.length > 11) {
-                setDetectedUnit('milliseconds')
-            } else {
-                ts = ts * 1000
-                setDetectedUnit('seconds')
-            }
-            setConvertedDate(new Date(ts))
-         } else {
-             setConvertedDate(null)
-             setDetectedUnit(null)
-         }
+          const tsInt = parseInt(inputValue)
+          if (!isNaN(tsInt)) {
+             let ts = tsInt
+             // Simple heuristic: > 10000000000 indicates ms (valid for dates after 1970-04-26)
+             // Or typically 13 chars vs 10 chars.
+             if (inputValue.length > 11) {
+                 setDetectedUnit('milliseconds')
+             } else {
+                 ts = ts * 1000
+                 setDetectedUnit('seconds')
+             }
+             setConvertedDate(new Date(ts))
+          } else {
+              setConvertedDate(null)
+              setDetectedUnit(null)
+          }
      } else {
          setConvertedDate(null)
          setDetectedUnit(null)
@@ -97,7 +96,7 @@ export default function EpochConverter() {
   const formatWithTimezone = (date: Date) => {
       return {
           gmt: date.toUTCString(),
-          local: date.toLocaleString() + ' ' + /\((.*)\)/.exec(new Date().toString())?.[1] || '',
+          local: date.toLocaleString() + ' ' + (/\((.*)\)/.exec(new Date().toString())?.[1] || ''),
           iso: date.toISOString(),
           relative: getRelativeTime(date)
       }
@@ -129,12 +128,12 @@ export default function EpochConverter() {
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
               <GlitchText text="Epoch Converter" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
                 Convert Unix timestamps to human-readable dates and vice versa.
             </p>
         </div>
 
-        <div className="max-w-4xl mx-auto mb-16">
+        <div className="mb-16">
             <div className="bg-black dark:bg-white text-white dark:text-black p-8 md:p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] relative">
                 <div className="flex justify-center md:absolute md:top-4 md:right-4 gap-2 mb-2 md:mb-0">
                     <button 
@@ -171,7 +170,7 @@ export default function EpochConverter() {
             </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Timestamp to Date */}
             <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-6">

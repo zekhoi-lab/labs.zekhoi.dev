@@ -49,11 +49,6 @@ export default function PasswordGenerator() {
   useEffect(() => {
     generatePassword() // eslint-disable-line react-hooks/set-state-in-effect
   }, [generatePassword]) 
-  // Note: We might want to NOT regenerate on every setting change to avoid annoying flickering if user is setting up,
-  // but looking at the raw HTML interactions, it's often expected. 
-  // However, usually "Generate" button is explicit. The raw HTML has a "Generate New" button.
-  // The provided code will regenerate on setting change which is also fine for interactivity.
-  // Let's stick to explicit generation primarily, but initial generation is needed.
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -87,12 +82,12 @@ export default function PasswordGenerator() {
         ]}
       />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 space-y-4">
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
               <GlitchText text="Password Generator" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
               Generate secure, random passwords locally in your browser.
             </p>
         </div>

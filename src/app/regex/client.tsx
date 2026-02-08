@@ -111,7 +111,7 @@ export default function RegexTester() {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="Regex Tester" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
             Test and validate regular expressions with real-time highlighting and reference.
           </p>
         </div>

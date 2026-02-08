@@ -52,19 +52,10 @@ export default function UrlParser() {
     setIsValid(valid)
   }
 
-  /* Removed useEffect to avoid sync state update lint */
-
-
-
   const updateUrlFromParts = (newParts: Partial<typeof parsed>) => {
     try {
       // Construct URL from current parsed state + new parts
       const current = { ...parsed, ...newParts }
-      
-      // We need to be careful constructing. 
-      // If protocol is missing, it crashes URL constructor if we try 'proto://...' manually without care.
-      // Safest is to use the last valid URL object if possible, but we don't store it.
-      // Let's try to construct string first.
       
       let newUrlStr = `${current.protocol || 'https'}://${current.host}`
       if (current.port) newUrlStr += `:${current.port}`
@@ -86,15 +77,7 @@ export default function UrlParser() {
       setParsed(current)
       setIsValid(true)
     } catch {
-      // If construction fails (e.g. empty host), we might just update the parsed state 
-      // but mark valid=false? Or just update what we can. 
-      // For now, let's update parsed state so inputs don't lag, but fullUrl might be invalid?
-      // Actually, if we update parsed state but not fullUrl, they get out of sync.
-      // Let's update both, but validation status will be false.
-      // We'll update parsed state
       setParsed(prev => ({ ...prev, ...newParts }))
-      // We won't update fullUrl if it's fundamentally broken to avoid wiping it? 
-      // No, better to try to sync.
     }
   }
   
@@ -123,13 +106,13 @@ export default function UrlParser() {
         ]}
       />
       
-      <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-12 space-y-4">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase">
             <GlitchText text="URL Parser" />
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-            Input a complex URL to break it down into its constituent parts. Edit any component to rebuild the URL in real-time.
+          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
+            Deep dive into URLs: parse components, query parameters, and validate structures.
           </p>
         </div>
 
