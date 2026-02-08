@@ -1,4 +1,5 @@
 import { Navbar } from '@/components/navbar'
+import { Footer } from '@/components/footer'
 
 export default function SecretsPage() {
   return (
@@ -188,16 +189,7 @@ export default function SecretsPage() {
         </div>
       </main>
 
-      <footer className="border-t border-black dark:border-white mt-auto py-8 bg-white/50 dark:bg-black/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wider">
-          <p>© 2024 Labs.Zekhoi.Dev</p>
-          <div className="flex gap-6 mt-4 sm:mt-0">
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Security Policy</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Audit Logs</a>
-            <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Help</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
