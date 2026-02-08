@@ -10,6 +10,8 @@ interface NavbarProps {
   statusLabel?: string
   statusColor?: string
   searchPlaceholder?: string
+  onSearch?: (value: string) => void
+  searchValue?: string
 }
 
 export function Navbar({ 
@@ -18,6 +20,8 @@ export function Navbar({
   statusLabel, 
   statusColor = "green-500",
   searchPlaceholder = "Search tools (cmd + k)",
+  onSearch,
+  searchValue,
 }: NavbarProps) {
   const isOnline = useSyncExternalStore(
     () => {
@@ -54,6 +58,8 @@ export function Navbar({
               className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus:border-black dark:focus:border-white focus:ring-0 pl-10 pr-4 py-1.5 text-sm placeholder:text-gray-400 transition-colors outline-none font-mono rounded-none text-black dark:text-white" 
               placeholder={searchPlaceholder}
               type="text"
+              value={searchValue}
+              onChange={(e) => onSearch?.(e.target.value)}
             />
           </div>
         </div>

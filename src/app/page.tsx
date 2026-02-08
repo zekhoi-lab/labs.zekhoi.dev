@@ -1,21 +1,132 @@
+'use client'
+
+import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { ToolCard } from '@/components/tool-card'
 import { Footer } from '@/components/footer'
 
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Access essential developer tools including UUID generator, Password generator, JSON formatter, and more.",
-  alternates: {
-    canonical: '/',
-  },
+interface Tool {
+  title: string
+  description: string
+  icon: string
+  href: string
+  version?: string
 }
 
+const TOOLS: Tool[] = [
+  {
+    title: "UUID Generator",
+    description: "Generate random v4 UUIDs instantly. Supports bulk generation and multiple formats.",
+    icon: "fingerprint",
+    href: "/uuid",
+    version: "v4"
+  },
+  {
+    title: "Password Gen",
+    description: "Create strong, secure passwords with custom length, symbols, and complexity rules.",
+    icon: "password",
+    href: "/password"
+  },
+  {
+    title: "JSON Formatter",
+    description: "Validate, minify, and beautify JSON data. Includes error highlighting and tree view.",
+    icon: "data_object",
+    href: "/json"
+  },
+  {
+    title: "Base64 Converter",
+    description: "Encode and decode data to Base64 format. Supports text strings and file uploads.",
+    icon: "code",
+    href: "/base64"
+  },
+  {
+    title: "JWT Debugger",
+    description: "Decode and inspect JSON Web Tokens. Verify signatures and view payload claims.",
+    icon: "verified_user",
+    href: "/jwt"
+  },
+  {
+    title: "Epoch Converter",
+    description: "Convert Unix timestamps to human-readable dates and vice versa. Local & UTC support.",
+    icon: "schedule",
+    href: "/epoch"
+  },
+  {
+    title: "Hash Generator",
+    description: "Compute hashes using common algorithms like MD5, SHA-1, SHA-256, and SHA-512.",
+    icon: "tag",
+    href: "/hash"
+  },
+  {
+    title: "Regex Tester",
+    description: "Test regular expressions against strings in real-time. Includes cheat sheet.",
+    icon: "regular_expression",
+    href: "/regex"
+  },
+  {
+    title: "Diff Viewer",
+    description: "Compare two pieces of code or text to find differences. Supports side-by-side and unified views.",
+    icon: "compare",
+    href: "/diff"
+  },
+  {
+    title: "URL Parser",
+    description: "Deconstruct URLs into protocol, host, path, and query parameters for easier debugging.",
+    icon: "link",
+    href: "/url"
+  },
+  {
+    title: "Color Converter",
+    description: "Convert between HEX, RGB, HSL, and CMYK formats. Includes palette generator.",
+    icon: "colorize",
+    href: "/color"
+  },
+  {
+    title: "Code Editor",
+    description: "Lightweight sandbox for writing and testing snippets in various programming languages.",
+    icon: "terminal",
+    href: "/editor"
+  },
+  {
+    title: "HTTP Client",
+    description: "Test API endpoints by sending GET, POST, PUT, and DELETE requests with custom headers.",
+    icon: "public",
+    href: "/http"
+  },
+  {
+    title: "Crontab Generator",
+    description: "Create and validate cron schedules using a simple, human-readable interface.",
+    icon: "schedule",
+    href: "/crontab"
+  },
+  {
+    title: "Image Optimizer",
+    description: "Compress and resize images for the web without losing significant quality.",
+    icon: "image",
+    href: "/image"
+  },
+  {
+    title: "SQL Formatter",
+    description: "Beautify complex SQL queries for better readability across various SQL dialects.",
+    icon: "database",
+    href: "/sql"
+  }
+]
+
 export default function Home() {
+  const [search, setSearch] = useState('')
+
+  const filteredTools = TOOLS.filter(tool => 
+    tool.title.toLowerCase().includes(search.toLowerCase()) || 
+    tool.description.toLowerCase().includes(search.toLowerCase())
+  )
+
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar />
+      <Navbar 
+        onSearch={setSearch} 
+        searchValue={search} 
+      />
       
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
         <div className="mb-16 space-y-4">
@@ -27,55 +138,17 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <ToolCard 
-            title="UUID Generator" 
-            description="Generate UUIDs instantly. Supports v4 (Random), v1, v6, and v7 (Timestamp)."
-            icon="fingerprint"
-            href="/uuid"
-            version="v7"
-          />
-          <ToolCard 
-            title="Password Gen" 
-            description="Create strong, secure passwords with custom length, symbols, and complexity rules."
-            icon="password"
-            href="/password"
-          />
-          <ToolCard 
-            title="JSON Formatter" 
-            description="Validate, minify, and beautify JSON data. Includes error highlighting and tree view."
-            icon="data_object"
-            href="/json"
-          />
-          <ToolCard 
-            title="Base64 Converter" 
-            description="Encode and decode data to Base64 format. Supports text strings and file uploads."
-            icon="code"
-            href="/base64"
-          />
-          <ToolCard 
-            title="JWT Debugger" 
-            description="Decode and inspect JSON Web Tokens. Verify signatures and view payload claims."
-            icon="verified_user"
-            href="/jwt"
-          />
-          <ToolCard 
-            title="Epoch Converter" 
-            description="Convert Unix timestamps to human-readable dates and vice versa. Local & UTC support."
-            icon="schedule"
-            href="/epoch"
-          />
-          <ToolCard 
-            title="Hash Generator" 
-            description="Compute hashes using common algorithms like MD5, SHA-1, SHA-256, and SHA-512."
-            icon="tag"
-            href="/hash"
-          />
-          <ToolCard 
-            title="Regex Tester" 
-            description="Test regular expressions against strings in real-time. Includes cheat sheet."
-            icon="regular_expression"
-            href="/regex"
-          />
+          {filteredTools.map((tool) => (
+            <ToolCard 
+              key={tool.href}
+              {...tool}
+            />
+          ))}
+          {filteredTools.length === 0 && (
+            <div className="col-span-full py-12 text-center text-gray-500">
+              No tools found matching "{search}"
+            </div>
+          )}
         </div>
       </main>
 
