@@ -3,6 +3,7 @@
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { HttpsProxyAgent } from 'https-proxy-agent'
+import * as cheerio from 'cheerio'
 
 // Configure axios-retry
 axiosRetry(axios, {
@@ -76,27 +77,8 @@ function normalizeProxy(proxy: string): string {
     return `http://${p}`
 }
 
-interface InstagramUser {
-    id: string
-    username: string
-    full_name: string
-    biography: string
-    profile_pic_url: string
-    edge_followed_by: { count: number }
-    edge_follow: { count: number }
-    edge_owner_to_timeline_media: { count: number }
-    is_private: boolean
-    is_verified: boolean
-}
-
-function formatStat(num: number): string {
-    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
-    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
-    return num.toString()
-}
-
-async function fetchProfileApi(username: string, proxy?: string): Promise<InternalCheckResult & { user?: InstagramUser }> {
-    const url = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`
+async function fetchProfileApi(username: string, proxy?: string): Promise<InternalCheckResult & { htmlData?: any }> {
+    const url = `https://www.instagram.com/${username}/`
     const normalizedProxy = proxy ? normalizeProxy(proxy) : undefined
     const agent = normalizedProxy ? new HttpsProxyAgent(normalizedProxy) : undefined
     const proxyNode = normalizedProxy ? 'Proxy' : 'Direct'
@@ -105,34 +87,60 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
         const response = await axios.get(url, {
             httpsAgent: agent,
             headers: {
-                'x-ig-app-id': '936619743392459',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-                'Accept': '*/*',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'x-asbd-id': '129477',
-                'x-ig-www-claim': '0',
-                'x-requested-with': 'XMLHttpRequest',
-                'Referer': `https://www.instagram.com/${username}/`,
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-origin',
+                Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.7",
+                "Cache-Control": "max-age=0",
+                Cookie: "csrftoken=8itmfqOZ9pW8bR42I3y9Wk; ig_did=0C826C21-17C3-444A-ABB7-EBABD37214D7; mid=ZvL-IgAEAAGfkZ0euP6AF4ra66Mr; wd=911x794",
+                Priority: "u=0, i",
+                Referer: `https://www.instagram.com/${username}/`,
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
             },
-            timeout: 15000,
+            timeout: 5000,
             validateStatus: (status) => status < 500
         })
 
         const httpCode = response.status
-        const data = response.data
+        const html = response.data
 
         if (httpCode === 404) {
             return { exists: false, httpCode, message: "404: Not Found", proxyNode }
         }
 
-        if (data?.data?.user) {
-            return { exists: true, httpCode, message: "Active", proxyNode, user: data.data.user }
+        if (httpCode === 429) {
+            return { exists: false, httpCode, message: "Rate Limited (429)", proxyNode }
         }
 
-        return { exists: false, httpCode, message: "API Error (Structure Mismatch)", proxyNode }
+        const $ = cheerio.load(html)
+        const redirectUrl = $("link[rel='alternate']").attr("href")
+        const isRedirected = redirectUrl?.includes("instagram.com/accounts/login")
+
+        if (isRedirected) {
+            return { exists: false, httpCode, message: "Blocked (Login Wall)", proxyNode }
+        }
+
+        // Extract metadata as fallback for status
+        const ogTitle = $('meta[property="og:title"]').attr('content')
+        const ogDescription = $('meta[property="og:description"]').attr('content')
+
+        // If og:title contains "Page Not Found" or is missing, it's likely the account doesn't exist
+        if (ogTitle?.toLowerCase().includes('page not found') || ogTitle?.toLowerCase().includes('not found')) {
+            return { exists: false, httpCode, message: "User not found", proxyNode }
+        }
+
+        if (ogTitle || ogDescription) {
+            return {
+                exists: true,
+                httpCode,
+                message: "Active",
+                proxyNode,
+                htmlData: { ogTitle, ogDescription }
+            }
+        }
+
+        // If no metadata found at all on a 200 page, it's either suspended or deleted
+        return { exists: false, httpCode, message: "User not found", proxyNode }
     } catch (e: any) {
         return { exists: false, httpCode: 500, message: e.message, proxyNode }
     }
@@ -141,34 +149,17 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
 export async function checkInstagram(username: string, proxy?: string): Promise<InstagramCheckResult> {
     const apiRes = await fetchProfileApi(username, proxy)
 
-    if (apiRes.exists && apiRes.user) {
-        const user = apiRes.user
-        const followers = user.edge_followed_by.count
-        const following = user.edge_follow.count
-        const posts = user.edge_owner_to_timeline_media.count
-
-        // Generate Instagram-style metadata strings
-        const ogTitle = `${user.full_name} (@${user.username}) • Instagram photos and videos`
-        const ogDescription = `${formatStat(followers)} Followers, ${formatStat(following)} Following, ${formatStat(posts)} Posts - See Instagram photos and videos from ${user.full_name} (@${user.username})`
-
+    if (apiRes.exists && apiRes.htmlData) {
         return {
             success: true,
             username,
             isSuspended: false,
             status: 'Active',
             httpCode: apiRes.httpCode,
-            message: "Success (API)",
+            message: "Success (HTML)",
             proxyNode: apiRes.proxyNode,
-            fullName: user.full_name,
-            biography: user.biography,
-            followers,
-            following,
-            posts,
-            isPrivate: user.is_private,
-            isVerified: user.is_verified,
-            profilePicUrl: user.profile_pic_url,
-            ogTitle,
-            ogDescription
+            ogTitle: apiRes.htmlData.ogTitle,
+            ogDescription: apiRes.htmlData.ogDescription
         }
     }
 

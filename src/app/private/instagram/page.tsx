@@ -323,8 +323,8 @@ export default function InstagramChecker() {
                             <div className="min-w-[800px]">
                                 <div className="grid grid-cols-12 gap-x-4 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
                                     <div className="col-span-1">#</div>
-                                    <div className="col-span-2">Code</div>
                                     <div className="col-span-6">Username / Full Name</div>
+                                    <div className="col-span-2">Visit</div>
                                     <div className="col-span-3 text-right">Status</div>
                                 </div>
                                 <div className="overflow-y-auto max-h-[calc(100vh-500px)] min-h-[300px] p-0">
@@ -334,35 +334,34 @@ export default function InstagramChecker() {
                                             className={`grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors ${res.status === 'Queued' ? 'opacity-40' : ''}`}
                                         >
                                             <div className="col-span-1 text-white/40">{(i + 1).toString().padStart(2, '0')}</div>
-                                            <div className={`col-span-2 min-w-0 ${res.httpCode === 200 ? 'text-green-500' :
-                                                res.httpCode === 404 ? 'text-red-500' :
-                                                    res.httpCode ? 'text-yellow-500' : 'text-white/20'
-                                                }`} title={res.httpCode ? `HTTP Status: ${res.httpCode}` : ''}>
-                                                {res.httpCode ? `[ ${res.httpCode} ]` : '---'}
-                                            </div>
                                             <div className="col-span-6 min-w-0 flex flex-col overflow-hidden">
                                                 <div className="flex items-center gap-2 overflow-hidden">
                                                     <span className="select-all truncate" title={res.originalUsername}>{res.originalUsername}</span>
                                                     {res.message && <span className="text-[10px] text-white/30 truncate flex-1 min-w-0" title={res.message}>- {res.message}</span>}
                                                 </div>
                                                 {res.fullName && <span className="text-xs text-white/40 truncate" title={res.fullName}>{res.fullName}</span>}
-                                                {res.followers !== undefined && (
-                                                    <span className="text-[10px] text-white/20 mt-0.5 truncate" title={`${res.followers} followers, ${res.posts} posts`}>
-                                                        {res.followers} followers • {res.posts} posts {res.isVerified ? '• Verified' : ''}
-                                                    </span>
-                                                )}
                                                 {res.proxyNode && (
                                                     <span className="text-[9px] text-white/30 truncate mt-0.5 font-mono" title={`Proxy Terminal: ${res.proxyNode}`}>
                                                         ROUTE: {res.proxyNode}
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className={`col-span-3 text-right truncate min-w-0 ${res.status === 'Active' ? 'text-green-400' :
+                                            <div className="col-span-2">
+                                                <a
+                                                    href={`https://www.instagram.com/${res.originalUsername}/`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[10px] uppercase tracking-widest bg-white/10 hover:bg-white/20 text-white px-2 py-1 transition-colors inline-block"
+                                                >
+                                                    Open
+                                                </a>
+                                            </div>
+                                            <div className={`col-span-3 text-right truncate min-w-0 font-bold ${res.status === 'Active' ? 'text-green-400' :
                                                 res.status === 'Not Found' ? 'text-red-400' :
                                                     res.status === 'Scanning' ? 'text-yellow-400' :
                                                         res.status === 'Error' ? 'text-red-500' : 'text-white/40'
                                                 }`} title={`Current Status: ${res.status || 'Queued'}`}>
-                                                {res.status || 'Queued'}
+                                                [ {(res.status || 'Queued').toUpperCase().replace(/\s+/g, '_')} ]
                                             </div>
                                         </div>
                                     ))}
