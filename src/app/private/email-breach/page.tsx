@@ -11,7 +11,7 @@ export default function EmailBreaches() {
                     title="OSINT_EMAIL_LEAK_INDEX"
                     description="Deep-web OSINT leak search. Identify compromised credentials across known databases."
                     breadcrumbs={[
-                        { label: 'Dashboard', href: '/private' },
+                        { label: 'Private Tools', href: '/private' },
                         { label: 'Email Breaches' }
                     ]}
                     meta={

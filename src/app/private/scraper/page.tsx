@@ -10,7 +10,7 @@ export default function WebScraper() {
                 title="Web Scraper"
                 description="Advanced content extraction engine with JavaScript rendering capabilities. Supports CSS selectors, XPath, and automated pagination handling."
                 breadcrumbs={[
-                    { label: 'Directory', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'Web Scraper' }
                 ]}
             />
@@ -118,7 +118,7 @@ export default function WebScraper() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-white/[0.02] border border-white/10 p-4">
                             <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-1">Requests/sec</span>
                             <span className="text-xl font-bold">0.0</span>

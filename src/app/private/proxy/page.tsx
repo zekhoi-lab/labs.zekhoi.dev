@@ -10,7 +10,7 @@ export default function ProxyValidator() {
                 title="Proxy Validator"
                 description="High-performance validation engine for network node verification. Real-time latency profiling and anonymity level detection."
                 breadcrumbs={[
-                    { label: 'Dashboard', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'Proxy Validator' }
                 ]}
             />

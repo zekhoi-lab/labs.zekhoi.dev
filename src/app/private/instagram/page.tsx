@@ -10,7 +10,7 @@ export default function InstagramChecker() {
                 title="Instagram Checker"
                 description="Account status verification & metadata extraction via private API endpoints. High-performance multi-threaded scanning module."
                 breadcrumbs={[
-                    { label: 'Private Tool', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'Instagram Checker' }
                 ]}
             />
@@ -55,39 +55,43 @@ root_access`}
                         </div>
                     </div>
                     <div className="border border-white/20 bg-black flex-1 overflow-hidden flex flex-col">
-                        <div className="grid grid-cols-12 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
-                            <div className="col-span-1">#</div>
-                            <div className="col-span-4">Username</div>
-                            <div className="col-span-4">Name</div>
-                            <div className="col-span-3 text-right">Status</div>
+                        <div className="overflow-x-auto flex-1 flex flex-col">
+                            <div className="min-w-[600px]">
+                                <div className="grid grid-cols-12 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
+                                    <div className="col-span-1">#</div>
+                                    <div className="col-span-4">Username</div>
+                                    <div className="col-span-4">Name</div>
+                                    <div className="col-span-3 text-right">Status</div>
+                                </div>
+                                <div className="overflow-y-auto flex-1 p-0">
+                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors">
+                                        <div className="col-span-1 text-white/40">01</div>
+                                        <div className="col-span-4">zekhoi_labs</div>
+                                        <div className="col-span-4 text-white/60">Zekhoi Laboratories</div>
+                                        <div className="col-span-3 text-right text-green-400">[ ACTIVE ]</div>
+                                    </div>
+                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors">
+                                        <div className="col-span-1 text-white/40">02</div>
+                                        <div className="col-span-4">unknown_entity_00</div>
+                                        <div className="col-span-4 text-white/60">--</div>
+                                        <div className="col-span-3 text-right text-red-400">[ NOT_FOUND ]</div>
+                                    </div>
+                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors animate-pulse">
+                                        <div className="col-span-1 text-white/40">03</div>
+                                        <div className="col-span-4">dev_ops_private</div>
+                                        <div className="col-span-4 text-white/60">...</div>
+                                        <div className="col-span-3 text-right text-yellow-400">[ SCANNING ]</div>
+                                    </div>
+                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors opacity-40">
+                                        <div className="col-span-1 text-white/40">04</div>
+                                        <div className="col-span-4">system_root</div>
+                                        <div className="col-span-4 text-white/60"></div>
+                                        <div className="col-span-3 text-right text-white/40">[ QUEUED ]</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="overflow-y-auto flex-1 p-0">
-                            <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors">
-                                <div className="col-span-1 text-white/40">01</div>
-                                <div className="col-span-4">zekhoi_labs</div>
-                                <div className="col-span-4 text-white/60">Zekhoi Laboratories</div>
-                                <div className="col-span-3 text-right text-green-400">[ ACTIVE ]</div>
-                            </div>
-                            <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors">
-                                <div className="col-span-1 text-white/40">02</div>
-                                <div className="col-span-4">unknown_entity_00</div>
-                                <div className="col-span-4 text-white/60">--</div>
-                                <div className="col-span-3 text-right text-red-400">[ NOT_FOUND ]</div>
-                            </div>
-                            <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors animate-pulse">
-                                <div className="col-span-1 text-white/40">03</div>
-                                <div className="col-span-4">dev_ops_private</div>
-                                <div className="col-span-4 text-white/60">...</div>
-                                <div className="col-span-3 text-right text-yellow-400">[ SCANNING ]</div>
-                            </div>
-                            <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors opacity-40">
-                                <div className="col-span-1 text-white/40">04</div>
-                                <div className="col-span-4">system_root</div>
-                                <div className="col-span-4 text-white/60"></div>
-                                <div className="col-span-3 text-right text-white/40">[ QUEUED ]</div>
-                            </div>
-                        </div>
-                        <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
+                        <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between shrink-0">
                             <span>PROCESS_ID: 9928_XJ</span>
                             <span>LATENCY: 42ms</span>
                         </div>

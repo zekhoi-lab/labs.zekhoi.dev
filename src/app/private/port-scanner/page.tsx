@@ -10,7 +10,7 @@ export default function PortScanner() {
                 title="Port Scanner"
                 description="Internal network analysis utility. High-performance multi-threaded scanning module with service version detection and state validation. Restricted access authorized only."
                 breadcrumbs={[
-                    { label: 'Internal Dashboard', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'Port Scanner' }
                 ]}
             />

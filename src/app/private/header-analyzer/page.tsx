@@ -11,7 +11,7 @@ export default function HeaderAnalyzer() {
                 title="Header Analyzer"
                 description="Analyze HTTP response headers for security misconfigurations. Identify missing security flags and validate server hardening policies."
                 breadcrumbs={[
-                    { label: 'Tool ID: 0x8F2', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'Security Analysis' }
                 ]}
             />

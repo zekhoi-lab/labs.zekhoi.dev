@@ -10,7 +10,7 @@ export default function WhoisMonitor() {
                 title="WHOIS Monitor"
                 description="Continuous tracking of ownership records, nameserver changes, and expiry alerts for private assets. Monitored activity is logged and encrypted."
                 breadcrumbs={[
-                    { label: 'Dashboard', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'WHOIS Monitor' }
                 ]}
                 meta={

@@ -10,13 +10,13 @@ export default function SSLChecker() {
                 title="SSL Cert Checker"
                 description="Deep inspection of SSL/TLS configurations. Validate certificate chains, expiration dates, and ciphersuite strength against current security standards."
                 breadcrumbs={[
-                    { label: 'Dashboard', href: '/private' },
+                    { label: 'Private Tools', href: '/private' },
                     { label: 'SSL Checker' }
                 ]}
             />
 
             <div className="w-full space-y-12">
-                <div className="flex gap-4 items-end">
+                <div className="flex flex-col md:flex-row gap-4 md:items-end">
                     <div className="flex-1 space-y-2">
                         <label className="text-[10px] uppercase tracking-widest text-white/60">Target Hostname</label>
                         <input
