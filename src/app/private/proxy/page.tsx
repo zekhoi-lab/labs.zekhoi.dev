@@ -21,20 +21,42 @@ export default function ProxyValidator() {
         setResults([])
         setStats({ active: 0, dead: 0, total: proxies.length })
 
-        // Process in batches (concurrency)
-        for (let i = 0; i < proxies.length; i += concurrency) {
-            if (!validating && i > 0) break // Simple cancellation check (not perfect but helpful)
+        let currentIndex = 0
+        let isRunning = true
 
-            const batch = proxies.slice(i, i + concurrency)
-            const promises = batch.map(p => validateProxy(p, timeout))
-            const batchResults = await Promise.all(promises)
+        const worker = async () => {
+            while (isRunning && currentIndex < proxies.length) {
+                const index = currentIndex++
+                // Double check bounds after increment
+                if (index >= proxies.length) break
 
-            setResults(prev => [...prev, ...batchResults])
-            setStats(prev => {
-                const active = batchResults.filter(r => r.status === 'Active').length
-                return { ...prev, active: prev.active + active, dead: prev.dead + (batch.length - active) }
-            })
+                const proxy = proxies[index]
+
+                try {
+                    const result = await validateProxy(proxy, timeout)
+
+                    // Check logic again before updating state
+                    if (!isRunning) return
+
+                    setResults(prev => [...prev, result])
+                    setStats(prev => {
+                        const isActive = result.status === 'Active'
+                        return {
+                            ...prev,
+                            active: prev.active + (isActive ? 1 : 0),
+                            dead: prev.dead + (isActive ? 0 : 1)
+                        }
+                    })
+                } catch (error) {
+                    console.error('Proxy validation error:', error)
+                }
+            }
         }
+
+        const workers = Array.from({ length: concurrency }, () => worker())
+        await Promise.all(workers)
+
+        isRunning = false
         setValidating(false)
     }
 
