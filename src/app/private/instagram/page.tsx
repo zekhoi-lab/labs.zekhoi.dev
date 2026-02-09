@@ -1,16 +1,22 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { checkInstagram, InstagramCheckResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
 export default function InstagramChecker() {
     const [input, setInput] = useState('')
+    const [proxyInput, setProxyInput] = useState('')
     const [results, setResults] = useState<(InstagramCheckResult & { originalUsername: string, status: 'Active' | 'Not Found' | 'Scanning' | 'Queued' | 'Error' })[]>([])
     const [isScanning, setIsScanning] = useState(false)
     const [stats, setStats] = useState({ total: 0, success: 0, error: 0 })
     const [concurrency, setConcurrency] = useState(3)
+    const [processId, setProcessId] = useState('')
+
+    useEffect(() => {
+        setProcessId(`${Math.floor(Math.random() * 9000) + 1000}_XJ`)
+    }, [])
 
     // Line numbers sync
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -24,6 +30,7 @@ export default function InstagramChecker() {
 
     const handleExecute = async () => {
         const usernames = input.split('\n').map(u => u.trim()).filter(u => u)
+        const proxies = proxyInput.split('\n').map(p => p.trim()).filter(p => p)
         if (usernames.length === 0) return
 
         setIsScanning(true)
@@ -38,6 +45,7 @@ export default function InstagramChecker() {
         setResults(initialResults)
 
         let currentIndex = 0
+        let proxyIndex = 0
 
         return new Promise<void>((resolve) => {
             const worker = async () => {
@@ -46,6 +54,7 @@ export default function InstagramChecker() {
                     if (index >= usernames.length) break
 
                     const username = usernames[index]
+                    const proxy = proxies.length > 0 ? proxies[proxyIndex++ % proxies.length] : undefined
 
                     // Update to scanning
                     setResults(prev => {
@@ -55,7 +64,7 @@ export default function InstagramChecker() {
                     })
 
                     try {
-                        const result = await checkInstagram(username)
+                        const result = await checkInstagram(username, proxy)
 
                         setResults(prev => {
                             const next = [...prev]
@@ -111,7 +120,7 @@ export default function InstagramChecker() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
                 <div className="lg:col-span-4 flex flex-col gap-6">
-                    <div className="bg-black border border-white/20 p-4 h-[500px] flex flex-col relative">
+                    <div className="bg-black border border-white/20 p-4 h-[350px] flex flex-col relative">
                         <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
                             Input Payload
                         </div>
@@ -129,6 +138,20 @@ export default function InstagramChecker() {
                                 placeholder={`Enter usernames (one per line)\nzekhoi_labs\ndev_null\nroot_access`}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div className="bg-black border border-white/20 p-4 h-[200px] flex flex-col relative">
+                        <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                            Proxy Configuration (Optional)
+                        </div>
+                        <div className="flex-1 flex mt-6 font-mono text-sm overflow-hidden relative">
+                            <textarea
+                                className="flex-1 bg-transparent border-none text-white p-2 focus:ring-0 leading-6 resize-none font-mono placeholder:text-white/20 h-full w-full outline-none scrollbar-thin whitespace-pre"
+                                placeholder={`http://user:pass@host:port\nhttp://host:port\n(One per line)`}
+                                value={proxyInput}
+                                onChange={(e) => setProxyInput(e.target.value)}
                             ></textarea>
                         </div>
                     </div>
@@ -209,6 +232,11 @@ export default function InstagramChecker() {
                                                         {res.followers} followers • {res.posts} posts {res.isVerified ? '• Verified' : ''}
                                                     </span>
                                                 )}
+                                                {res.proxyNode && (
+                                                    <span className="text-[9px] text-white/30 truncate mt-0.5 font-mono" title={`Proxy Terminal: ${res.proxyNode}`}>
+                                                        ROUTE: {res.proxyNode}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className={`col-span-3 text-right truncate min-w-0 ${res.status === 'Active' ? 'text-green-400' :
                                                 res.status === 'Not Found' ? 'text-red-400' :
@@ -228,7 +256,7 @@ export default function InstagramChecker() {
                             </div>
                         </div>
                         <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
-                            <span>PROCESS_ID: {Math.floor(Math.random() * 9000) + 1000}_XJ</span>
+                            <span suppressHydrationWarning>PROCESS_ID: {processId}</span>
                             <span>SERVER_PROXY_EXECUTION</span>
                         </div>
                     </div>
