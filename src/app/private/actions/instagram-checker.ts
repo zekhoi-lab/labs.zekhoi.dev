@@ -123,19 +123,20 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
         // Extract metadata as fallback for status
         const ogTitle = $('meta[property="og:title"]').attr('content')
         const ogDescription = $('meta[property="og:description"]').attr('content')
+        const metaDescription = $('meta[name="description"]').attr('content')
 
         // If og:title contains "Page Not Found" or is missing, it's likely the account doesn't exist
         if (ogTitle?.toLowerCase().includes('page not found') || ogTitle?.toLowerCase().includes('not found')) {
             return { exists: false, httpCode, message: "User not found", proxyNode }
         }
 
-        if (ogTitle || ogDescription) {
+        if (ogTitle || ogDescription || metaDescription) {
             return {
                 exists: true,
                 httpCode,
                 message: "Active",
                 proxyNode,
-                htmlData: { ogTitle, ogDescription }
+                htmlData: { ogTitle, ogDescription, metaDescription }
             }
         }
 
@@ -150,6 +151,15 @@ export async function checkInstagram(username: string, proxy?: string): Promise<
     const apiRes = await fetchProfileApi(username, proxy)
 
     if (apiRes.exists && apiRes.htmlData) {
+        const ogTitle = apiRes.htmlData.ogTitle || ''
+        const ogDesc = apiRes.htmlData.ogDescription || apiRes.htmlData.metaDescription || ''
+
+        // Clean Title: "Name (@user) • Instagram..." -> "Name"
+        const fullName = ogTitle.split(' (@')[0].split(' • ')[0]
+
+        // Clean Description: "Followers, Following, Posts - See..." -> "Followers, Following, Posts"
+        const cleanDesc = ogDesc.split(' - ')[0]
+
         return {
             success: true,
             username,
@@ -158,8 +168,9 @@ export async function checkInstagram(username: string, proxy?: string): Promise<
             httpCode: apiRes.httpCode,
             message: "Success (HTML)",
             proxyNode: apiRes.proxyNode,
-            ogTitle: apiRes.htmlData.ogTitle,
-            ogDescription: apiRes.htmlData.ogDescription
+            fullName,
+            ogTitle: apiRes.htmlData.ogTitle, // Keep original for reference if needed
+            ogDescription: cleanDesc
         }
     }
 

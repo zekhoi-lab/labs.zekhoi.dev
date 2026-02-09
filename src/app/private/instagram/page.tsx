@@ -340,6 +340,11 @@ export default function InstagramChecker() {
                                                     {res.message && <span className="text-[10px] text-white/30 truncate flex-1 min-w-0" title={res.message}>- {res.message}</span>}
                                                 </div>
                                                 {res.fullName && <span className="text-xs text-white/40 truncate" title={res.fullName}>{res.fullName}</span>}
+                                                {(res.ogDescription || res.metaDescription) && (
+                                                    <span className="text-[10px] text-white/30 truncate mt-0.5 italic" title={res.ogDescription || res.metaDescription}>
+                                                        {res.ogDescription || res.metaDescription}
+                                                    </span>
+                                                )}
                                                 {res.proxyNode && (
                                                     <span className="text-[9px] text-white/30 truncate mt-0.5 font-mono" title={`Proxy Terminal: ${res.proxyNode}`}>
                                                         ROUTE: {res.proxyNode}
