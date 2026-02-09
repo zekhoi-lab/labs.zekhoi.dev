@@ -178,7 +178,7 @@ export default function InstagramChecker() {
                         setStats(prev => ({
                             ...prev,
                             success: prev.success + (result!.status === 'Active' ? 1 : 0),
-                            error: prev.error + (result!.status === 'Not Found' ? 1 : 0)
+                            error: prev.error + (result!.status === 'Not Found' || result!.status === 'Error' ? 1 : 0)
                         }))
                     } else {
                         setResults(prev => {
@@ -197,6 +197,29 @@ export default function InstagramChecker() {
                 resolve()
             })
         })
+    }
+
+    const handleExport = (type: 'success' | 'error') => {
+        const filteredResults = results.filter(res => {
+            if (type === 'success') return res.status === 'Active'
+            return res.status === 'Not Found' || res.status === 'Error'
+        })
+
+        if (filteredResults.length === 0) return
+
+        const textContent = filteredResults
+            .map(res => res.originalUsername)
+            .join('\n')
+
+        const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.setAttribute('href', url)
+        link.setAttribute('download', `instagram_${type}_${new Date().toISOString().split('T')[0]}.txt`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
     }
 
     const lineCount = input.split('\n').length
@@ -313,6 +336,24 @@ export default function InstagramChecker() {
                             <span className="text-white">ERROR: <span className="text-white/60">{stats.error}</span></span>
                         </div>
                         <div className="flex items-center gap-2">
+                            <div className="flex gap-2 mr-4">
+                                <button
+                                    onClick={() => handleExport('success')}
+                                    disabled={stats.success === 0}
+                                    className="text-[9px] bg-green-500/10 hover:bg-green-500/20 text-green-400 px-2 py-0.5 border border-green-500/20 transition-colors flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                    <span className="material-symbols-outlined text-[10px]">download</span>
+                                    <span>EXPORT_SUCCESS</span>
+                                </button>
+                                <button
+                                    onClick={() => handleExport('error')}
+                                    disabled={stats.error === 0}
+                                    className="text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-0.5 border border-red-500/20 transition-colors flex items-center gap-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                    <span className="material-symbols-outlined text-[10px]">download</span>
+                                    <span>EXPORT_ERROR</span>
+                                </button>
+                            </div>
                             <span className={`w-2 h-2 bg-white ${isScanning ? 'animate-pulse' : ''}`}></span>
                             <span>{isScanning ? 'SCANNING' : 'IDLE'}</span>
                         </div>
