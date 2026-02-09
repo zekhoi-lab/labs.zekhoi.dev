@@ -69,7 +69,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
                             city: json.city || 'Unknown',
                             ip: json.query
                         })
-                    } catch (_e) {
+                    } catch {
                         resolve({ proxy, status: 'Active (Parse Error)', latency, anonymity: 'Unknown', country: '-' })
                     }
                 } else {
@@ -78,7 +78,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
             })
         })
 
-        req.on('error', (_err) => {
+        req.on('error', () => {
             resolve({
                 proxy,
                 status: 'Dead',

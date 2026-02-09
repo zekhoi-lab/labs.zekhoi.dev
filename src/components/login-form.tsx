@@ -15,11 +15,11 @@ export function LoginForm() {
   const [attempts, setAttempts] = useState(0)
   const isOnline = useSyncExternalStore(
     () => {
-      window.addEventListener('online', () => {})
-      window.addEventListener('offline', () => {})
+      window.addEventListener('online', () => { })
+      window.addEventListener('offline', () => { })
       return () => {
-        window.removeEventListener('online', () => {})
-        window.removeEventListener('offline', () => {})
+        window.removeEventListener('online', () => { })
+        window.removeEventListener('offline', () => { })
       }
     },
     () => navigator.onLine,
@@ -32,6 +32,7 @@ export function LoginForm() {
   const [errorId, setErrorId] = useState('ERR-0000')
   const [sessionId, setSessionId] = useState('SID-0000')
   const [errorMessage, setErrorMessage] = useState('ERROR_INVALID_TOKEN')
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
   const mutation = useMutation({
@@ -47,20 +48,20 @@ export function LoginForm() {
         const elapsed = Date.now() - startTime
         const newProgress = Math.min(100, Math.floor((elapsed / duration) * 100))
         setProgress(newProgress)
-        
+
         if (newProgress >= 100) {
           clearInterval(progressInterval)
         }
       }, 50)
-      
+
       return { progressInterval }
     },
     onSuccess: (result, _variables, context) => {
       clearInterval(context?.progressInterval)
-      
+
       if (result.success) {
         setState('success')
-        router.push('/')
+        router.push('/private')
       } else {
         if (result.error === 'limit') {
           setState('limit')
@@ -141,7 +142,7 @@ export function LoginForm() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-        handleSubmit()
+      handleSubmit()
     }
   }
 
@@ -163,7 +164,7 @@ export function LoginForm() {
           <div className="absolute top-[-1px] right-[-1px] w-4 h-4 border-r border-t border-red-600 dark:border-red-500"></div>
           <div className="absolute bottom-[-1px] left-[-1px] w-4 h-4 border-l border-b border-red-600 dark:border-red-500"></div>
           <div className="absolute bottom-[-1px] right-[-1px] w-4 h-4 border-r border-b border-red-600 dark:border-red-500"></div>
-          
+
           <div className="flex flex-col gap-8 relative z-10">
             <div className="space-y-4 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-3 mb-4 text-red-600 dark:text-red-500">
@@ -175,11 +176,11 @@ export function LoginForm() {
                 </h1>
               </div>
               <p className="text-xs uppercase tracking-[0.1em] text-gray-500 dark:text-gray-400 font-mono leading-relaxed">
-                {'// Too many failed attempts detected.'}<br/>
+                {'// Too many failed attempts detected.'}<br />
                 {'// Rate limiter active on IP:'} {clientIp}
               </p>
             </div>
-            
+
             <div className="text-center py-4 border-y border-dashed border-gray-300 dark:border-gray-700">
               <span className="text-xs font-mono text-gray-500 dark:text-gray-500 block mb-1">COOLDOWN SEQUENCE ACTIVE</span>
               <div className="font-mono text-3xl font-bold tracking-widest text-gray-900 dark:text-gray-100">
@@ -229,51 +230,51 @@ export function LoginForm() {
           SYSTEM_PROCESSING
         </div>
         <div className="w-full max-w-[420px] bg-white dark:bg-gray-900 border border-black dark:border-gray-700 p-6 sm:p-12 shadow-none relative">
-            <div className="absolute top-[-1px] left-[-1px] w-4 h-4 border-l border-t border-black dark:border-white"></div>
-            <div className="absolute top-[-1px] right-[-1px] w-4 h-4 border-r border-t border-black dark:border-white"></div>
-            <div className="absolute bottom-[-1px] left-[-1px] w-4 h-4 border-l border-b border-black dark:border-white"></div>
-            <div className="absolute bottom-[-1px] right-[-1px] w-4 h-4 border-r border-b border-black dark:border-white"></div>
-            <div className="flex flex-col gap-8">
-                <div className="space-y-2 text-center sm:text-left">
-                    <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
-                        <span className="material-symbols-outlined text-3xl animate-spin">settings</span>
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tighter animate-flicker-intense text-gray-800 dark:text-white">
-                        labs.zekhoi.dev
-                    </h1>
-                    <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 font-mono">
-                        {'// HANDSHAKE_INITIATED'}
-                    </p>
-                </div>
-                <div className="flex flex-col gap-6">
-                    <div className="group relative opacity-50 cursor-not-allowed">
-                        <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-gray-800 dark:text-gray-200" htmlFor="access-key-loading">
-                            &gt; Access Key
-                        </label>
-                        <div className="relative flex items-center">
-                            <span className="absolute left-3 text-gray-400 material-symbols-outlined text-lg">lock</span>
-                            <input className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 pl-10 text-sm font-mono text-gray-500 dark:text-gray-400 cursor-not-allowed rounded-sm select-none focus:outline-none" disabled id="access-key-loading" type="password" value="••••••••••••••••"/>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        <button className="w-full bg-black dark:bg-white text-white dark:text-black py-3 px-4 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group rounded-sm border border-transparent cursor-wait" disabled>
-                            <span>ESTABLISHING_SECURE_TUNNEL</span><span className="animate-cursor">_</span>
-                        </button>
-                        <div className="w-full font-mono text-[10px] text-center text-gray-600 dark:text-gray-400 tracking-widest mt-1">
-                            [{Array(20).fill(0).map((_, i) => (
-                              i < Math.floor(progress / 5) ? '=' : '.'
-                            )).join('')}] {progress}%
-                        </div>
-                    </div>
-                </div>
-                <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-end text-[10px] font-mono text-gray-400">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-primary animate-pulse">VERIFYING INTEGRITY...</span>
-                        <span>ENCRYPTION: AES-256</span>
-                    </div>
-                    <div>v.1.0.4-alpha</div>
-                </div>
+          <div className="absolute top-[-1px] left-[-1px] w-4 h-4 border-l border-t border-black dark:border-white"></div>
+          <div className="absolute top-[-1px] right-[-1px] w-4 h-4 border-r border-t border-black dark:border-white"></div>
+          <div className="absolute bottom-[-1px] left-[-1px] w-4 h-4 border-l border-b border-black dark:border-white"></div>
+          <div className="absolute bottom-[-1px] right-[-1px] w-4 h-4 border-r border-b border-black dark:border-white"></div>
+          <div className="flex flex-col gap-8">
+            <div className="space-y-2 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
+                <span className="material-symbols-outlined text-3xl animate-spin">settings</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tighter animate-flicker-intense text-gray-800 dark:text-white">
+                labs.zekhoi.dev
+              </h1>
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 font-mono">
+                {'// HANDSHAKE_INITIATED'}
+              </p>
             </div>
+            <div className="flex flex-col gap-6">
+              <div className="group relative opacity-50 cursor-not-allowed">
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-gray-800 dark:text-gray-200" htmlFor="access-key-loading">
+                  &gt; Access Key
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-gray-400 material-symbols-outlined text-lg">lock</span>
+                  <input className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 pl-10 text-sm font-mono text-gray-500 dark:text-gray-400 cursor-not-allowed rounded-sm select-none focus:outline-none" disabled id="access-key-loading" type="password" value="••••••••••••••••" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button className="w-full bg-black dark:bg-white text-white dark:text-black py-3 px-4 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 group rounded-sm border border-transparent cursor-wait" disabled>
+                  <span>ESTABLISHING_SECURE_TUNNEL</span><span className="animate-cursor">_</span>
+                </button>
+                <div className="w-full font-mono text-[10px] text-center text-gray-600 dark:text-gray-400 tracking-widest mt-1">
+                  [{Array(20).fill(0).map((_, i) => (
+                    i < Math.floor(progress / 5) ? '=' : '.'
+                  )).join('')}] {progress}%
+                </div>
+              </div>
+            </div>
+            <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-end text-[10px] font-mono text-gray-400">
+              <div className="flex flex-col gap-1">
+                <span className="text-primary animate-pulse">VERIFYING INTEGRITY...</span>
+                <span>ENCRYPTION: AES-256</span>
+              </div>
+              <div>v.1.0.4-alpha</div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -300,7 +301,7 @@ export function LoginForm() {
         <div className="absolute top-[-1px] right-[-1px] w-4 h-4 border-r border-t border-black dark:border-white"></div>
         <div className="absolute bottom-[-1px] left-[-1px] w-4 h-4 border-l border-b border-black dark:border-white"></div>
         <div className="absolute bottom-[-1px] right-[-1px] w-4 h-4 border-r border-b border-black dark:border-white"></div>
-        
+
         <div className="flex flex-col gap-8">
           <div className="space-y-2 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
@@ -319,43 +320,58 @@ export function LoginForm() {
               <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-gray-800 dark:text-gray-200" htmlFor="access-key">
                 &gt; Access Key
               </label>
-              
-              {state === 'invalid' ? (
-                <>
-                  <div className="relative flex items-center mb-1">
-                    <span className="absolute left-3 text-red-500 material-symbols-outlined text-lg">warning</span>
-                    <input 
-                      className="w-full bg-red-50/10 border-2 border-red-500 animate-border-pulse px-4 py-3 pl-10 text-sm font-mono text-red-600 dark:text-red-400 placeholder:text-red-300 dark:placeholder:text-red-700 focus:ring-0 rounded-sm focus:outline-none" 
-                      id="access-key" 
-                      type="password" 
-                      value={password}
-                      onChange={handleChange}
-                      onKeyDown={handleKeyDown}
-                    />
-                    <div className="absolute right-3 w-2 h-4 bg-red-500 animate-cursor"></div>
-                  </div>
-                  <div className="text-[10px] font-mono font-bold text-red-600 dark:text-red-500 tracking-wider flex items-center gap-2 animate-pulse">
-                    <span className="inline-block animate-glitch-text">!! {errorMessage}</span>
-                  </div>
-                </>
-              ) : (
-                <div className="relative flex items-center">
-                  <span className="absolute left-3 text-gray-400 material-symbols-outlined text-lg">key</span>
-                  <input 
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-600 px-4 py-3 pl-10 text-sm font-mono placeholder:text-gray-300 dark:placeholder:text-gray-600 focus:border-black dark:focus:border-white focus:ring-0 transition-colors rounded-sm focus:outline-none" 
-                    id="access-key" 
-                    placeholder="_ENTER_TOKEN_SEQUENCE" 
-                    type="password"
-                    value={password}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                  />
-                  <div className="absolute right-3 w-2 h-4 bg-primary animate-cursor"></div>
+
+              <div className={cn(
+                "relative flex items-center",
+                state === 'invalid' && "mb-1"
+              )}>
+                <span className={cn(
+                  "absolute left-3 material-symbols-outlined text-lg",
+                  state === 'invalid' ? "text-red-500" : "text-gray-400"
+                )}>
+                  {state === 'invalid' ? 'warning' : 'key'}
+                </span>
+                <input
+                  className={cn(
+                    "w-full px-4 py-3 pl-10 text-sm font-mono rounded-sm focus:outline-none focus:ring-0",
+                    state === 'invalid'
+                      ? "bg-red-50/10 border-2 border-red-500 animate-border-pulse text-red-600 dark:text-red-400 placeholder:text-red-300 dark:placeholder:text-red-700"
+                      : "bg-transparent border border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white transition-colors"
+                  )}
+                  id="access-key"
+                  placeholder={state === 'invalid' ? undefined : "_ENTER_TOKEN_SEQUENCE"}
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  autoComplete="off"
+                />
+                <div className="absolute right-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={cn(
+                      "material-symbols-outlined text-lg transition-colors hover:text-primary focus:outline-none",
+                      state === 'invalid' ? "text-red-400" : "text-gray-500"
+                    )}
+                  >
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </button>
+                  <div className={cn(
+                    "w-2 h-4 animate-cursor",
+                    state === 'invalid' ? "bg-red-500" : "bg-primary"
+                  )}></div>
+                </div>
+              </div>
+
+              {state === 'invalid' && (
+                <div className="text-[10px] font-mono font-bold text-red-600 dark:text-red-500 tracking-wider flex items-center gap-2 animate-pulse">
+                  <span className="inline-block animate-glitch-text">!! {errorMessage}</span>
                 </div>
               )}
             </div>
 
-            <button 
+            <button
               onClick={() => handleSubmit()}
               className="w-full bg-black dark:bg-white text-white dark:text-black py-3 px-4 text-sm font-bold uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 group rounded-sm border border-transparent hover:border-primary/50"
             >

@@ -1,7 +1,6 @@
 'use server'
 
 import https from 'https'
-import http from 'http'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 export interface InstagramCheckResult {
@@ -48,7 +47,7 @@ type InternalCheckResult = {
  * Matches logic in proxy-validator.ts
  */
 function normalizeProxy(proxy: string): string {
-    let p = proxy.trim()
+    const p = proxy.trim()
     if (!p) return ''
 
     // Ignore lines that look like WHOIS status or descriptions

@@ -8,7 +8,7 @@ import { rateLimiter } from '@/lib/rate-limit'
 export async function login(password: string) {
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for') || '127.0.0.1'
-  
+
   const limitCheck = rateLimiter.check(ip)
 
   if (!limitCheck.success) {
@@ -34,6 +34,11 @@ export async function login(password: string) {
   const newAttempts = rateLimiter.increment(ip)
 
   return { success: false, attempts: newAttempts }
+}
+
+export async function logout() {
+  const cookieStore = await cookies()
+  cookieStore.delete('auth_token')
 }
 
 

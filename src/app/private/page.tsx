@@ -2,6 +2,8 @@
 
 import { ToolDashboard } from '@/components/tool-dashboard'
 import { GlitchText } from '@/components/glitch-text'
+import { logout } from '../actions/auth'
+import { useRouter } from 'next/navigation'
 
 const PRIVATE_TOOLS = [
     {
@@ -56,6 +58,14 @@ const PRIVATE_TOOLS = [
 ]
 
 export default function PrivatePage() {
+    const router = useRouter()
+
+    const handleLogout = async () => {
+        await logout()
+        router.refresh() // Middleware will pick up the cookie deletion
+        router.push('/login')
+    }
+
     return (
         <ToolDashboard
             title={<GlitchText text="Private Tools" />}
@@ -69,7 +79,7 @@ export default function PrivatePage() {
                             <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                             <span className="text-white/80">Secure Session</span>
                         </div>
-                        <button className="hover:underline">Logout</button>
+                        <button onClick={handleLogout} className="hover:underline">Logout</button>
                     </div>
                 )
             }}
