@@ -14,7 +14,7 @@ export default function InstagramChecker() {
     const [stats, setStats] = useState({ total: 0, success: 0, error: 0 })
     const [concurrency, setConcurrency] = useState(3)
     const [processId, setProcessId] = useState('')
-    const [fetchMode, setFetchMode] = useState<'client' | 'server'>('client')
+    const [fetchMode, setFetchMode] = useState<'client' | 'server'>('server')
 
     useEffect(() => {
         setProcessId(`${Math.floor(Math.random() * 9000) + 1000}_XJ`)
