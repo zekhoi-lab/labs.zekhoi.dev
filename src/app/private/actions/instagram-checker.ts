@@ -48,11 +48,22 @@ type InternalCheckResult = {
  * Matches logic in proxy-validator.ts
  */
 function normalizeProxy(proxy: string): string {
-    const parts = proxy.trim().split(':')
+    let p = proxy.trim()
+    if (!p) return ''
+
+    // Ignore lines that look like WHOIS status or descriptions
+    if (p.toLowerCase().includes('status:') || p.toLowerCase().includes('notice:') || p.includes('>>>')) {
+        return ''
+    }
+
+    const parts = p.split(':')
     if (parts.length < 2) return ''
 
     const host = parts[0]
     const port = parts[1]
+
+    // Simple hostname validation
+    if (!host.includes('.') && host !== 'localhost') return ''
 
     if (parts.length === 4) {
         const user = parts[2]
