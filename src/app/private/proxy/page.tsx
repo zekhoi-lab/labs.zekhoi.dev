@@ -88,7 +88,7 @@ export default function ProxyValidator() {
                             <h2 className="text-xs uppercase tracking-widest font-bold">Live Results</h2>
                             <div className="flex gap-4">
                                 <button className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors">Export Active</button>
-                                <button className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors">Clear All</button>
+                                <button onClick={() => { setResults([]); setStats({ active: 0, dead: 0, total: 0 }); }} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors">Clear All</button>
                             </div>
                         </div>
                         <div className="overflow-x-auto flex-1">

@@ -18,7 +18,7 @@ export async function validateProxy(proxy: string): Promise<ProxyResult> {
         const port = parts[1]
 
         if (!host || !port) {
-            resolve({ proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown' })
+            resolve({ proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' })
             return
         }
 
@@ -26,25 +26,37 @@ export async function validateProxy(proxy: string): Promise<ProxyResult> {
         const socket = new net.Socket()
         socket.setTimeout(3000)
 
-        socket.on('connect', () => {
+        socket.on('connect', async () => {
             const latency = Date.now() - start
             socket.destroy()
+
+            let country = 'Unknown'
+            try {
+                const geoRes = await fetch(`http://ip-api.com/json/${host}`)
+                if (geoRes.ok) {
+                    const geoData = await geoRes.json()
+                    country = geoData.country || 'Unknown'
+                }
+            } catch {
+                // Ignore geo fetch errors
+            }
+
             resolve({
                 proxy,
                 status: 'Active',
                 latency,
                 anonymity: latency < 100 ? 'Elite' : latency < 500 ? 'Anonymous' : 'Transparent',
-                country: 'Unknown'
+                country
             })
         })
 
         socket.on('timeout', () => {
             socket.destroy()
-            resolve({ proxy, status: 'Timeout', latency: 0, anonymity: '-' })
+            resolve({ proxy, status: 'Timeout', latency: 0, anonymity: '-', country: '-' })
         })
 
         socket.on('error', () => {
-            resolve({ proxy, status: 'Dead', latency: 0, anonymity: '-' })
+            resolve({ proxy, status: 'Dead', latency: 0, anonymity: '-', country: '-' })
         })
 
         socket.connect(Number(port), host)
