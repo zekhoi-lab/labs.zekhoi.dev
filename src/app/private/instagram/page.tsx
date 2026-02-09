@@ -1,14 +1,33 @@
-'use client'
 
+import { useState } from 'react'
+import { checkInstagram } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
 export default function InstagramChecker() {
+    const [username, setUsername] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [result, setResult] = useState<any>(null)
+
+    const handleCheck = async () => {
+        if (!username) return
+        setLoading(true)
+        setResult(null)
+        try {
+            const data = await checkInstagram(username)
+            setResult(data)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <PrivateToolLayout>
             <ToolHeader
                 title="Instagram Checker"
-                description="Account status verification & metadata extraction via private API endpoints. High-performance multi-threaded scanning module."
+                description="Profile analytics and availability verification. Retrieves public metadata, engagement metrics, and account status from the Instagram graph."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
                     { label: 'Instagram Checker' }
@@ -17,85 +36,120 @@ export default function InstagramChecker() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
                 <div className="lg:col-span-4 flex flex-col gap-6">
-                    <div className="bg-black border border-white/20 p-4 h-[500px] flex flex-col relative">
-                        <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
-                            Input Payload
-                        </div>
-                        <div className="flex-1 flex mt-6 font-mono text-sm overflow-hidden">
-                            <div className="w-8 text-right text-white/30 select-none pr-2 pt-2 leading-6 font-mono border-r border-white/10 h-full bg-black">
-                                1<br />2<br />3<br />4<br />5<br />6<br />7<br />8<br />9<br />10<br />11<br />12<br />13<br />14<br />15
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-[10px] uppercase tracking-widest text-white/60">Target Username</label>
+                            <div className="relative group">
+                                <span className="absolute left-4 top-3 text-white/40 text-sm">@</span>
+                                <input
+                                    className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 pl-8 pr-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
+                                    placeholder="username"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
+                                />
                             </div>
-                            <textarea
-                                className="flex-1 bg-transparent border-none text-white p-2 focus:ring-0 leading-6 resize-none font-mono placeholder:text-white/20 h-full w-full outline-none"
-                                placeholder={`Enter usernames (one per line)
-zekhoi_labs
-dev_null
-root_access`}
-                            ></textarea>
+                        </div>
+                        <button
+                            onClick={handleCheck}
+                            disabled={loading}
+                            className="bg-white text-black w-full py-4 text-sm font-bold uppercase tracking-widest hover:bg-white/90 transition-all border border-white disabled:opacity-50"
+                        >
+                            {loading ? 'Analyzing...' : 'Analyze Profile'}
+                        </button>
+                    </div>
+
+                    <div className="p-6 border border-white/20 bg-black space-y-4">
+                        <h3 className="text-xs font-bold uppercase tracking-widest border-b border-white/10 pb-4">Detection Status</h3>
+
+                        <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-white/40 uppercase">Profile Status</span>
+                            {result && result.success ? (
+                                <span className="text-sm font-bold text-green-500">ACTIVE</span>
+                            ) : result && !result.success && result.error ? (
+                                <span className="text-sm font-bold text-red-500">NOT FOUND</span>
+                            ) : (
+                                <span className="text-sm font-bold text-white/40">WAITING</span>
+                            )}
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-white/40 uppercase">Availability</span>
+                            {result ? (
+                                <span className="text-sm font-bold text-red-500">TAKEN</span>
+                            ) : (
+                                <span className="text-sm font-bold text-white/40">-</span>
+                            )}
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-white/40 uppercase">Privacy</span>
+                            {result && result.success ? (
+                                <span className={`text-sm font-bold ${result.isPrivate ? 'text-yellow-500' : 'text-green-500'}`}>
+                                    {result.isPrivate ? 'PRIVATE' : 'PUBLIC'}
+                                </span>
+                            ) : (
+                                <span className="text-sm font-bold text-white/40">-</span>
+                            )}
                         </div>
                     </div>
-                    <button className="fragment-card w-full py-4 bg-white text-black font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-colors flex items-center justify-center gap-2 border border-white">
-                        <span>[ EXECUTE_SCAN ]</span>
-                        <span className="material-symbols-outlined text-sm">play_arrow</span>
-                    </button>
                 </div>
 
                 <div className="lg:col-span-8 flex flex-col h-full">
-                    <div className="flex items-center justify-between border border-white/20 bg-black p-3 mb-4 text-xs font-mono uppercase tracking-wider">
-                        <div className="flex gap-4">
-                            <span className="text-white">TOTAL: <span className="text-white/60">0</span></span>
-                            <span className="text-white/20">//</span>
-                            <span className="text-white">SUCCESS: <span className="text-white/60">0</span></span>
-                            <span className="text-white/20">//</span>
-                            <span className="text-white">ERROR: <span className="text-white/60">0</span></span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-white animate-pulse"></span>
-                            <span>IDLE</span>
-                        </div>
-                    </div>
-                    <div className="border border-white/20 bg-black flex-1 overflow-hidden flex flex-col">
-                        <div className="overflow-x-auto flex-1 flex flex-col">
-                            <div className="min-w-[600px]">
-                                <div className="grid grid-cols-12 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
-                                    <div className="col-span-1">#</div>
-                                    <div className="col-span-4">Username</div>
-                                    <div className="col-span-4">Name</div>
-                                    <div className="col-span-3 text-right">Status</div>
+                    {result && result.success && (
+                        <div className="flex-1 border border-white/20 bg-black flex flex-col">
+                            <div className="border-b border-white/20 px-8 py-8 flex flex-col md:flex-row gap-8 items-start md:items-center">
+                                <div className="w-24 h-24 rounded-full border border-white/20 bg-white/5 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-4xl text-white/20">person</span>
                                 </div>
-                                <div className="overflow-y-auto flex-1 p-0">
-                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors">
-                                        <div className="col-span-1 text-white/40">01</div>
-                                        <div className="col-span-4">zekhoi_labs</div>
-                                        <div className="col-span-4 text-white/60">Zekhoi Laboratories</div>
-                                        <div className="col-span-3 text-right text-green-400">[ ACTIVE ]</div>
+                                <div className="flex-1">
+                                    <div className="flex flex-wrap items-center gap-4 mb-2">
+                                        <h2 className="text-2xl font-bold">{result.username}</h2>
+                                        {result.isVerified && <span className="material-symbols-outlined text-blue-500 text-lg">verified</span>}
+                                        <span className="px-2 py-0.5 border border-white/20 text-[10px] uppercase tracking-wider rounded-full">Business Account</span>
                                     </div>
-                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors">
-                                        <div className="col-span-1 text-white/40">02</div>
-                                        <div className="col-span-4">unknown_entity_00</div>
-                                        <div className="col-span-4 text-white/60">--</div>
-                                        <div className="col-span-3 text-right text-red-400">[ NOT_FOUND ]</div>
-                                    </div>
-                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors animate-pulse">
-                                        <div className="col-span-1 text-white/40">03</div>
-                                        <div className="col-span-4">dev_ops_private</div>
-                                        <div className="col-span-4 text-white/60">...</div>
-                                        <div className="col-span-3 text-right text-yellow-400">[ SCANNING ]</div>
-                                    </div>
-                                    <div className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors opacity-40">
-                                        <div className="col-span-1 text-white/40">04</div>
-                                        <div className="col-span-4">system_root</div>
-                                        <div className="col-span-4 text-white/60"></div>
-                                        <div className="col-span-3 text-right text-white/40">[ QUEUED ]</div>
+                                    <p className="text-sm text-white/60 max-w-lg mb-4">{result.bio}</p>
+                                    <a href={`https://instagram.com/${result.username}`} target="_blank" className="text-[10px] text-blue-400 hover:text-blue-300 uppercase tracking-widest flex items-center gap-1">
+                                        View on Instagram <span className="material-symbols-outlined text-xs">open_in_new</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 divide-x divide-white/20 border-b border-white/20">
+                                <div className="p-8 text-center hover:bg-white/[0.02] transition-colors">
+                                    <span className="block text-2xl font-bold mb-1">{result.posts.toLocaleString()}</span>
+                                    <span className="text-[10px] text-white/40 uppercase tracking-widest">Posts</span>
+                                </div>
+                                <div className="p-8 text-center hover:bg-white/[0.02] transition-colors">
+                                    <span className="block text-2xl font-bold mb-1">{result.followers.toLocaleString()}</span>
+                                    <span className="text-[10px] text-white/40 uppercase tracking-widest">Followers</span>
+                                </div>
+                                <div className="p-8 text-center hover:bg-white/[0.02] transition-colors">
+                                    <span className="block text-2xl font-bold mb-1">{result.following.toLocaleString()}</span>
+                                    <span className="text-[10px] text-white/40 uppercase tracking-widest">Following</span>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 bg-white/[0.02] p-8">
+                                <h3 className="text-xs font-bold uppercase tracking-widest mb-6">Engagement Metrics</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-2">
+                                            <span className="text-white/60">Engagement Rate</span>
+                                            <span className="font-bold">{result.engagement}</span>
+                                        </div>
+                                        <div className="h-1 bg-white/10 w-full overflow-hidden">
+                                            <div className="h-full bg-white w-[35%]"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between shrink-0">
-                            <span>PROCESS_ID: 9928_XJ</span>
-                            <span>LATENCY: 42ms</span>
+                    )}
+                    {(!result || !result.success) && (
+                        <div className="flex-1 border border-white/20 bg-black flex items-center justify-center text-white/20 uppercase tracking-widest text-sm">
+                            {result && result.error ? `Error: ${result.error}` : 'Enter username to analyze'}
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </PrivateToolLayout>

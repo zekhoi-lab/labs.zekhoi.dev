@@ -3,7 +3,70 @@
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
+
+import { useState, useRef, useEffect } from 'react'
+import { scanPort } from '../actions'
+
 export default function PortScanner() {
+    const [target, setTarget] = useState('')
+    const [range, setRange] = useState('1-100')
+    const [scanning, setScanning] = useState(false)
+    const [results, setResults] = useState<any[]>([])
+    const [logs, setLogs] = useState<string[]>([])
+    const [progress, setProgress] = useState({ current: 0, total: 0 })
+    const scrollRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+        }
+    }, [logs])
+
+    const addLog = (msg: string) => {
+        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`])
+    }
+
+    const handleScan = async () => {
+        if (!target || !range) return
+        setScanning(true)
+        setResults([])
+        setLogs([])
+        addLog(`Initializing scan for target: ${target}`)
+
+        const [start, end] = range.split('-').map(Number)
+        if (isNaN(start) || isNaN(end) || start > end) {
+            addLog('Error: Invalid port range')
+            setScanning(false)
+            return
+        }
+
+        const totalPorts = end - start + 1
+        setProgress({ current: 0, total: totalPorts })
+        addLog(`Scanning ${totalPorts} ports...`)
+
+        const batchSize = 10
+        for (let i = start; i <= end; i += batchSize) {
+            const batch = []
+            for (let j = 0; j < batchSize && i + j <= end; j++) {
+                batch.push(i + j)
+            }
+
+            const promises = batch.map(port => scanPort(target, port))
+            const batchResults = await Promise.all(promises)
+
+            batchResults.forEach(res => {
+                if (res.status === 'open') {
+                    setResults(prev => [...prev, res])
+                    addLog(`Port ${res.port} OPEN (${res.service})`)
+                }
+            })
+            setProgress(prev => ({ ...prev, current: Math.min(prev.current + batchSize, totalPorts) }))
+        }
+
+        addLog('Scan complete.')
+        setScanning(false)
+    }
+
     return (
         <PrivateToolLayout>
             <ToolHeader
@@ -23,14 +86,20 @@ export default function PortScanner() {
                                 <label className="text-[10px] uppercase tracking-widest text-white/60">Target IP / Hostname</label>
                                 <input
                                     className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-2.5 text-sm text-white placeholder:text-white/20 font-mono transition-colors outline-none"
-                                    placeholder="192.168.1.1" type="text"
+                                    placeholder="scanme.nmap.org"
+                                    type="text"
+                                    value={target}
+                                    onChange={(e) => setTarget(e.target.value)}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] uppercase tracking-widest text-white/60">Port Range</label>
                                 <input
                                     className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-2.5 text-sm text-white placeholder:text-white/20 font-mono transition-colors outline-none"
-                                    placeholder="1-1024" type="text"
+                                    placeholder="1-100"
+                                    type="text"
+                                    value={range}
+                                    onChange={(e) => setRange(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -55,18 +124,24 @@ export default function PortScanner() {
                                 </label>
                             </div>
                         </div>
-                        <button className="w-full py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-black hover:text-white border border-white transition-all">
-                            Initialize Scan
+                        <button
+                            onClick={handleScan}
+                            disabled={scanning}
+                            className="w-full py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-black hover:text-white border border-white transition-all disabled:opacity-50"
+                        >
+                            {scanning ? 'Scanning...' : 'Initialize Scan'}
                         </button>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="border border-white/20 p-4 text-center bg-black">
                             <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Threads</p>
-                            <p className="text-xl font-bold tracking-tighter">128/SEC</p>
+                            <p className="text-xl font-bold tracking-tighter">10/BATCH</p>
                         </div>
                         <div className="border border-white/20 p-4 text-center bg-black">
                             <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Status</p>
-                            <p className="text-xl font-bold tracking-tighter text-white/60">IDLE</p>
+                            <p className={`text-xl font-bold tracking-tighter ${scanning ? 'text-green-500 animate-pulse' : 'text-white/60'}`}>
+                                {scanning ? 'ACTIVE' : 'IDLE'}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -81,10 +156,12 @@ export default function PortScanner() {
                                 <div className="w-2 h-2 rounded-full border border-white/20"></div>
                             </div>
                         </div>
-                        <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-1 terminal-scroll">
-                            <div className="text-white/40">[2024-05-20 14:02:11] Waiting for user input...</div>
-                            <div className="text-white/40">[2024-05-20 14:02:15] System ready. All modules loaded.</div>
-                            <div className="text-white">root@zekhoi-labs:~# <span className="animate-pulse">_</span></div>
+                        <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-1 terminal-scroll" ref={scrollRef}>
+                            {logs.length === 0 && <div className="text-white/40">Waiting for user input...</div>}
+                            {logs.map((log, i) => (
+                                <div key={i} className="text-white/60">{log}</div>
+                            ))}
+                            {scanning && <div className="text-white">root@zekhoi-labs:~# <span className="animate-pulse">_</span></div>}
                         </div>
                     </div>
                     <div className="border border-white/20 bg-black">
@@ -102,65 +179,27 @@ export default function PortScanner() {
                                         <th className="px-4 py-3 font-normal">Port</th>
                                         <th className="px-4 py-3 font-normal">Service</th>
                                         <th className="px-4 py-3 font-normal">State</th>
-                                        <th className="px-4 py-3 font-normal">Version</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-4 py-3 font-bold">22</td>
-                                        <td className="px-4 py-3">ssh</td>
-                                        <td className="px-4 py-3">
-                                            <span className="flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-                                                Open
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-white/60">OpenSSH 8.9p1 Ubuntu-3ubuntu0.1</td>
-                                    </tr>
-                                    <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-4 py-3 font-bold">80</td>
-                                        <td className="px-4 py-3">http</td>
-                                        <td className="px-4 py-3">
-                                            <span className="flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-                                                Open
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-white/60">nginx 1.18.0</td>
-                                    </tr>
-                                    <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-4 py-3 font-bold">443</td>
-                                        <td className="px-4 py-3">https</td>
-                                        <td className="px-4 py-3">
-                                            <span className="flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-                                                Open
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-white/60">nginx 1.18.0 (SSL)</td>
-                                    </tr>
-                                    <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-4 py-3 font-bold">3306</td>
-                                        <td className="px-4 py-3">mysql</td>
-                                        <td className="px-4 py-3 text-white/40">
-                                            <span className="flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 border border-white/40 rounded-full"></span>
-                                                Closed
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-white/20">--</td>
-                                    </tr>
-                                    <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-4 py-3 font-bold">8080</td>
-                                        <td className="px-4 py-3">http-proxy</td>
-                                        <td className="px-4 py-3">
-                                            <span className="flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-                                                Open
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-white/60">Squid proxy-cache 5.7</td>
-                                    </tr>
+                                    {results.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-4 py-8 text-center text-white/20 italic">No open ports found yet.</td>
+                                        </tr>
+                                    ) : (
+                                        results.map((res, i) => (
+                                            <tr key={i} className="hover:bg-white/5 transition-colors">
+                                                <td className="px-4 py-3 font-bold">{res.port}</td>
+                                                <td className="px-4 py-3">{res.service}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className="flex items-center gap-2">
+                                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                        <span className="text-green-500">Open</span>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

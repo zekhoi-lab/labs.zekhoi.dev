@@ -1,139 +1,110 @@
-'use client'
 
+import { useState } from 'react'
+import { checkEmailBreach } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
-export default function EmailBreaches() {
+export default function EmailBreach() {
+    const [email, setEmail] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [result, setResult] = useState<any>(null)
+
+    const handleCheck = async () => {
+        if (!email) return
+        setLoading(true)
+        setResult(null)
+        try {
+            const data = await checkEmailBreach(email)
+            setResult(data)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <PrivateToolLayout>
-            <div className="w-full py-4">
-                <ToolHeader
-                    title="OSINT_EMAIL_LEAK_INDEX"
-                    description="Deep-web OSINT leak search. Identify compromised credentials across known databases."
-                    breadcrumbs={[
-                        { label: 'Private Tools', href: '/private' },
-                        { label: 'Email Breaches' }
-                    ]}
-                    meta={
-                        <span className="text-[10px] text-white/40 tracking-[0.3em] uppercase block">
-                            Module: OSINT_LEAK_DETECTION
-                        </span>
-                    }
-                />
+            <ToolHeader
+                title="Email Breaches"
+                description="Deep web surveillance system. Cross-references email addresses against 15TB+ of leaked database records. Instant notification of compromised credentials."
+                breadcrumbs={[
+                    { label: 'Private Tools', href: '/private' },
+                    { label: 'Email Breaches' }
+                ]}
+            />
 
-                <div className="mb-16">
-                    <div className="relative group">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white transition-colors">
-                            <span className="material-symbols-outlined text-xl">search</span>
-                        </span>
+            <div className="w-full py-4">
+                <div className="flex flex-col md:flex-row gap-4 mb-16">
+                    <div className="relative flex-1 group">
                         <input
-                            className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 pl-12 pr-4 py-4 text-sm placeholder:text-white/20 text-white transition-all outline-none font-mono"
-                            placeholder="Enter target email address..." type="text"
+                            className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-6 py-4 text-sm placeholder:text-white/20 text-white transition-colors outline-none font-mono"
+                            placeholder="TARGET EMAIL ADDRESS..."
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
                         />
+                        <div className="absolute inset-0 border border-white/0 group-hover:border-white/10 pointer-events-none transition-colors"></div>
                     </div>
+                    <button
+                        onClick={handleCheck}
+                        disabled={loading}
+                        className="bg-white text-black px-12 py-4 text-sm font-bold uppercase tracking-widest hover:bg-white/90 transition-all disabled:opacity-50"
+                    >
+                        {loading ? 'Scanning...' : 'Scan Database'}
+                    </button>
                 </div>
+
+                {result && (
+                    <div className="mb-12 border border-white/20 p-8 flex items-center justify-between bg-black">
+                        <div>
+                            <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-2">Status</span>
+                            {result.breached ? (
+                                <h2 className="text-3xl font-bold text-red-500">COMPROMISED</h2>
+                            ) : (
+                                <h2 className="text-3xl font-bold text-green-500">SECURE</h2>
+                            )}
+                        </div>
+                        <div className="text-right">
+                            <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-2">Breaches Found</span>
+                            <span className="text-3xl font-bold">{result.count}</span>
+                        </div>
+                    </div>
+                )}
 
                 <section className="space-y-0 border-t border-white/10">
-                    <div className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
-                        <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rotate-45"></div>
-                        <div className="absolute left-[-1px] top-0 bottom-0 w-px bg-white/20"></div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Date</span>
-                                <span className="text-sm">2023-11-14</span>
-                            </div>
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Breach Name</span>
-                                <span className="text-sm font-bold group-hover:underline">Canva Global</span>
-                            </div>
-                            <div className="md:col-span-2">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Data Leaked</span>
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Passwords</span>
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Emails</span>
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">IP Addresses</span>
+                    {result && result.breached ? (
+                        result.sources.map((source: any, i: number) => (
+                            <div key={i} className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
+                                <span className="absolute left-0 top-10 w-2 h-2 bg-red-500 rounded-full group-hover:scale-150 transition-transform"></span>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+                                    <div className="md:col-span-1">
+                                        <h3 className="text-xl font-bold mb-1">{source.name}</h3>
+                                        <span className="text-[10px] text-white/40 uppercase tracking-widest">{source.date}</span>
+                                    </div>
+                                    <div className="md:col-span-3">
+                                        <div className="flex flex-wrap gap-2">
+                                            {source.data.map((item: string, j: number) => (
+                                                <span key={j} className="px-3 py-1 border border-white/20 text-[10px] uppercase tracking-widest bg-white/[0.02]">
+                                                    {item}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        ))
+                    ) : result && !result.breached ? (
+                        <div className="py-12 text-center text-white/40 text-sm uppercase tracking-widest">
+                            No breaches found for this email address.
                         </div>
-                    </div>
-
-                    <div className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
-                        <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rotate-45"></div>
-                        <div className="absolute left-[-1px] top-0 bottom-0 w-px bg-white/20"></div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Date</span>
-                                <span className="text-sm">2022-05-20</span>
-                            </div>
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Breach Name</span>
-                                <span className="text-sm font-bold group-hover:underline">MyFitnessPal</span>
-                            </div>
-                            <div className="md:col-span-2">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Data Leaked</span>
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Auth Tokens</span>
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Usernames</span>
-                                </div>
-                            </div>
+                    ) : (
+                        <div className="py-12 text-center text-white/40 text-sm uppercase tracking-widest">
+                            {loading ? 'Searching 15TB+ of data...' : 'Awaiting Input'}
                         </div>
-                    </div>
-
-                    <div className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
-                        <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rotate-45"></div>
-                        <div className="absolute left-[-1px] top-0 bottom-0 w-px bg-white/20"></div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Date</span>
-                                <span className="text-sm">2021-01-12</span>
-                            </div>
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Breach Name</span>
-                                <span className="text-sm font-bold group-hover:underline">Dropbox v2</span>
-                            </div>
-                            <div className="md:col-span-2">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Data Leaked</span>
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Salted Hashes</span>
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Location Data</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
-                        <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rotate-45"></div>
-                        <div className="absolute left-[-1px] top-0 bottom-0 w-px bg-white/20"></div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Date</span>
-                                <span className="text-sm">2019-08-30</span>
-                            </div>
-                            <div className="md:col-span-1">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Breach Name</span>
-                                <span className="text-sm font-bold group-hover:underline">Zynga Leak</span>
-                            </div>
-                            <div className="md:col-span-2">
-                                <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Data Leaked</span>
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Cleartext PW</span>
-                                    <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase">Full Names</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </section>
-
-                <div className="mt-12 p-6 border border-white/10 bg-white/[0.01]">
-                    <div className="flex items-start gap-4">
-                        <span className="material-symbols-outlined text-white/40">info</span>
-                        <p className="text-[11px] text-white/40 leading-relaxed uppercase tracking-wider">
-                            Caution: The data presented above is aggregated from various dark-web sources.
-                            Unauthorized use of this data for malicious purposes is strictly prohibited and logged by
-                            server-side protocols.
-                        </p>
-                    </div>
-                </div>
             </div>
         </PrivateToolLayout>
     )
