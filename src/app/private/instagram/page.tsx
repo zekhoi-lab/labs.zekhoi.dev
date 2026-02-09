@@ -177,51 +177,55 @@ export default function InstagramChecker() {
                     </div>
 
                     <div className="border border-white/20 bg-black flex-1 overflow-hidden flex flex-col">
-                        <div className="grid grid-cols-12 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
-                            <div className="col-span-1">#</div>
-                            <div className="col-span-2">Code</div>
-                            <div className="col-span-6">Username / Full Name</div>
-                            <div className="col-span-3 text-right">Status</div>
-                        </div>
-                        <div className="overflow-y-auto flex-1 p-0 scrollbar-thin">
-                            {results.map((res, i) => (
-                                <div
-                                    key={i}
-                                    className={`grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors ${res.status === 'Queued' ? 'opacity-40' : ''}`}
-                                >
-                                    <div className="col-span-1 text-white/40">{(i + 1).toString().padStart(2, '0')}</div>
-                                    <div className={`col-span-2 ${res.httpCode === 200 ? 'text-green-500' :
-                                            res.httpCode === 404 ? 'text-red-500' :
-                                                res.httpCode ? 'text-yellow-500' : 'text-white/20'
-                                        }`}>
-                                        {res.httpCode ? `[ ${res.httpCode} ]` : '---'}
-                                    </div>
-                                    <div className="col-span-6 flex flex-col">
-                                        <div className="flex items-center gap-2">
-                                            <span className="select-all">{res.originalUsername}</span>
-                                            {res.message && <span className="text-[10px] text-white/30 truncate max-w-[150px]" title={res.message}>- {res.message}</span>}
+                        <div className="overflow-x-auto scrollbar-thin">
+                            <div className="min-w-[800px]">
+                                <div className="grid grid-cols-12 gap-x-4 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
+                                    <div className="col-span-1">#</div>
+                                    <div className="col-span-2">Code</div>
+                                    <div className="col-span-6">Username / Full Name</div>
+                                    <div className="col-span-3 text-right">Status</div>
+                                </div>
+                                <div className="overflow-y-auto max-h-[calc(100vh-500px)] min-h-[300px] p-0">
+                                    {results.map((res, i) => (
+                                        <div
+                                            key={i}
+                                            className={`grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors ${res.status === 'Queued' ? 'opacity-40' : ''}`}
+                                        >
+                                            <div className="col-span-1 text-white/40">{(i + 1).toString().padStart(2, '0')}</div>
+                                            <div className={`col-span-2 min-w-0 ${res.httpCode === 200 ? 'text-green-500' :
+                                                res.httpCode === 404 ? 'text-red-500' :
+                                                    res.httpCode ? 'text-yellow-500' : 'text-white/20'
+                                                }`} title={res.httpCode ? `HTTP Status: ${res.httpCode}` : ''}>
+                                                {res.httpCode ? `[ ${res.httpCode} ]` : '---'}
+                                            </div>
+                                            <div className="col-span-6 min-w-0 flex flex-col overflow-hidden">
+                                                <div className="flex items-center gap-2 overflow-hidden">
+                                                    <span className="select-all truncate" title={res.originalUsername}>{res.originalUsername}</span>
+                                                    {res.message && <span className="text-[10px] text-white/30 truncate flex-1 min-w-0" title={res.message}>- {res.message}</span>}
+                                                </div>
+                                                {res.fullName && <span className="text-xs text-white/40 truncate" title={res.fullName}>{res.fullName}</span>}
+                                                {res.followers !== undefined && (
+                                                    <span className="text-[10px] text-white/20 mt-0.5 truncate" title={`${res.followers} followers, ${res.posts} posts`}>
+                                                        {res.followers} followers • {res.posts} posts {res.isVerified ? '• Verified' : ''}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className={`col-span-3 text-right truncate min-w-0 ${res.status === 'Active' ? 'text-green-400' :
+                                                res.status === 'Not Found' ? 'text-red-400' :
+                                                    res.status === 'Scanning' ? 'text-yellow-400' :
+                                                        res.status === 'Error' ? 'text-red-500' : 'text-white/40'
+                                                }`} title={`Current Status: ${res.status || 'Queued'}`}>
+                                                [ {(res.status || 'QUEUED').toUpperCase().replace(' ', '_')} ]
+                                            </div>
                                         </div>
-                                        {res.fullName && <span className="text-xs text-white/40">{res.fullName}</span>}
-                                        {res.followers !== undefined && (
-                                            <span className="text-[10px] text-white/20 mt-0.5">
-                                                {res.followers} followers • {res.posts} posts {res.isVerified ? '• Verified' : ''}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className={`col-span-3 text-right ${res.status === 'Active' ? 'text-green-400' :
-                                            res.status === 'Not Found' ? 'text-red-400' :
-                                                res.status === 'Scanning' ? 'text-yellow-400' :
-                                                    res.status === 'Error' ? 'text-red-500' : 'text-white/40'
-                                        }`}>
-                                        [ {(res.status || 'QUEUED').toUpperCase().replace(' ', '_')} ]
-                                    </div>
+                                    ))}
+                                    {results.length === 0 && (
+                                        <div className="p-8 text-center text-white/20 italic">
+                                            No targets queued.
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                            {results.length === 0 && (
-                                <div className="p-8 text-center text-white/20 italic">
-                                    No targets queued.
-                                </div>
-                            )}
+                            </div>
                         </div>
                         <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
                             <span>PROCESS_ID: {Math.floor(Math.random() * 9000) + 1000}_XJ</span>

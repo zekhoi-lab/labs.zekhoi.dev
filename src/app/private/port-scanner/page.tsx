@@ -2,8 +2,6 @@
 
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
-
-
 import { useState, useRef, useEffect } from 'react'
 import { scanPort, PortScanResult } from '../actions'
 
@@ -78,14 +76,18 @@ export default function PortScanner() {
                 ]}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-4 space-y-6">
-                    <div className="bg-black border border-white/20 p-6 space-y-6 fragment-card">
-                        <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    {/* Input Container styled like Instagram Payload */}
+                    <div className="bg-black border border-white/20 p-4 h-[500px] flex flex-col relative">
+                        <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                            Configuration
+                        </div>
+                        <div className="flex-1 flex flex-col gap-6 mt-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest text-white/60">Target IP / Hostname</label>
+                                <label className="text-[10px] uppercase tracking-widest text-white/60">Target Host</label>
                                 <input
-                                    className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-2.5 text-sm text-white placeholder:text-white/20 font-mono transition-colors outline-none"
+                                    className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm text-white placeholder:text-white/20 font-mono outline-none"
                                     placeholder="scanme.nmap.org"
                                     type="text"
                                     value={target}
@@ -95,115 +97,101 @@ export default function PortScanner() {
                             <div className="space-y-2">
                                 <label className="text-[10px] uppercase tracking-widest text-white/60">Port Range</label>
                                 <input
-                                    className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-2.5 text-sm text-white placeholder:text-white/20 font-mono transition-colors outline-none"
+                                    className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm text-white placeholder:text-white/20 font-mono outline-none"
                                     placeholder="1-100"
                                     type="text"
                                     value={range}
                                     onChange={(e) => setRange(e.target.value)}
                                 />
                             </div>
-                        </div>
-                        <div className="space-y-4 pt-4">
-                            <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-white/40">
-                                <span>Options</span>
-                            </div>
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <input
-                                        className="rounded-none bg-black border-white/20 text-white focus:ring-0 focus:ring-offset-0"
-                                        type="checkbox"
-                                    />
-                                    <span className="text-xs text-white/60 group-hover:text-white transition-colors">Service Version Detection</span>
-                                </label>
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <input
-                                        className="rounded-none bg-black border-white/20 text-white focus:ring-0 focus:ring-offset-0"
-                                        type="checkbox" defaultChecked
-                                    />
-                                    <span className="text-xs text-white/60 group-hover:text-white transition-colors">OS Fingerprinting</span>
-                                </label>
+
+                            <div className="border-t border-white/10 pt-4 mt-auto">
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <input
+                                            className="rounded-none bg-black border-white/20 text-white focus:ring-0 focus:ring-offset-0"
+                                            type="checkbox"
+                                        />
+                                        <span className="text-xs text-white/60 group-hover:text-white transition-colors">Service Version Detection</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <input
+                                            className="rounded-none bg-black border-white/20 text-white focus:ring-0 focus:ring-offset-0"
+                                            type="checkbox" defaultChecked
+                                        />
+                                        <span className="text-xs text-white/60 group-hover:text-white transition-colors">OS Fingerprinting</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        <button
-                            onClick={handleScan}
-                            disabled={scanning}
-                            className="w-full py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-black hover:text-white border border-white transition-all disabled:opacity-50"
-                        >
-                            {scanning ? 'Scanning...' : 'Initialize Scan'}
-                        </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="border border-white/20 p-4 text-center bg-black">
-                            <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Threads</p>
-                            <p className="text-xl font-bold tracking-tighter">10/BATCH</p>
-                        </div>
-                        <div className="border border-white/20 p-4 text-center bg-black">
-                            <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Status</p>
-                            <p className={`text-xl font-bold tracking-tighter ${scanning ? 'text-green-500 animate-pulse' : 'text-white/60'}`}>
-                                {scanning ? 'ACTIVE' : 'IDLE'}
-                            </p>
-                        </div>
-                    </div>
+
+                    <button
+                        onClick={handleScan}
+                        disabled={scanning}
+                        className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-colors flex items-center justify-center gap-2 border border-white disabled:opacity-50 fragment-card"
+                    >
+                        <span>{scanning ? '[ SCANNING... ]' : '[ EXECUTE SCAN ]'}</span>
+                        <span className="material-symbols-outlined text-sm">radar</span>
+                    </button>
                 </div>
 
-                <div className="lg:col-span-8 space-y-6">
-                    <div className="border border-white/20 bg-black flex flex-col h-64">
-                        <div className="border-b border-white/20 px-4 py-2 flex items-center justify-between bg-white/5">
-                            <span className="text-[10px] uppercase tracking-widest text-white/60">
-                                Live Terminal Output {scanning && progress.total > 0 && `(${Math.round((progress.current / progress.total) * 100)}%)`}
-                            </span>
-                            <div className="flex gap-1.5">
-                                <div className="w-2 h-2 rounded-full border border-white/20"></div>
-                                <div className="w-2 h-2 rounded-full border border-white/20"></div>
-                                <div className="w-2 h-2 rounded-full border border-white/20"></div>
+                <div className="lg:col-span-8 flex flex-col h-full">
+                    <div className="flex items-center justify-between border border-white/20 bg-black p-3 mb-4 text-xs font-mono uppercase tracking-wider">
+                        <div className="flex gap-4">
+                            <span className="text-white">PORTS: <span className="text-white/60">{progress.total}</span></span>
+                            <span className="text-white/20">{'//'}</span>
+                            <span className="text-white">OPEN: <span className="text-white/60">{results.length}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className={`w-2 h-2 bg-white ${scanning ? 'animate-pulse' : ''}`}></span>
+                                <span>{scanning ? `SCANNING (${Math.round(progress.total ? (progress.current / progress.total) * 100 : 0)}%)` : 'IDLE'}</span>
                             </div>
                         </div>
-                        <div className="flex-1 p-4 overflow-y-auto font-mono text-xs space-y-1 terminal-scroll" ref={scrollRef}>
-                            {logs.length === 0 && <div className="text-white/40">Waiting for user input...</div>}
-                            {logs.map((log, i) => (
-                                <div key={i} className="text-white/60">{log}</div>
-                            ))}
-                            {scanning && <div className="text-white">root@zekhoi-labs:~# <span className="animate-pulse">_</span></div>}
+                    </div>
+
+                    <div className="border border-white/20 bg-black flex-1 overflow-hidden flex flex-col min-h-[400px]">
+                        <div className="overflow-x-auto scrollbar-thin">
+                            <div className="min-w-[700px]">
+                                <div className="grid grid-cols-12 gap-x-4 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
+                                    <div className="col-span-2">Port</div>
+                                    <div className="col-span-7">Service</div>
+                                    <div className="col-span-3 text-right">State</div>
+                                </div>
+                                <div className="overflow-y-auto max-h-[400px] min-h-[300px] p-0 scrollbar-thin">
+                                    {results.map((res, i) => (
+                                        <div
+                                            key={i}
+                                            className="grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors"
+                                        >
+                                            <div className="col-span-2 text-white/80 truncate min-w-0" title={`Port: ${res.port}`}>{res.port}</div>
+                                            <div className="col-span-7 text-white/60 truncate px-1 min-w-0" title={res.service}>{res.service}</div>
+                                            <div className="col-span-3 text-right text-green-400 font-bold uppercase tracking-tighter truncate min-w-0" title="State: OPEN">
+                                                [ OPEN ]
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {results.length === 0 && (
+                                        <div className="p-8 text-center text-white/20 italic">
+                                            {scanning ? 'Scanning ports...' : 'No open ports found or waiting to start.'}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="border border-white/20 bg-black">
-                        <div className="border-b border-white/20 px-4 py-3 flex items-center justify-between">
-                            <h2 className="text-xs uppercase tracking-widest font-bold">Scan Results</h2>
-                            <button className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white flex items-center gap-1 transition-colors">
-                                <span className="material-symbols-outlined text-sm">download</span>
-                                Export CSV
-                            </button>
+
+                    {/* Integrated Terminal styled as footer log */}
+                    <div className="border border-white/20 bg-black mt-4 h-48 flex flex-col">
+                        <div className="bg-white/5 px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 border-b border-white/10">
+                            Scan Log
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-xs">
-                                <thead>
-                                    <tr className="border-b border-white/10 text-white/40 uppercase tracking-widest">
-                                        <th className="px-4 py-3 font-normal">Port</th>
-                                        <th className="px-4 py-3 font-normal">Service</th>
-                                        <th className="px-4 py-3 font-normal">State</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {results.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-4 py-8 text-center text-white/20 italic">No open ports found yet.</td>
-                                        </tr>
-                                    ) : (
-                                        results.map((res, i) => (
-                                            <tr key={i} className="hover:bg-white/5 transition-colors">
-                                                <td className="px-4 py-3 font-bold">{res.port}</td>
-                                                <td className="px-4 py-3">{res.service}</td>
-                                                <td className="px-4 py-3">
-                                                    <span className="flex items-center gap-2">
-                                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                                                        <span className="text-green-500">Open</span>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                        <div className="flex-1 overflow-y-auto p-4 font-mono text-[10px] text-white/60 space-y-1 scrollbar-thin" ref={scrollRef}>
+                            {logs.map((log, i) => (
+                                <div key={i}>{log}</div>
+                            ))}
+                            {scanning && <div className="text-white">_</div>}
                         </div>
                     </div>
                 </div>

@@ -2,8 +2,6 @@
 
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
-
-
 import { useState } from 'react'
 import { scrapeWeb, ScrapeResult } from '../actions'
 
@@ -39,44 +37,49 @@ export default function WebScraper() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
                 <div className="lg:col-span-4 flex flex-col gap-6">
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest text-white/60">Target URL</label>
-                            <input
-                                className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
-                                placeholder="https://site.com/listing"
-                                type="text"
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
-                            />
+                    <div className="bg-black border border-white/20 p-4 h-[300px] flex flex-col relative">
+                        <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                            Target Configuration
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest text-white/60">Limit Params</label>
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="flex-1 flex flex-col gap-6 mt-8">
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase tracking-widest text-white/60">Target URL</label>
                                 <input
-                                    className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
-                                    placeholder="Max Pages: 1" type="number" disabled
+                                    className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm text-white placeholder:text-white/20 font-mono outline-none"
+                                    placeholder="https://site.com/listing"
+                                    type="text"
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
                                 />
-                                <input
-                                    className="w-full bg-black border border-white/20 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
-                                    placeholder="Delay: 1000ms" type="number" disabled
-                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase tracking-widest text-white/60">Parameters</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input
+                                        className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
+                                        placeholder="Pages: 1" type="number" disabled
+                                    />
+                                    <input
+                                        className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
+                                        placeholder="Delay: 1s" type="number" disabled
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 bg-black border border-white/20 flex flex-col relative h-96">
-                        <div className="absolute top-0 right-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
-                            Output
+                    <div className="bg-black border border-white/20 p-4 flex-1 flex flex-col relative min-h-[300px]">
+                        <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                            JSON Output
                         </div>
-                        <div className="p-4 font-mono text-xs overflow-auto h-full text-white/80 whitespace-pre-wrap">
+                        <div className="flex-1 mt-6 overflow-auto font-mono text-xs text-white/60 whitespace-pre-wrap scrollbar-thin">
                             {loading ? (
-                                <span className="animate-pulse">Scraping target...</span>
+                                <span className="animate-pulse">Fetching content...</span>
                             ) : result ? (
                                 JSON.stringify(result, null, 2)
                             ) : (
-                                <span className="text-white/30">Ready to extract.</span>
+                                <span className="text-white/20">Waiting for extraction...</span>
                             )}
                         </div>
                     </div>
@@ -84,63 +87,71 @@ export default function WebScraper() {
                     <button
                         onClick={handleScrape}
                         disabled={loading}
-                        className="fragment-card w-full py-4 bg-white text-black font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-colors flex items-center justify-center gap-2 border border-white disabled:opacity-50"
+                        className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest text-sm hover:bg-white/90 transition-colors flex items-center justify-center gap-2 border border-white disabled:opacity-50 fragment-card"
                     >
-                        <span>{loading ? '[ Extracting... ]' : '[ Start Extraction ]'}</span>
+                        <span>{loading ? '[ EXTRACTING... ]' : '[ START EXTRACTION ]'}</span>
                         <span className="material-symbols-outlined text-sm">code</span>
                     </button>
                 </div>
 
-                <div className="lg:col-span-8 flex flex-col h-full gap-6">
-                    <div className="flex-1 border border-white/20 bg-black flex flex-col overflow-hidden min-h-[400px]">
-                        <div className="border-b border-white/20 bg-white/5 p-3 flex justify-between items-center">
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Data Preview</span>
-                            <div className="flex gap-4 text-[10px] font-mono text-white/60">
-                                <span>Rows: {result?.links?.length || 0}</span>
-                                <span>Size: {result?.size || 0}KB</span>
-                            </div>
+                <div className="lg:col-span-8 flex flex-col h-full">
+                    <div className="flex items-center justify-between border border-white/20 bg-black p-3 mb-4 text-xs font-mono uppercase tracking-wider">
+                        <div className="flex gap-4">
+                            <span className="text-white">STATUS: <span className="text-white/60">{loading ? 'Running' : 'Idle'}</span></span>
+                            <span className="text-white/20">{'//'}</span>
+                            <span className="text-white">SIZE: <span className="text-white/60">{result?.size || 0} KB</span></span>
                         </div>
-                        <div className="overflow-auto flex-1 p-0">
-                            <table className="w-full text-left text-xs font-mono">
-                                <thead>
-                                    <tr className="border-b border-white/10 text-white/40 uppercase tracking-widest bg-black sticky top-0">
-                                        <th className="px-4 py-3 font-normal whitespace-nowrap">Timestamp</th>
-                                        <th className="px-4 py-3 font-normal whitespace-nowrap">ID</th>
-                                        <th className="px-4 py-3 font-normal whitespace-nowrap">Content</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {result?.success && (
-                                        <>
-                                            <tr className="hover:bg-white/5 transition-colors">
-                                                <td className="px-4 py-3 text-white/40">{result.timestamp}</td>
-                                                <td className="px-4 py-3 text-green-400">Title</td>
-                                                <td className="px-4 py-3 text-white/80">{result.title}</td>
-                                            </tr>
-                                            <tr className="hover:bg-white/5 transition-colors">
-                                                <td className="px-4 py-3 text-white/40">{result.timestamp}</td>
-                                                <td className="px-4 py-3 text-blue-400">Description</td>
-                                                <td className="px-4 py-3 text-white/80">{result.description}</td>
-                                            </tr>
-                                        </>
-                                    )}
-                                </tbody>
-                            </table>
+                        <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 bg-white ${loading ? 'animate-pulse' : ''}`}></span>
+                            <span>{result?.success ? 'SUCCESS' : loading ? 'PROCESSING' : 'WAITING'}</span>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-white/[0.02] border border-white/10 p-4">
-                            <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-1">Requests/sec</span>
-                            <span className="text-xl font-bold">1.0</span>
+                    <div className="border border-white/20 bg-black flex-1 overflow-hidden flex flex-col">
+                        <div className="overflow-x-auto scrollbar-thin">
+                            <div className="min-w-[700px]">
+                                <div className="grid grid-cols-12 gap-x-4 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
+                                    <div className="col-span-3">Field</div>
+                                    <div className="col-span-9">Content</div>
+                                </div>
+                                <div className="overflow-y-auto max-h-[calc(100vh-400px)] min-h-[300px] p-0 scrollbar-thin">
+                                    {result?.success ? (
+                                        <>
+                                            <div className="grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono hover:bg-white/5">
+                                                <div className="col-span-3 text-white/60 truncate min-w-0" title="Title">Title</div>
+                                                <div className="col-span-9 text-white/80 truncate min-w-0" title={result.title}>{result.title}</div>
+                                            </div>
+                                            <div className="grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono hover:bg-white/5">
+                                                <div className="col-span-3 text-white/60 truncate min-w-0" title="Description">Description</div>
+                                                <div className="col-span-9 text-white/80 truncate min-w-0" title={result.description}>{result.description}</div>
+                                            </div>
+                                            <div className="grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono hover:bg-white/5">
+                                                <div className="col-span-3 text-white/60 truncate min-w-0" title="Links Found">Links Found</div>
+                                                <div className="col-span-9 text-white/80 truncate min-w-0" title={`${(result.links || []).length} URLs extracted`}>{(result.links || []).length} URLs extracted</div>
+                                            </div>
+                                            {(result.links || []).slice(0, 10).map((link, i) => (
+                                                <div key={i} className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono hover:bg-white/5">
+                                                    <div className="col-span-3 text-white/40 truncate min-w-0" title={`Link #${i + 1}`}>Link #{i + 1}</div>
+                                                    <div className="col-span-9 text-blue-400 truncate underline cursor-pointer min-w-0" title={link}>{link}</div>
+                                                </div>
+                                            ))}
+                                            {(result.links || []).length > 10 && (
+                                                <div className="p-4 text-center text-white/40 italic text-xs">
+                                                    ... and {(result.links || []).length - 10} more links
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="p-8 text-center text-white/20 italic">
+                                            No data extracted yet.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        <div className="bg-white/[0.02] border border-white/10 p-4">
-                            <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-1">Data Parsed</span>
-                            <span className="text-xl font-bold">{result?.size || 0} KB</span>
-                        </div>
-                        <div className="bg-white/[0.02] border border-white/10 p-4">
-                            <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-1">Active Threads</span>
-                            <span className="text-xl font-bold">{loading ? '1' : '0'}</span>
+                        <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
+                            <span>PROCESS_ID: {Math.floor(Math.random() * 9000) + 1000}_SC</span>
+                            <span>RENDER: JSDOM</span>
                         </div>
                     </div>
                 </div>
