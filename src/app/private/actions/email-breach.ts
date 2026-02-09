@@ -107,13 +107,14 @@ export async function checkEmailBreach(email: string): Promise<EmailBreachResult
             error: 'Invalid API response format'
         }
 
-    } catch (e: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
         return {
             success: false,
             breached: false,
             count: 0,
             sources: [],
-            error: e.message || 'Failed to connect to breach database'
+            error: errorMessage || 'Failed to connect to breach database'
         }
     }
 }
