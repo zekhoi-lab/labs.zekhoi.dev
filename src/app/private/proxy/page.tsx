@@ -74,7 +74,7 @@ export default function ProxyValidator() {
                         <div className="space-y-2">
                             <label className="text-[10px] uppercase tracking-widest text-white/60">Proxy List</label>
                             <textarea
-                                className="w-full h-64 bg-black border border-white/20 focus:border-white focus:ring-0 p-4 text-sm text-white placeholder:text-white/20 font-mono resize-none outline-none whitespace-pre overflow-x-auto"
+                                className="w-full h-64 bg-black border border-white/20 focus:border-white focus:ring-0 p-4 text-sm text-white placeholder:text-white/20 font-mono resize-none outline-none whitespace-pre overflow-x-auto scrollbar-thin"
                                 placeholder={`192.168.1.1:8080\n10.0.0.1:3128:user:pass`}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
@@ -148,7 +148,7 @@ export default function ProxyValidator() {
                                 <button onClick={() => { setResults([]); setStats({ active: 0, dead: 0, total: 0 }); }} className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors">Clear All</button>
                             </div>
                         </div>
-                        <div className="overflow-x-auto flex-1">
+                        <div className="overflow-x-auto flex-1 scrollbar-thin">
                             <table className="w-full text-left text-xs whitespace-nowrap">
                                 <thead>
                                     <tr className="border-b border-white/10 text-white/40 uppercase tracking-widest sticky top-0 bg-black">
