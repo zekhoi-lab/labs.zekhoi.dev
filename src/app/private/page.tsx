@@ -8,50 +8,50 @@ const PRIVATE_TOOLS = [
         title: "Instagram Checker",
         description: "Account status verification & metadata extraction via private API endpoints.",
         icon: "person_search",
-        href: "#",
+        href: "/private/instagram",
         version: "Internal"
     },
     {
         title: "Proxy Validator",
         description: "Real-time anonymity levels, latency checks, and geological routing validation.",
         icon: "vpn_lock",
-        href: "#"
+        href: "/private/proxy"
     },
     {
         title: "Email Breaches",
         description: "Deep-web OSINT leak search. Identify compromised credentials across known databases.",
         icon: "history_edu",
-        href: "#"
+        href: "/private/email-breach"
     },
     {
         title: "Domain WHOIS Monitor",
         description: "Continuous tracking of ownership records, nameserver changes, and expiry alerts.",
         icon: "domain_verification",
-        href: "#"
+        href: "/private/whois"
     },
     {
         title: "Port Scanner",
         description: "Vulnerability testing for open ports with service version detection and OS fingerprinting.",
         icon: "router",
-        href: "#"
+        href: "/private/port-scanner"
     },
     {
         title: "Header Analyzer",
         description: "Security header inspection (CSP, HSTS, X-Frame-Options) for server hardening.",
         icon: "policy",
-        href: "#"
+        href: "/private/header-analyzer"
     },
     {
         title: "SSL Cert Checker",
         description: "Validity and expiration monitoring for certificate chains across multiple subdomains.",
         icon: "gpp_maybe",
-        href: "#"
+        href: "/private/ssl"
     },
     {
         title: "Web Scraper",
         description: "Automated data extraction with headless browser support and proxy rotation.",
         icon: "data_thresholding",
-        href: "#"
+        href: "/private/scraper"
     }
 ]
 
