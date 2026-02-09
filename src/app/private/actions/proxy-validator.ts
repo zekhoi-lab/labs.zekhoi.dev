@@ -1,7 +1,6 @@
 'use server'
 
-import { HttpsProxyAgent } from 'https-proxy-agent'
-import { Agent } from 'https'
+import http from 'http'
 
 export interface ProxyResult {
     proxy: string
@@ -19,55 +18,87 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
         return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
     }
 
-    // Construct proxy URL
-    let proxyUrl = `http://${proxy}`
-    // If username/password provided (IP:PORT:USER:PASS)
+    const proxyHost = parts[0]
+    const proxyPort = parseInt(parts[1])
+    let authHeader: string | undefined
+
     if (parts.length === 4) {
-        proxyUrl = `http://${parts[2]}:${parts[3]}@${parts[0]}:${parts[1]}`
+        const credentials = Buffer.from(`${parts[2]}:${parts[3]}`).toString('base64')
+        authHeader = `Basic ${credentials}`
     }
 
-    const agent = new HttpsProxyAgent(proxyUrl)
-    const start = Date.now()
+    return new Promise((resolve) => {
+        const start = Date.now()
 
-    try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-        //ip-api.com is http only for free tier, perfect for testing proxy connectivity
-        const fetchOptions: RequestInit & { agent?: Agent } = {
-            agent: agent,
-            signal: controller.signal,
-            cache: 'no-store'
+        const options: http.RequestOptions = {
+            hostname: proxyHost,
+            port: proxyPort,
+            path: 'http://ip-api.com/json',
+            method: 'GET',
+            headers: {
+                'Host': 'ip-api.com',
+                ...(authHeader ? { 'Proxy-Authorization': authHeader } : {})
+            },
+            timeout: timeout
         }
 
-        const res = await fetch('http://ip-api.com/json', fetchOptions)
+        const req = http.request(options, (res) => {
+            let data = ''
 
-        clearTimeout(timeoutId)
+            res.on('data', (chunk) => {
+                data += chunk
+            })
 
-        const latency = Date.now() - start
+            res.on('end', () => {
+                const latency = Date.now() - start
 
-        if (res.ok) {
-            const data = await res.json()
-            return {
+                if (res.statusCode === 200) {
+                    try {
+                        const json = JSON.parse(data)
+                        if (json.status === 'fail') {
+                            resolve({ proxy, status: 'Active (API Limit)', latency, anonymity: 'Anonymous', country: '-', city: '-' })
+                            return
+                        }
+
+                        resolve({
+                            proxy,
+                            status: 'Active',
+                            latency,
+                            anonymity: latency < 300 ? 'Elite' : latency < 1000 ? 'Anonymous' : 'Transparent',
+                            country: json.country || 'Unknown',
+                            city: json.city || 'Unknown',
+                            ip: json.query
+                        })
+                    } catch (_e) {
+                        resolve({ proxy, status: 'Active (Parse Error)', latency, anonymity: 'Unknown', country: '-' })
+                    }
+                } else {
+                    resolve({ proxy, status: `Dead (${res.statusCode})`, latency: 0, anonymity: '-', country: '-' })
+                }
+            })
+        })
+
+        req.on('error', (_err) => {
+            resolve({
                 proxy,
-                status: 'Active',
-                latency,
-                anonymity: latency < 300 ? 'Elite' : latency < 1000 ? 'Anonymous' : 'Transparent',
-                country: data.country || 'Unknown',
-                city: data.city || 'Unknown',
-                ip: data.query // The IP seen by the endpoint (exit IP)
-            }
-        } else {
-            return { proxy, status: 'Dead (HTTP Error)', latency: 0, anonymity: '-', country: '-' }
-        }
-    } catch (error: unknown) {
-        const err = error as Error
-        return {
-            proxy,
-            status: err.name === 'AbortError' ? 'Timeout' : 'Dead',
-            latency: 0,
-            anonymity: '-',
-            country: '-'
-        }
-    }
+                status: 'Dead',
+                latency: 0,
+                anonymity: '-',
+                country: '-'
+            })
+        })
+
+        req.on('timeout', () => {
+            req.destroy()
+            resolve({
+                proxy,
+                status: 'Timeout',
+                latency: 0,
+                anonymity: '-',
+                country: '-'
+            })
+        })
+
+        req.end()
+    })
 }
