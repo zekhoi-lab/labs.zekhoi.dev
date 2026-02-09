@@ -13,7 +13,7 @@ export interface ProxyResult {
     ip?: string
 }
 
-export async function validateProxy(proxy: string): Promise<ProxyResult> {
+export async function validateProxy(proxy: string, timeout: number = 5000): Promise<ProxyResult> {
     const parts = proxy.split(':')
     if (parts.length < 2) {
         return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
@@ -31,7 +31,7 @@ export async function validateProxy(proxy: string): Promise<ProxyResult> {
 
     try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        const timeoutId = setTimeout(() => controller.abort(), timeout)
 
         //ip-api.com is http only for free tier, perfect for testing proxy connectivity
         const fetchOptions: RequestInit & { agent?: Agent } = {
