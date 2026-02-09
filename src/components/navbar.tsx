@@ -6,28 +6,32 @@ import { cn } from '@/lib/utils'
 
 import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb'
 
-interface NavbarProps {
+export interface NavbarProps {
   title?: string
   icon?: string
   statusLabel?: string
   statusColor?: string
   breadcrumbs?: BreadcrumbItem[]
+  centerContent?: React.ReactNode
+  rightContent?: React.ReactNode
 }
 
-export function Navbar({ 
-  title = "labs.zekhoi.dev", 
-  icon = "terminal", 
-  statusLabel, 
+export function Navbar({
+  title = "labs.zekhoi.dev",
+  icon = "terminal",
+  statusLabel,
   statusColor = "green-500",
   breadcrumbs,
+  centerContent,
+  rightContent,
 }: NavbarProps) {
   const isOnline = useSyncExternalStore(
     () => {
-      window.addEventListener('online', () => {})
-      window.addEventListener('offline', () => {})
+      window.addEventListener('online', () => { })
+      window.addEventListener('offline', () => { })
       return () => {
-        window.removeEventListener('online', () => {})
-        window.removeEventListener('offline', () => {})
+        window.removeEventListener('online', () => { })
+        window.removeEventListener('offline', () => { })
       }
     },
     () => navigator.onLine,
@@ -46,33 +50,34 @@ export function Navbar({
             {title}
           </Link>
           {breadcrumbs && breadcrumbs.length > 0 && (
-             <div className="hidden sm:flex items-center gap-2 ml-4 pl-4 border-l border-gray-300 dark:border-gray-700 h-6">
-                <Breadcrumb items={breadcrumbs} />
-             </div>
+            <div className="hidden sm:flex items-center gap-2 ml-4 pl-4 border-l border-gray-300 dark:border-gray-700 h-6">
+              <Breadcrumb items={breadcrumbs} />
+            </div>
           )}
         </div>
-        
+
         <div className="hidden md:flex flex-1 max-w-md mx-8">
-          {/* Search removed */}
+          {centerContent}
         </div>
-        
+
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">
-          <StatusContent 
-            isOnline={isOnline} 
-            currentStatusColor={currentStatusColor} 
+          <StatusContent
+            isOnline={isOnline}
+            currentStatusColor={currentStatusColor}
             currentStatusLabel={currentStatusLabel}
           />
+          {rightContent}
         </div>
       </div>
     </nav>
   )
 }
 
-function StatusContent({ 
-  isOnline, 
-  currentStatusColor, 
+function StatusContent({
+  isOnline,
+  currentStatusColor,
   currentStatusLabel,
-}: { 
+}: {
   isOnline: boolean
   currentStatusColor: string
   currentStatusLabel: string

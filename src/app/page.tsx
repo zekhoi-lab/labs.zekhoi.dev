@@ -1,9 +1,7 @@
 'use client'
 
 
-import { Navbar } from '@/components/navbar'
-import { ToolCard } from '@/components/tool-card'
-import { Footer } from '@/components/footer'
+import { ToolDashboard } from '@/components/tool-dashboard'
 import { GlitchText } from '@/components/glitch-text'
 
 interface Tool {
@@ -116,31 +114,10 @@ const TOOLS: Tool[] = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-16 space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-black dark:text-white uppercase">
-            <GlitchText text="Developer Tools" />
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 max-w-2xl text-sm md:text-base leading-relaxed">
-            A curated collection of essential utilities for your daily workflow.
-            Built for speed, privacy, and minimalism—no ads, no tracking, just tools.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {TOOLS.map((tool) => (
-            <ToolCard
-              key={tool.href}
-              {...tool}
-            />
-          ))}
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+    <ToolDashboard
+      title={<GlitchText text="Developer Tools" />}
+      description="A curated collection of essential utilities for your daily workflow. Built for speed, privacy, and minimalism—no ads, no tracking, just tools."
+      tools={TOOLS}
+    />
   );
 }
