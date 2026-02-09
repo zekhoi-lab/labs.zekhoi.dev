@@ -102,7 +102,7 @@ export default function EmailBreach() {
                         </div>
                     ) : (
                         <div className="py-12 text-center text-white/40 text-sm uppercase tracking-widest">
-                            {loading ? 'Searching 15TB+ of data...' : 'Awaiting Input'}
+                            {loading ? 'Searching database...' : 'Awaiting Input'}
                         </div>
                     )}
                 </section>
