@@ -1,7 +1,11 @@
 'use server'
 
-import https from 'https'
+import axios from 'axios'
+import axiosRetry from 'axios-retry'
 import { HttpsProxyAgent } from 'https-proxy-agent'
+
+// Configure axios-retry
+axiosRetry(axios, { retries: 1, retryDelay: axiosRetry.exponentialDelay })
 
 export interface InstagramCheckResult {
     success: boolean
@@ -21,22 +25,14 @@ export interface InstagramCheckResult {
     posts?: number
     isPrivate?: boolean
     isVerified?: boolean
-}
-
-interface InstagramUser {
-    full_name: string
-    biography: string
-    profile_pic_url: string
-    edge_followed_by?: { count: number }
-    edge_follow?: { count: number }
-    edge_owner_to_timeline_media?: { count: number }
-    is_private: boolean
-    is_verified: boolean
+    // Formatted Metadata strings
+    ogTitle?: string
+    ogDescription?: string
+    metaDescription?: string
 }
 
 type InternalCheckResult = {
     exists: boolean
-    user?: InstagramUser
     httpCode: number
     message?: string
     proxyNode?: string
@@ -47,202 +43,163 @@ type InternalCheckResult = {
  * Matches logic in proxy-validator.ts
  */
 function normalizeProxy(proxy: string): string {
-    const p = proxy.trim()
+    let p = proxy.trim()
     if (!p) return ''
 
-    // Ignore lines that look like WHOIS status or descriptions
-    if (p.toLowerCase().includes('status:') || p.toLowerCase().includes('notice:') || p.includes('>>>')) {
-        return ''
-    }
+    // Strip http:// or https:// if user provided it
+    p = p.replace(/^https?:\/\//i, '')
 
     const parts = p.split(':')
     if (parts.length < 2) return ''
 
-    const host = parts[0]
-    const port = parts[1]
-
-    // Simple hostname validation
-    if (!host.includes('.') && host !== 'localhost') return ''
-
+    // Handle host:port:user:pass
     if (parts.length === 4) {
+        const host = parts[0]
+        const port = parts[1]
         const user = parts[2]
         const pass = parts[3]
         return `http://${user}:${pass}@${host}:${port}`
     }
 
-    return `http://${host}:${port}`
+    // Handle user:pass:host:port
+    if (parts.length === 4 && parts[1].length > 5) { // heuristics for port length
+        // unlikely user:pass:host:port but possible
+    }
+
+    return `http://${p}`
 }
 
 /**
  * Verifies the proxy by fetching the exit IP
  */
 async function getExitIp(proxyUrl: string): Promise<string> {
-    return new Promise((resolve) => {
+    try {
         const agent = new HttpsProxyAgent(proxyUrl)
-        const options = {
-            method: 'GET',
-            agent: agent,
+        const response = await axios.get('https://api.ipify.org?format=json', {
+            httpsAgent: agent,
             timeout: 5000
-        }
-
-        const req = https.get('https://api.ipify.org?format=json', options, (res) => {
-            let data = ''
-            res.on('data', (chunk) => data += chunk)
-            res.on('end', () => {
-                try {
-                    const json = JSON.parse(data)
-                    resolve(json.ip || 'Unknown Exit')
-                } catch {
-                    resolve('IP Check Failed')
-                }
-            })
         })
-
-        req.on('error', () => resolve('Proxy Offline'))
-        req.on('timeout', () => {
-            req.destroy()
-            resolve('Proxy Timeout')
-        })
-    })
+        return response.data.ip || 'Unknown Exit'
+    } catch {
+        // Distinguish between timeout and other errors
+        return 'Proxy Offline'
+    }
 }
 
-async function fetchProfile(username: string, proxy?: string, count = 0): Promise<InternalCheckResult> {
+interface InstagramUser {
+    id: string
+    username: string
+    full_name: string
+    biography: string
+    profile_pic_url: string
+    edge_followed_by: { count: number }
+    edge_follow: { count: number }
+    edge_owner_to_timeline_media: { count: number }
+    is_private: boolean
+    is_verified: boolean
+}
+
+function formatStat(num: number): string {
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
+    return num.toString()
+}
+
+async function fetchProfileApi(username: string, proxy?: string): Promise<InternalCheckResult & { user?: InstagramUser }> {
     const url = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`
     const normalizedProxy = proxy ? normalizeProxy(proxy) : undefined
+    const agent = normalizedProxy ? new HttpsProxyAgent(normalizedProxy) : undefined
 
-    // Get Exit IP for verification if proxy is used
     let proxyNode = 'Direct'
     if (normalizedProxy) {
         proxyNode = await getExitIp(normalizedProxy)
-        // If proxy is offline/timed out, don't even try IG
         if (proxyNode === 'Proxy Offline' || proxyNode === 'Proxy Timeout') {
             return { exists: false, httpCode: 0, message: proxyNode, proxyNode }
         }
     }
 
-    const agent = normalizedProxy ? new HttpsProxyAgent(normalizedProxy) : undefined
-
-    return new Promise((resolve) => {
-        const options = {
-            method: 'GET',
+    try {
+        const response = await axios.get(url, {
+            httpsAgent: agent,
             headers: {
-                'X-IG-App-ID': '936619743392459',
-                'X-ASBD-ID': '359341',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
+                'x-ig-app-id': '936619743392459',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
                 'Accept': '*/*',
-                'Accept-Language': 'en-GB,en;q=0.9',
-                'Sec-CH-UA': '"Not(A:Brand";v="8", "Chromium";v="144", "Microsoft Edge";v="144"',
-                'Sec-CH-UA-Mobile': '?0',
-                'Sec-CH-UA-Platform': '"Windows"',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'x-asbd-id': '129477',
+                'x-ig-www-claim': '0',
+                'x-requested-with': 'XMLHttpRequest',
+                'Referer': `https://www.instagram.com/${username}/`,
                 'Sec-Fetch-Dest': 'empty',
                 'Sec-Fetch-Mode': 'cors',
                 'Sec-Fetch-Site': 'same-origin',
+                "Cookie": "csrftoken=yaHxTiXr5qArRN7_m5eQJ_; datr=CGiJaaPWgiF9okN_SuRAtlIQ; ig_did=0AEC0F57-7767-46E0-9A33-D76C7982715B; mid=aYloCAALAAH6-CGY4Igfset0bznl; wd=2001x1274"
             },
-            agent: agent,
-            timeout: 20000
+            timeout: 15000,
+            validateStatus: (status) => status < 500
+        })
+
+        const httpCode = response.status
+        const data = response.data
+
+        if (httpCode === 404) {
+            return { exists: false, httpCode, message: "404: Not Found", proxyNode }
         }
 
-        const req = https.request(url, options, (res) => {
-            let data = ''
-            res.on('data', (chunk) => data += chunk)
-            res.on('end', () => {
-                const httpCode = res.statusCode || 0
+        if (data?.data?.user) {
+            return { exists: true, httpCode, message: "Active", proxyNode, user: data.data.user }
+        }
 
-                // Status Logic Refinement
-                if (httpCode === 429) {
-                    resolve({ exists: false, httpCode, message: "Rate Limited (429)", proxyNode })
-                    return
-                }
-                if (httpCode === 403 || httpCode === 401) {
-                    resolve({ exists: false, httpCode, message: `Access Forbidden (${httpCode})`, proxyNode })
-                    return
-                }
-                if (httpCode >= 500) {
-                    resolve({ exists: false, httpCode, message: `Server Error (${httpCode})`, proxyNode })
-                    return
-                }
-                if (httpCode === 404) {
-                    resolve({ exists: false, httpCode, message: "User not found or suspended (404)", proxyNode })
-                    return
-                }
-
-                if (!data) {
-                    resolve({ exists: false, httpCode, message: `Empty response (${httpCode})`, proxyNode })
-                    return
-                }
-
-                try {
-                    const json = JSON.parse(data)
-                    if (json && json.data && json.data.user) {
-                        resolve({ exists: true, user: json.data.user as InstagramUser, httpCode, message: "Profile active", proxyNode })
-                    } else {
-                        // Sometimes 200 OK but "user not found" in JSON or "login required"
-                        const isNoUser = json?.data?.user === null || json?.message === 'User not found'
-                        resolve({
-                            exists: false,
-                            httpCode,
-                            message: isNoUser ? "User not found" : "Blocked/Login Required",
-                            proxyNode
-                        })
-                    }
-                } catch {
-                    resolve({ exists: false, httpCode, message: "Invalid JSON (Likely Blocked)", proxyNode })
-                }
-            })
-        })
-
-        req.on('error', async (e) => {
-            if (count < 1) { // Retry once
-                await new Promise(r => setTimeout(r, 1000))
-                resolve(await fetchProfile(username, proxy, count + 1))
-            } else {
-                resolve({ exists: false, httpCode: 500, message: e.message, proxyNode })
-            }
-        })
-
-        req.on('timeout', () => {
-            req.destroy()
-            resolve({ exists: false, httpCode: 408, message: "IG Request Timeout", proxyNode })
-        })
-
-        req.end()
-    })
+        return { exists: false, httpCode, message: "API Error (Structure Mismatch)", proxyNode }
+    } catch (e: any) {
+        return { exists: false, httpCode: 500, message: e.message, proxyNode }
+    }
 }
 
 export async function checkInstagram(username: string, proxy?: string): Promise<InstagramCheckResult> {
-    const { exists, user, httpCode, message, proxyNode } = await fetchProfile(username, proxy)
+    const apiRes = await fetchProfileApi(username, proxy)
 
-    if (!exists || !user) {
-        // Differentiate between Not Found and Error/Rate Limit
-        // HTTP 429, 403, 5xx, or 200 with a "Blocked/Login Required" message should be status: 'Error'
-        const isError = httpCode === 429 || httpCode === 403 || httpCode >= 500 || httpCode === 0 || message?.includes('Blocked')
+    if (apiRes.exists && apiRes.user) {
+        const user = apiRes.user
+        const followers = user.edge_followed_by.count
+        const following = user.edge_follow.count
+        const posts = user.edge_owner_to_timeline_media.count
+
+        // Generate Instagram-style metadata strings
+        const ogTitle = `${user.full_name} (@${user.username}) • Instagram photos and videos`
+        const ogDescription = `${formatStat(followers)} Followers, ${formatStat(following)} Following, ${formatStat(posts)} Posts - See Instagram photos and videos from ${user.full_name} (@${user.username})`
 
         return {
             success: true,
             username,
-            isSuspended: httpCode === 404 || message === 'User not found',
-            status: isError ? 'Error' : 'Not Found',
-            httpCode,
-            message,
-            proxyNode
+            isSuspended: false,
+            status: 'Active',
+            httpCode: apiRes.httpCode,
+            message: "Success (API)",
+            proxyNode: apiRes.proxyNode,
+            fullName: user.full_name,
+            biography: user.biography,
+            followers,
+            following,
+            posts,
+            isPrivate: user.is_private,
+            isVerified: user.is_verified,
+            profilePicUrl: user.profile_pic_url,
+            ogTitle,
+            ogDescription
         }
     }
+
+    const { httpCode, message, proxyNode } = apiRes
+    const isError = httpCode === 429 || httpCode === 403 || httpCode >= 500 || httpCode === 0 || message?.includes('Blocked')
 
     return {
         success: true,
         username,
-        isSuspended: false,
-        status: 'Active',
+        isSuspended: httpCode === 404 || message === '404: Not Found' || message === 'User not found',
+        status: isError ? 'Error' : 'Not Found',
         httpCode,
         message,
-        proxyNode,
-        fullName: user.full_name,
-        biography: user.biography,
-        profilePicUrl: user.profile_pic_url,
-        followers: user.edge_followed_by?.count,
-        following: user.edge_follow?.count,
-        posts: user.edge_owner_to_timeline_media?.count,
-        isPrivate: user.is_private,
-        isVerified: user.is_verified
+        proxyNode
     }
 }

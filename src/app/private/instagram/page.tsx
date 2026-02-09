@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import axios from 'axios'
 import { checkInstagram, InstagramCheckResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
@@ -13,6 +14,7 @@ export default function InstagramChecker() {
     const [stats, setStats] = useState({ total: 0, success: 0, error: 0 })
     const [concurrency, setConcurrency] = useState(3)
     const [processId, setProcessId] = useState('')
+    const [fetchMode, setFetchMode] = useState<'client' | 'server'>('client')
 
     useEffect(() => {
         setProcessId(`${Math.floor(Math.random() * 9000) + 1000}_XJ`)
@@ -25,6 +27,73 @@ export default function InstagramChecker() {
     const handleScroll = () => {
         if (textareaRef.current && lineNumbersRef.current) {
             lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop
+        }
+    }
+
+    function formatStat(num: number): string {
+        if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M'
+        if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K'
+        return num.toString()
+    }
+
+    const checkInstagramClient = async (username: string): Promise<InstagramCheckResult> => {
+        try {
+            const apiUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`
+            const apiResponse = await axios.get(apiUrl, {
+                headers: {
+                    'x-ig-app-id': '936619743392459',
+                    'Accept': '*/*',
+                    'x-requested-with': 'XMLHttpRequest'
+                },
+                timeout: 10000,
+                validateStatus: (status) => status < 500
+            })
+
+            const httpCode = apiResponse.status
+            const data = apiResponse.data
+
+            if (data?.data?.user) {
+                const user = data.data.user
+                const followers = user.edge_followed_by.count
+                const following = user.edge_follow.count
+                const posts = user.edge_owner_to_timeline_media.count
+
+                return {
+                    success: true,
+                    username,
+                    isSuspended: false,
+                    status: 'Active',
+                    httpCode,
+                    message: "Success (API Client)",
+                    fullName: user.full_name,
+                    biography: user.biography,
+                    followers,
+                    following,
+                    posts,
+                    isPrivate: user.is_private,
+                    isVerified: user.is_verified,
+                    profilePicUrl: user.profile_pic_url,
+                    ogTitle: `${user.full_name} (@${user.username}) • Instagram photos and videos`,
+                    ogDescription: `${formatStat(followers)} Followers, ${formatStat(following)} Following, ${formatStat(posts)} Posts - See Instagram photos and videos from ${user.full_name} (@${user.username})`
+                }
+            }
+
+            return {
+                success: true,
+                username,
+                isSuspended: httpCode === 404,
+                status: httpCode === 404 ? 'Not Found' : 'Error',
+                httpCode,
+                message: httpCode === 404 ? '404: Not Found' : 'API Structure Mismatch'
+            }
+        } catch (e: any) {
+            return {
+                success: true,
+                username,
+                status: 'Error',
+                httpCode: 0,
+                message: 'Fetch Failed (Likely CORS) - Use Server Mode instead'
+            }
         }
     }
 
@@ -64,7 +133,9 @@ export default function InstagramChecker() {
                     })
 
                     try {
-                        const result = await checkInstagram(username, proxy)
+                        const result = fetchMode === 'server'
+                            ? await checkInstagram(username, proxy)
+                            : await checkInstagramClient(username)
 
                         setResults(prev => {
                             const next = [...prev]
@@ -142,35 +213,59 @@ export default function InstagramChecker() {
                         </div>
                     </div>
 
-                    <div className="bg-black border border-white/20 p-4 h-[200px] flex flex-col relative">
-                        <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
-                            Proxy Configuration (Optional)
-                        </div>
-                        <div className="flex-1 flex mt-6 font-mono text-sm overflow-hidden relative">
-                            <textarea
-                                className="flex-1 bg-transparent border-none text-white p-2 focus:ring-0 leading-6 resize-none font-mono placeholder:text-white/20 h-full w-full outline-none scrollbar-thin whitespace-pre"
-                                placeholder={`http://user:pass@host:port\nhttp://host:port\n(One per line)`}
-                                value={proxyInput}
-                                onChange={(e) => setProxyInput(e.target.value)}
-                            ></textarea>
-                        </div>
-                    </div>
-
                     <div className="space-y-4">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] uppercase tracking-widest text-white/60">Fetch Mode</label>
+                            <div className="grid grid-cols-2 border border-white/20 p-1">
+                                <button
+                                    onClick={() => setFetchMode('client')}
+                                    className={`py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${fetchMode === 'client' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                                >
+                                    Client
+                                </button>
+                                <button
+                                    onClick={() => setFetchMode('server')}
+                                    className={`py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${fetchMode === 'server' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                                >
+                                    Server
+                                </button>
+                            </div>
+                        </div>
+
+                        {fetchMode === 'server' && (
+                            <div className="bg-black border border-white/20 p-4 h-[200px] flex flex-col relative">
+                                <div className="absolute top-0 left-0 bg-white text-black text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                                    Proxy Configuration (Optional)
+                                </div>
+                                <div className="flex-1 flex mt-6 font-mono text-sm overflow-hidden relative">
+                                    <textarea
+                                        className="flex-1 bg-transparent border-none text-white p-2 focus:ring-0 leading-6 resize-none font-mono placeholder:text-white/20 h-full w-full outline-none scrollbar-thin whitespace-pre"
+                                        placeholder={`http://user:pass@host:port\nhttp://host:port\n(One per line)`}
+                                        value={proxyInput}
+                                        onChange={(e) => setProxyInput(e.target.value)}
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <label className="text-[10px] uppercase tracking-widest text-white/60">Concurrency</label>
-                                <span className="text-xs font-mono text-white">{concurrency} Threads</span>
+                                <span className="text-xs font-mono text-white">{fetchMode === 'client' ? 'Sequential' : `${concurrency} Threads`}</span>
                             </div>
-                            <input
-                                type="range"
-                                min="1"
-                                max="50"
-                                value={concurrency}
-                                onChange={(e) => setConcurrency(parseInt(e.target.value))}
-                                disabled={isScanning}
-                                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
-                            />
+                            {fetchMode === 'server' ? (
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="50"
+                                    value={concurrency}
+                                    onChange={(e) => setConcurrency(parseInt(e.target.value))}
+                                    disabled={isScanning}
+                                    className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
+                                />
+                            ) : (
+                                <div className="text-[10px] text-white/30 italic">Client-side fetch is restricted to sequential to avoid IP rate limits.</div>
+                            )}
                         </div>
 
                         <button
@@ -243,7 +338,6 @@ export default function InstagramChecker() {
                                                     res.status === 'Scanning' ? 'text-yellow-400' :
                                                         res.status === 'Error' ? 'text-red-500' : 'text-white/40'
                                                 }`} title={`Current Status: ${res.status || 'Queued'}`}>
-                                                [ {(res.status || 'QUEUED').toUpperCase().replace(' ', '_')} ]
                                             </div>
                                         </div>
                                     ))}
@@ -257,7 +351,7 @@ export default function InstagramChecker() {
                         </div>
                         <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
                             <span suppressHydrationWarning>PROCESS_ID: {processId}</span>
-                            <span>SERVER_PROXY_EXECUTION</span>
+                            <span>ACTIVE_FETCH_MODE: {fetchMode.toUpperCase()}</span>
                         </div>
                     </div>
                 </div>
