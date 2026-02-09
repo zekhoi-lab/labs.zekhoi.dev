@@ -19,13 +19,13 @@ export default function ProxyValidator() {
                 <div className="lg:col-span-4 space-y-6">
                     <div className="space-y-4">
                         <label className="text-[10px] uppercase tracking-widest text-white/60 block">
-                            Input Proxy List (IP:PORT)
+                            Input Proxy List (IP:PORT or IP:PORT:USER:PASS)
                         </label>
                         <textarea
                             className="w-full h-96 bg-black border border-white/20 focus:border-white focus:ring-0 p-4 text-xs font-mono placeholder:text-white/20 transition-all resize-none outline-none text-white"
                             placeholder={`192.168.1.1:8080
-127.0.0.1:9050
-...`}
+185.72.1.1:3128:user:pass
+127.0.0.1:9050`}
                         ></textarea>
                         <div className="grid grid-cols-2 gap-4">
                             <button className="bg-white text-black font-bold text-xs py-3 uppercase tracking-widest hover:bg-white/80 transition-colors">

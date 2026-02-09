@@ -15,7 +15,7 @@ export default function SSLChecker() {
                 ]}
             />
 
-            <div className="max-w-4xl mx-auto space-y-12">
+            <div className="w-full space-y-12">
                 <div className="flex gap-4 items-end">
                     <div className="flex-1 space-y-2">
                         <label className="text-[10px] uppercase tracking-widest text-white/60">Target Hostname</label>

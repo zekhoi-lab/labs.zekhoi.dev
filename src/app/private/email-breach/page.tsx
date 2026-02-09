@@ -6,7 +6,7 @@ import { ToolHeader } from '@/components/tool-header'
 export default function EmailBreaches() {
     return (
         <PrivateToolLayout>
-            <div className="max-w-4xl mx-auto py-4">
+            <div className="w-full py-4">
                 <ToolHeader
                     title="OSINT_EMAIL_LEAK_INDEX"
                     description="Deep-web OSINT leak search. Identify compromised credentials across known databases."

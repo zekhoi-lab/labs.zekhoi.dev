@@ -58,7 +58,7 @@ const PRIVATE_TOOLS = [
 export default function PrivatePage() {
     return (
         <ToolDashboard
-            title={<GlitchText text="Private Tool" />}
+            title={<GlitchText text="Private Tools" />}
             description="Restricted access internal utilities. High-performance modules for network analysis, OSINT, and security auditing. All operations are logged and end-to-end encrypted."
             tools={PRIVATE_TOOLS}
             theme="private"
