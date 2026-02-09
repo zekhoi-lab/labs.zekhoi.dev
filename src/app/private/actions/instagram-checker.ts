@@ -77,7 +77,13 @@ function normalizeProxy(proxy: string): string {
     return `http://${p}`
 }
 
-async function fetchProfileApi(username: string, proxy?: string): Promise<InternalCheckResult & { htmlData?: any }> {
+type HtmlMetadata = {
+    ogTitle?: string
+    ogDescription?: string
+    metaDescription?: string
+}
+
+async function fetchProfileApi(username: string, proxy?: string): Promise<InternalCheckResult & { htmlData?: HtmlMetadata }> {
     const url = `https://www.instagram.com/${username}/`
     const normalizedProxy = proxy ? normalizeProxy(proxy) : undefined
     const agent = normalizedProxy ? new HttpsProxyAgent(normalizedProxy) : undefined
@@ -142,8 +148,9 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
 
         // If no metadata found at all on a 200 page, it's either suspended or deleted
         return { exists: false, httpCode, message: "User not found", proxyNode }
-    } catch (e: any) {
-        return { exists: false, httpCode: 500, message: e.message, proxyNode }
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e)
+        return { exists: false, httpCode: 500, message, proxyNode }
     }
 }
 

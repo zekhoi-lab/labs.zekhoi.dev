@@ -86,7 +86,7 @@ export default function InstagramChecker() {
                 httpCode,
                 message: httpCode === 404 ? '404: Not Found' : 'API Structure Mismatch'
             }
-        } catch (e: any) {
+        } catch {
             return {
                 success: true,
                 username,
@@ -156,7 +156,7 @@ export default function InstagramChecker() {
                                 // Wait before retry (exponential backoff)
                                 await new Promise(r => setTimeout(r, 1000 * attempts))
                             }
-                        } catch (e: any) {
+                        } catch (e: unknown) {
                             console.error("Worker error:", e)
                             break
                         }
