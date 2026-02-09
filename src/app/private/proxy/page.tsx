@@ -99,13 +99,14 @@ export default function ProxyValidator() {
                                         <th className="px-6 py-4 font-normal">Status</th>
                                         <th className="px-6 py-4 font-normal">Anonymity</th>
                                         <th className="px-6 py-4 font-normal">Latency</th>
-                                        <th className="px-6 py-4 font-normal text-right">Country</th>
+                                        <th className="px-6 py-4 font-normal">Exit IP</th>
+                                        <th className="px-6 py-4 font-normal text-right">Location</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5 font-mono">
                                     {results.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-8 text-center text-white/20 italic">Waiting for input...</td>
+                                            <td colSpan={6} className="px-6 py-8 text-center text-white/20 italic">Waiting for input...</td>
                                         </tr>
                                     ) : (
                                         results.map((res, i) => (
@@ -123,7 +124,8 @@ export default function ProxyValidator() {
                                                         {res.latency}ms
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-right text-white/40">{res.country}</td>
+                                                <td className="px-6 py-4 text-white/60">{res.ip || '-'}</td>
+                                                <td className="px-6 py-4 text-right text-white/40">{res.city ? `${res.city}, ${res.country}` : res.country}</td>
                                             </tr>
                                         ))
                                     )}

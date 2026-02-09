@@ -1,7 +1,7 @@
 'use server'
 
-import net from 'net'
-
+import { HttpsProxyAgent } from 'https-proxy-agent'
+import { Agent } from 'https'
 
 export interface ProxyResult {
     proxy: string
@@ -9,56 +9,65 @@ export interface ProxyResult {
     latency: number
     anonymity: string
     country?: string
+    city?: string
+    ip?: string
 }
 
 export async function validateProxy(proxy: string): Promise<ProxyResult> {
-    return new Promise<ProxyResult>((resolve) => {
-        const parts = proxy.split(':')
-        const host = parts[0]
-        const port = parts[1]
+    const parts = proxy.split(':')
+    if (parts.length < 2) {
+        return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
+    }
 
-        if (!host || !port) {
-            resolve({ proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' })
-            return
+    // Construct proxy URL
+    let proxyUrl = `http://${proxy}`
+    // If username/password provided (IP:PORT:USER:PASS)
+    if (parts.length === 4) {
+        proxyUrl = `http://${parts[2]}:${parts[3]}@${parts[0]}:${parts[1]}`
+    }
+
+    const agent = new HttpsProxyAgent(proxyUrl)
+    const start = Date.now()
+
+    try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+        //ip-api.com is http only for free tier, perfect for testing proxy connectivity
+        const fetchOptions: RequestInit & { agent?: Agent } = {
+            agent: agent,
+            signal: controller.signal,
+            cache: 'no-store'
         }
 
-        const start = Date.now()
-        const socket = new net.Socket()
-        socket.setTimeout(3000)
+        const res = await fetch('http://ip-api.com/json', fetchOptions)
 
-        socket.on('connect', async () => {
-            const latency = Date.now() - start
-            socket.destroy()
+        clearTimeout(timeoutId)
 
-            let country = 'Unknown'
-            try {
-                const geoRes = await fetch(`http://ip-api.com/json/${host}`)
-                if (geoRes.ok) {
-                    const geoData = await geoRes.json()
-                    country = geoData.country || 'Unknown'
-                }
-            } catch {
-                // Ignore geo fetch errors
-            }
+        const latency = Date.now() - start
 
-            resolve({
+        if (res.ok) {
+            const data = await res.json()
+            return {
                 proxy,
                 status: 'Active',
                 latency,
-                anonymity: latency < 100 ? 'Elite' : latency < 500 ? 'Anonymous' : 'Transparent',
-                country
-            })
-        })
-
-        socket.on('timeout', () => {
-            socket.destroy()
-            resolve({ proxy, status: 'Timeout', latency: 0, anonymity: '-', country: '-' })
-        })
-
-        socket.on('error', () => {
-            resolve({ proxy, status: 'Dead', latency: 0, anonymity: '-', country: '-' })
-        })
-
-        socket.connect(Number(port), host)
-    })
+                anonymity: latency < 300 ? 'Elite' : latency < 1000 ? 'Anonymous' : 'Transparent',
+                country: data.country || 'Unknown',
+                city: data.city || 'Unknown',
+                ip: data.query // The IP seen by the endpoint (exit IP)
+            }
+        } else {
+            return { proxy, status: 'Dead (HTTP Error)', latency: 0, anonymity: '-', country: '-' }
+        }
+    } catch (error: unknown) {
+        const err = error as Error
+        return {
+            proxy,
+            status: err.name === 'AbortError' ? 'Timeout' : 'Dead',
+            latency: 0,
+            anonymity: '-',
+            country: '-'
+        }
+    }
 }
