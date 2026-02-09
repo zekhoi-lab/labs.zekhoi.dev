@@ -5,7 +5,14 @@ import axiosRetry from 'axios-retry'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 // Configure axios-retry
-axiosRetry(axios, { retries: 1, retryDelay: axiosRetry.exponentialDelay })
+axiosRetry(axios, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: (error) => {
+        // Retry on 429 (Rate Limit) in addition to default network/5xx errors
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429
+    }
+})
 
 export interface InstagramCheckResult {
     success: boolean
@@ -69,23 +76,6 @@ function normalizeProxy(proxy: string): string {
     return `http://${p}`
 }
 
-/**
- * Verifies the proxy by fetching the exit IP
- */
-async function getExitIp(proxyUrl: string): Promise<string> {
-    try {
-        const agent = new HttpsProxyAgent(proxyUrl)
-        const response = await axios.get('https://api.ipify.org?format=json', {
-            httpsAgent: agent,
-            timeout: 5000
-        })
-        return response.data.ip || 'Unknown Exit'
-    } catch {
-        // Distinguish between timeout and other errors
-        return 'Proxy Offline'
-    }
-}
-
 interface InstagramUser {
     id: string
     username: string
@@ -109,14 +99,7 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
     const url = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`
     const normalizedProxy = proxy ? normalizeProxy(proxy) : undefined
     const agent = normalizedProxy ? new HttpsProxyAgent(normalizedProxy) : undefined
-
-    let proxyNode = 'Direct'
-    if (normalizedProxy) {
-        proxyNode = await getExitIp(normalizedProxy)
-        if (proxyNode === 'Proxy Offline' || proxyNode === 'Proxy Timeout') {
-            return { exists: false, httpCode: 0, message: proxyNode, proxyNode }
-        }
-    }
+    const proxyNode = normalizedProxy ? 'Proxy' : 'Direct'
 
     try {
         const response = await axios.get(url, {
@@ -133,7 +116,6 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
                 'Sec-Fetch-Dest': 'empty',
                 'Sec-Fetch-Mode': 'cors',
                 'Sec-Fetch-Site': 'same-origin',
-                "Cookie": "csrftoken=yaHxTiXr5qArRN7_m5eQJ_; datr=CGiJaaPWgiF9okN_SuRAtlIQ; ig_did=0AEC0F57-7767-46E0-9A33-D76C7982715B; mid=aYloCAALAAH6-CGY4Igfset0bznl; wd=2001x1274"
             },
             timeout: 15000,
             validateStatus: (status) => status < 500

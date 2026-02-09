@@ -123,28 +123,53 @@ export default function InstagramChecker() {
                     if (index >= usernames.length) break
 
                     const username = usernames[index]
-                    const proxy = proxies.length > 0 ? proxies[proxyIndex++ % proxies.length] : undefined
+                    let result: InstagramCheckResult | null = null
+                    let attempts = 0
+                    const maxAttempts = 3
 
-                    // Update to scanning
-                    setResults(prev => {
-                        const next = [...prev]
-                        if (next[index]) next[index] = { ...next[index], status: 'Scanning' }
-                        return next
-                    })
+                    while (attempts <= maxAttempts) {
+                        const currentProxy = proxies.length > 0 ? proxies[proxyIndex++ % proxies.length] : undefined
 
-                    try {
-                        const result = fetchMode === 'server'
-                            ? await checkInstagram(username, proxy)
-                            : await checkInstagramClient(username)
-
+                        // Update to scanning/retrying
                         setResults(prev => {
                             const next = [...prev]
                             if (next[index]) {
                                 next[index] = {
-                                    ...result,
+                                    ...next[index],
+                                    status: 'Scanning',
+                                    message: attempts > 0 ? `Retrying (${attempts}/${maxAttempts})...` : 'Scanning...'
+                                }
+                            }
+                            return next
+                        })
+
+                        try {
+                            result = fetchMode === 'server'
+                                ? await checkInstagram(username, currentProxy)
+                                : await checkInstagramClient(username)
+
+                            // Break loop if not a 429
+                            if (result.httpCode !== 429) break
+
+                            attempts++
+                            if (attempts <= maxAttempts) {
+                                // Wait before retry (exponential backoff)
+                                await new Promise(r => setTimeout(r, 1000 * attempts))
+                            }
+                        } catch (e: any) {
+                            console.error("Worker error:", e)
+                            break
+                        }
+                    }
+
+                    if (result) {
+                        setResults(prev => {
+                            const next = [...prev]
+                            if (next[index]) {
+                                next[index] = {
+                                    ...result!,
                                     originalUsername: username,
-                                    // Use 'status' directly from result, fallback to 'Error' if undefined
-                                    status: result.status || 'Error'
+                                    status: result!.status || 'Error'
                                 }
                             }
                             return next
@@ -152,14 +177,13 @@ export default function InstagramChecker() {
 
                         setStats(prev => ({
                             ...prev,
-                            success: prev.success + (result.status === 'Active' ? 1 : 0),
-                            error: prev.error + (result.status === 'Not Found' ? 1 : 0)
+                            success: prev.success + (result!.status === 'Active' ? 1 : 0),
+                            error: prev.error + (result!.status === 'Not Found' ? 1 : 0)
                         }))
-
-                    } catch {
+                    } else {
                         setResults(prev => {
                             const next = [...prev]
-                            if (next[index]) next[index] = { ...next[index], status: 'Error', error: 'Scan Failed' }
+                            if (next[index]) next[index] = { ...next[index], status: 'Error', message: 'Scan Failed' }
                             return next
                         })
                         setStats(prev => ({ ...prev, error: prev.error + 1 }))
@@ -338,6 +362,7 @@ export default function InstagramChecker() {
                                                     res.status === 'Scanning' ? 'text-yellow-400' :
                                                         res.status === 'Error' ? 'text-red-500' : 'text-white/40'
                                                 }`} title={`Current Status: ${res.status || 'Queued'}`}>
+                                                {res.status || 'Queued'}
                                             </div>
                                         </div>
                                     ))}
