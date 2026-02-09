@@ -154,7 +154,7 @@ export default function PortScanner() {
                     <div className="border border-white/20 bg-black flex-1 overflow-hidden flex flex-col min-h-[400px]">
                         <div className="overflow-x-auto scrollbar-thin">
                             <div className="min-w-[700px]">
-                                <div className="grid grid-cols-12 gap-x-4 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
+                                <div className="grid grid-cols-12 border-b border-white/20 p-3 text-xs font-bold uppercase tracking-wider text-white/60">
                                     <div className="col-span-2">Port</div>
                                     <div className="col-span-7">Service</div>
                                     <div className="col-span-3 text-right">State</div>
@@ -163,7 +163,7 @@ export default function PortScanner() {
                                     {results.map((res, i) => (
                                         <div
                                             key={i}
-                                            className="grid grid-cols-12 gap-x-4 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors"
+                                            className="grid grid-cols-12 border-b border-white/10 p-3 text-sm font-mono items-center hover:bg-white/5 transition-colors"
                                         >
                                             <div className="col-span-2 text-white/80 truncate min-w-0" title={`Port: ${res.port}`}>{res.port}</div>
                                             <div className="col-span-7 text-white/60 truncate px-1 min-w-0" title={res.service}>{res.service}</div>
