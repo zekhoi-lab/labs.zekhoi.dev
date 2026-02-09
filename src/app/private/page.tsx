@@ -73,6 +73,10 @@ export default function PrivatePage() {
                     </div>
                 )
             }}
+            breadcrumbs={[
+                { label: 'Home', href: '/' },
+                { label: 'Private Tools' }
+            ]}
         />
     )
 }

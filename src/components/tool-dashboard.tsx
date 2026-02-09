@@ -17,6 +17,7 @@ interface ToolDashboardProps {
     tools: Tool[]
     theme?: 'default' | 'private'
     navbarProps?: Partial<NavbarProps>
+    breadcrumbs?: Array<{ label: string; href?: string }>
 }
 
 export function ToolDashboard({
@@ -24,7 +25,8 @@ export function ToolDashboard({
     description,
     tools,
     theme = 'default',
-    navbarProps
+    navbarProps,
+    breadcrumbs
 }: ToolDashboardProps) {
     const isPrivate = theme === 'private'
 
@@ -37,6 +39,22 @@ export function ToolDashboard({
 
             <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
                 <div className="mb-16 space-y-4">
+                    {breadcrumbs && (
+                        <div className={`flex items-center gap-2 text-xs uppercase tracking-[0.2em] mb-2 font-mono ${isPrivate ? 'text-white/40' : 'text-gray-400'}`}>
+                            {breadcrumbs.map((crumb, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    {index > 0 && <span>/</span>}
+                                    {crumb.href ? (
+                                        <a href={crumb.href} className={`hover:opacity-100 transition-opacity ${isPrivate ? 'hover:text-white' : 'hover:text-black dark:hover:text-white'}`}>
+                                            {crumb.label}
+                                        </a>
+                                    ) : (
+                                        <span className={isPrivate ? 'text-white' : 'text-black dark:text-white'}>{crumb.label}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <h1 className={`text-4xl md:text-6xl font-bold tracking-tighter uppercase ${isPrivate ? 'text-white' : 'text-black dark:text-white'
                         }`}>
                         {title}
