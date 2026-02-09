@@ -2,8 +2,17 @@
 
 import net from 'net'
 
-export async function validateProxy(proxy: string) {
-    return new Promise<any>((resolve) => {
+
+export interface ProxyResult {
+    proxy: string
+    status: string
+    latency: number
+    anonymity: string
+    country?: string
+}
+
+export async function validateProxy(proxy: string): Promise<ProxyResult> {
+    return new Promise<ProxyResult>((resolve) => {
         const parts = proxy.split(':')
         const host = parts[0]
         const port = parts[1]

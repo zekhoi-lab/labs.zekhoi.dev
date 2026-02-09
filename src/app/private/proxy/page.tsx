@@ -1,13 +1,14 @@
+'use client'
 
 import { useState } from 'react'
-import { validateProxy } from '../actions'
+import { validateProxy, ProxyResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
 export default function ProxyValidator() {
     const [input, setInput] = useState('')
     const [validating, setValidating] = useState(false)
-    const [results, setResults] = useState<any[]>([])
+    const [results, setResults] = useState<ProxyResult[]>([])
     const [stats, setStats] = useState({ active: 0, dead: 0, total: 0 })
 
     const handleValidate = async () => {

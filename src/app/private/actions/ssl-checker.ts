@@ -2,8 +2,21 @@
 
 import tls from 'tls'
 
-export async function checkSSL(host: string) {
-    return new Promise<any>((resolve) => {
+
+export interface SSLResult {
+    success: boolean
+    daysRemaining?: number
+    validFrom?: string | null
+    validTo?: string | null
+    issuer?: string | null
+    subject?: string | null
+    protocol?: string
+    grade?: string
+    error?: string
+}
+
+export async function checkSSL(host: string): Promise<SSLResult> {
+    return new Promise<SSLResult>((resolve) => {
         try {
             const socket = tls.connect({
                 host,
@@ -23,7 +36,7 @@ export async function checkSSL(host: string) {
                     validTo: cert.valid_to,
                     issuer: cert.issuer.O || cert.issuer.CN,
                     subject: cert.subject.CN,
-                    protocol: socket.getProtocol(),
+                    protocol: socket.getProtocol() || undefined,
                     grade: daysRemaining > 60 ? 'A+' : daysRemaining > 30 ? 'B' : 'F'
                 })
             })

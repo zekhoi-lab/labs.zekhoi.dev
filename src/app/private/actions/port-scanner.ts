@@ -2,8 +2,15 @@
 
 import net from 'net'
 
-export async function scanPort(host: string, port: number) {
-    return new Promise<{ port: number, status: 'open' | 'closed', service?: string }>((resolve) => {
+
+export interface PortScanResult {
+    port: number
+    status: 'open' | 'closed'
+    service?: string
+}
+
+export async function scanPort(host: string, port: number): Promise<PortScanResult> {
+    return new Promise<PortScanResult>((resolve) => {
         const socket = new net.Socket()
         socket.setTimeout(2000)
 

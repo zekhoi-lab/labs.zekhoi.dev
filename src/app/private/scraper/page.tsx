@@ -5,12 +5,12 @@ import { ToolHeader } from '@/components/tool-header'
 
 
 import { useState } from 'react'
-import { scrapeWeb } from '../actions'
+import { scrapeWeb, ScrapeResult } from '../actions'
 
 export default function WebScraper() {
     const [url, setUrl] = useState('')
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
+    const [result, setResult] = useState<ScrapeResult | null>(null)
 
     const handleScrape = async () => {
         if (!url) return
@@ -122,19 +122,7 @@ export default function WebScraper() {
                                                 <td className="px-4 py-3 text-blue-400">Description</td>
                                                 <td className="px-4 py-3 text-white/80">{result.description}</td>
                                             </tr>
-                                            {result.links.map((link: string, i: number) => (
-                                                <tr key={i} className="hover:bg-white/5 transition-colors">
-                                                    <td className="px-4 py-3 text-white/40">{result.timestamp}</td>
-                                                    <td className="px-4 py-3 text-purple-400">Link</td>
-                                                    <td className="px-4 py-3 text-white/80 text-ellipsis overflow-hidden max-w-xs">{link}</td>
-                                                </tr>
-                                            ))}
                                         </>
-                                    )}
-                                    {!result && (
-                                        <tr>
-                                            <td colSpan={3} className="px-4 py-8 text-center text-white/20 italic">No data extracted yet.</td>
-                                        </tr>
                                     )}
                                 </tbody>
                             </table>

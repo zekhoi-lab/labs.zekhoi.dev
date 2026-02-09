@@ -1,4 +1,4 @@
-'use server'
+
 
 export * from './actions/header-analyzer'
 export * from './actions/port-scanner'

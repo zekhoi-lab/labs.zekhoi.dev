@@ -1,6 +1,17 @@
 'use server'
 
-export async function scrapeWeb(url: string) {
+
+export interface ScrapeResult {
+    success: boolean
+    title?: string
+    description?: string
+    links?: string[]
+    size?: string
+    timestamp?: string
+    error?: string
+}
+
+export async function scrapeWeb(url: string): Promise<ScrapeResult> {
     try {
         if (!url.startsWith('http')) url = 'https://' + url
         const res = await fetch(url, {

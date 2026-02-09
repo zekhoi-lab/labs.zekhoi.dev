@@ -4,12 +4,12 @@ import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 import { GlitchText } from '@/components/glitch-text'
 import { useState } from 'react'
-import { analyzeHeaders } from '../actions'
+import { analyzeHeaders, HeaderAnalysisResult } from '../actions'
 
 export default function HeaderAnalyzer() {
     const [url, setUrl] = useState('')
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
+    const [result, setResult] = useState<HeaderAnalysisResult | null>(null)
 
     const handleAnalyze = async () => {
         if (!url) return
@@ -67,11 +67,11 @@ export default function HeaderAnalyzer() {
                         <div className="border border-white/20 p-8 flex flex-col items-center justify-center text-center bg-black/40 backdrop-blur-sm">
                             <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 mb-6">Security Grade</span>
                             <div className="text-9xl font-bold mb-6">
-                                <GlitchText text={result.score >= 90 ? 'A' : result.score >= 70 ? 'B' : result.score >= 50 ? 'C' : 'F'} />
+                                <GlitchText text={(result.score ?? 0) >= 90 ? 'A' : (result.score ?? 0) >= 70 ? 'B' : (result.score ?? 0) >= 50 ? 'C' : 'F'} />
                             </div>
                             <div className="space-y-2">
-                                <div className="text-xs text-white/60">{result.issues.length} Warnings Detected</div>
-                                <div className="text-xs text-green-500">{Object.keys(result.headers).length - result.issues.length} Headers Correctly Configured</div>
+                                <div className="text-xs text-white/60">{(result.issues || []).length} Warnings Detected</div>
+                                <div className="text-xs text-green-500">{Object.keys(result.headers || {}).length - (result.issues || []).length} Headers Correctly Configured</div>
                             </div>
                         </div>
                         <div className="border border-white/20 p-6 space-y-4">
@@ -79,28 +79,58 @@ export default function HeaderAnalyzer() {
                             <div className="space-y-3">
                                 <div className="flex justify-between text-[11px]">
                                     <span className="text-white/40">Server</span>
-                                    <span className="text-white">{result.server}</span>
+                                    <span className="text-white">{result.server || 'Unknown'}</span>
                                 </div>
                                 <div className="flex justify-between text-[11px]">
                                     <span className="text-white/40">IP Address</span>
-                                    <span className="text-white">{result.ip}</span>
+                                    <span className="text-white">{result.ip || 'Unknown'}</span>
                                 </div>
                                 <div className="flex justify-between text-[11px]">
                                     <span className="text-white/40">Status Code</span>
-                                    <span className="text-white font-bold">{result.status}</span>
+                                    <span className="text-white font-bold">{result.status || 'Unknown'}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="lg:col-span-8 space-y-6">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full transition-all duration-1000 ${(result.score ?? 0) > 80 ? 'bg-green-500' :
+                                        (result.score ?? 0) > 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                        }`}
+                                    style={{ width: `${result.score ?? 0}%` }}
+                                ></div>
+                            </div>
+                            <span className="text-2xl font-bold font-mono">
+                                {result.score ?? 0}/100
+                            </span>
+                        </div>
+
+                        <div className="space-y-2">
+                            {(result.issues || []).length === 0 ? (
+                                <div className="p-4 border border-green-500/20 bg-green-500/10 text-green-400 text-sm">
+                                    <span className="material-symbols-outlined align-middle mr-2 text-lg">check_circle</span>
+                                    All expected security headers are present.
+                                </div>
+                            ) : (
+                                (result.issues || []).map((issue, i) => (
+                                    <div key={i} className="p-3 border border-red-500/20 bg-red-500/10 text-red-400 text-sm flex items-start gap-3">
+                                        <span className="material-symbols-outlined text-lg">error</span>
+                                        <span>{issue}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
                         <div className="border border-white/20 overflow-hidden">
                             <div className="bg-white/5 border-b border-white/20 px-6 py-3 flex justify-between items-center">
                                 <span className="text-[10px] font-bold uppercase tracking-widest">Header Policy Breakdown</span>
                                 <span className="text-[10px] text-white/40">v2.1.0-stable</span>
                             </div>
                             <div className="divide-y divide-white/10">
-                                {Object.entries(result.headers).map(([key, value]) => (
+                                {Object.entries(result.headers || {}).map(([key, value]) => (
                                     <div key={key} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
                                         <div className="space-y-1">
                                             <div className="font-bold text-sm flex items-center gap-2 uppercase">
@@ -113,7 +143,7 @@ export default function HeaderAnalyzer() {
                                         </div>
                                     </div>
                                 ))}
-                                {result.issues.map((issue: string, i: number) => (
+                                {(result.issues || []).map((issue: string, i: number) => (
                                     <div key={i} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.02] transition-colors">
                                         <div className="space-y-1">
                                             <div className="font-bold text-sm flex items-center gap-2">

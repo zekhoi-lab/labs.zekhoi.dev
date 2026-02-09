@@ -5,13 +5,13 @@ import { ToolHeader } from '@/components/tool-header'
 
 
 import { useState, useRef, useEffect } from 'react'
-import { scanPort } from '../actions'
+import { scanPort, PortScanResult } from '../actions'
 
 export default function PortScanner() {
     const [target, setTarget] = useState('')
     const [range, setRange] = useState('1-100')
     const [scanning, setScanning] = useState(false)
-    const [results, setResults] = useState<any[]>([])
+    const [results, setResults] = useState<PortScanResult[]>([])
     const [logs, setLogs] = useState<string[]>([])
     const [progress, setProgress] = useState({ current: 0, total: 0 })
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -149,7 +149,9 @@ export default function PortScanner() {
                 <div className="lg:col-span-8 space-y-6">
                     <div className="border border-white/20 bg-black flex flex-col h-64">
                         <div className="border-b border-white/20 px-4 py-2 flex items-center justify-between bg-white/5">
-                            <span className="text-[10px] uppercase tracking-widest text-white/60">Live Terminal Output</span>
+                            <span className="text-[10px] uppercase tracking-widest text-white/60">
+                                Live Terminal Output {scanning && progress.total > 0 && `(${Math.round((progress.current / progress.total) * 100)}%)`}
+                            </span>
                             <div className="flex gap-1.5">
                                 <div className="w-2 h-2 rounded-full border border-white/20"></div>
                                 <div className="w-2 h-2 rounded-full border border-white/20"></div>

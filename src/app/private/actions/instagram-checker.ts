@@ -1,6 +1,20 @@
 'use server'
 
-export async function checkInstagram(username: string) {
+
+export interface InstagramCheckResult {
+    success: boolean
+    username?: string
+    followers?: number
+    following?: number
+    posts?: number
+    isPrivate?: boolean
+    isVerified?: boolean
+    bio?: string
+    engagement?: string
+    error?: string
+}
+
+export async function checkInstagram(username: string): Promise<InstagramCheckResult> {
     // In a real app, this would use private Instagram API or scraping
     await new Promise(r => setTimeout(r, 2000))
 

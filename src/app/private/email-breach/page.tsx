@@ -1,13 +1,14 @@
+'use client'
 
 import { useState } from 'react'
-import { checkEmailBreach } from '../actions'
+import { checkEmailBreach, EmailBreachResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
 export default function EmailBreach() {
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
+    const [result, setResult] = useState<EmailBreachResult | null>(null)
 
     const handleCheck = async () => {
         if (!email) return
@@ -75,7 +76,7 @@ export default function EmailBreach() {
 
                 <section className="space-y-0 border-t border-white/10">
                     {result && result.breached ? (
-                        result.sources.map((source: any, i: number) => (
+                        result.sources.map((source, i) => (
                             <div key={i} className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
                                 <span className="absolute left-0 top-10 w-2 h-2 bg-red-500 rounded-full group-hover:scale-150 transition-transform"></span>
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">

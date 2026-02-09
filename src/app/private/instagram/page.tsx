@@ -1,13 +1,14 @@
+'use client'
 
 import { useState } from 'react'
-import { checkInstagram } from '../actions'
+import { checkInstagram, InstagramCheckResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
 export default function InstagramChecker() {
     const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
+    const [result, setResult] = useState<InstagramCheckResult | null>(null)
 
     const handleCheck = async () => {
         if (!username) return
@@ -116,15 +117,15 @@ export default function InstagramChecker() {
 
                             <div className="grid grid-cols-3 divide-x divide-white/20 border-b border-white/20">
                                 <div className="p-8 text-center hover:bg-white/[0.02] transition-colors">
-                                    <span className="block text-2xl font-bold mb-1">{result.posts.toLocaleString()}</span>
+                                    <span className="block text-2xl font-bold mb-1">{(result.posts ?? 0).toLocaleString()}</span>
                                     <span className="text-[10px] text-white/40 uppercase tracking-widest">Posts</span>
                                 </div>
                                 <div className="p-8 text-center hover:bg-white/[0.02] transition-colors">
-                                    <span className="block text-2xl font-bold mb-1">{result.followers.toLocaleString()}</span>
+                                    <span className="block text-2xl font-bold mb-1">{(result.followers ?? 0).toLocaleString()}</span>
                                     <span className="text-[10px] text-white/40 uppercase tracking-widest">Followers</span>
                                 </div>
                                 <div className="p-8 text-center hover:bg-white/[0.02] transition-colors">
-                                    <span className="block text-2xl font-bold mb-1">{result.following.toLocaleString()}</span>
+                                    <span className="block text-2xl font-bold mb-1">{(result.following ?? 0).toLocaleString()}</span>
                                     <span className="text-[10px] text-white/40 uppercase tracking-widest">Following</span>
                                 </div>
                             </div>

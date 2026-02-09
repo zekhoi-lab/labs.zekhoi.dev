@@ -1,6 +1,21 @@
 'use server'
 
-export async function checkEmailBreach(email: string) {
+
+export interface BreachSource {
+    name: string
+    date: string
+    data: string[]
+}
+
+export interface EmailBreachResult {
+    success: boolean
+    breached: boolean
+    count: number
+    sources: BreachSource[]
+    error?: string // Optional error field for catch block
+}
+
+export async function checkEmailBreach(email: string): Promise<EmailBreachResult> {
     // In a real app, this would query HaveIBeenPwned API or similar
     await new Promise(r => setTimeout(r, 1500))
 

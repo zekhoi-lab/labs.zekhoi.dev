@@ -1,13 +1,25 @@
 'use server'
 
-export async function analyzeHeaders(url: string) {
+
+export interface HeaderAnalysisResult {
+    success: boolean
+    headers?: Record<string, string>
+    issues?: string[]
+    score?: number
+    server?: string
+    ip?: string
+    status?: string
+    error?: string
+}
+
+export async function analyzeHeaders(url: string): Promise<HeaderAnalysisResult> {
     try {
         if (!url.startsWith('http')) url = 'https://' + url
         const res = await fetch(url, { method: 'HEAD', cache: 'no-store' })
         const headers: Record<string, string> = {}
         res.headers.forEach((v, k) => (headers[k] = v))
 
-        const securityHeaders = {
+        const securityHeaders: Record<string, string> = {
             'content-security-policy': 'Missing CSP',
             'strict-transport-security': 'Missing HSTS',
             'x-frame-options': 'Missing X-Frame-Options',
@@ -16,7 +28,7 @@ export async function analyzeHeaders(url: string) {
             'permissions-policy': 'Missing Permissions-Policy',
         }
 
-        const issues = []
+        const issues: string[] = []
         let score = 100
 
         for (const [header, msg] of Object.entries(securityHeaders)) {

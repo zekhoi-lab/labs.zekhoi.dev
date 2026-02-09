@@ -1,13 +1,14 @@
+'use client'
 
 import { useState } from 'react'
-import { lookupWhois } from '../actions'
+import { lookupWhois, WhoisResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 
 export default function WhoisMonitor() {
     const [domain, setDomain] = useState('')
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
+    const [result, setResult] = useState<WhoisResult | null>(null)
 
     const handleLookup = async () => {
         if (!domain) return
@@ -69,13 +70,13 @@ export default function WhoisMonitor() {
                                     <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Expiry Date</span>
                                     <span className="text-sm font-mono text-green-500">{result.expiry}</span>
                                 </div>
-                                <div>
-                                    <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Nameservers</span>
-                                    <ul className="text-sm space-y-1 text-white/80">
-                                        {result.nameservers.map((ns: string, i: number) => (
-                                            <li key={i}>{ns}</li>
+                                <div className="flex justify-between items-center text-xs border-b border-white/10 pb-2">
+                                    <span className="text-white/40 uppercase tracking-widest">Nameservers</span>
+                                    <div className="text-right">
+                                        {(result.nameservers || []).map((ns, i) => (
+                                            <span key={i} className="block font-mono">{ns}</span>
                                         ))}
-                                    </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>

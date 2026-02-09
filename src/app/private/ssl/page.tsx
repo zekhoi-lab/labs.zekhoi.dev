@@ -5,12 +5,12 @@ import { ToolHeader } from '@/components/tool-header'
 
 
 import { useState } from 'react'
-import { checkSSL } from '../actions'
+import { checkSSL, SSLResult } from '../actions'
 
 export default function SSLChecker() {
     const [host, setHost] = useState('')
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<any>(null)
+    const [result, setResult] = useState<SSLResult | null>(null)
 
     const handleCheck = async () => {
         if (!host) return
@@ -71,7 +71,7 @@ export default function SSLChecker() {
                                         <span className="material-symbols-outlined">lock</span>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold">{result.subject}</h3>
+                                        <h3 className="text-xl font-bold">{result.subject || '-'}</h3>
                                         <span className="text-xs text-green-500 font-bold uppercase tracking-widest flex items-center gap-1">
                                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                             Valid Certificate
@@ -82,19 +82,19 @@ export default function SSLChecker() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Issuer</span>
-                                            <span className="text-sm truncate block" title={result.issuer}>{result.issuer}</span>
+                                            <span className="text-sm truncate block" title={result.issuer || '-'}>{result.issuer || '-'}</span>
                                         </div>
                                         <div>
                                             <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Protocol</span>
-                                            <span className="text-sm">{result.protocol}</span>
+                                            <span className="text-sm">{result.protocol || '-'}</span>
                                         </div>
                                     </div>
                                     <div>
                                         <span className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">Validity Period</span>
                                         <div className="flex justify-between items-center bg-white/5 p-2 border border-white/10 text-xs font-mono">
-                                            <span>{new Date(result.validFrom).toLocaleDateString()}</span>
+                                            <span>{result.validFrom ? new Date(result.validFrom).toLocaleDateString() : '-'}</span>
                                             <span className="text-white/40">→</span>
-                                            <span>{new Date(result.validTo).toLocaleDateString()}</span>
+                                            <span>{result.validTo ? new Date(result.validTo).toLocaleDateString() : '-'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -110,7 +110,7 @@ export default function SSLChecker() {
                                         <div className="h-8 w-px bg-white/20"></div>
                                     </div>
                                     <div>
-                                        <span className="block text-sm font-bold truncate max-w-[200px]" title={result.issuer}>{result.issuer}</span>
+                                        <span className="block text-sm font-bold truncate max-w-[200px]" title={result.issuer || undefined}>{result.issuer}</span>
                                         <span className="text-[10px] text-white/40 uppercase tracking-wider">Issuer</span>
                                     </div>
                                     <span className="ml-auto text-green-500 material-symbols-outlined text-sm">check</span>
@@ -121,7 +121,7 @@ export default function SSLChecker() {
                                         <span className="w-2 h-2 rounded-full border border-white/40 bg-white/20"></span>
                                     </div>
                                     <div>
-                                        <span className="block text-sm font-bold truncate max-w-[200px]" title={result.subject}>{result.subject}</span>
+                                        <span className="block text-sm font-bold truncate max-w-[200px]" title={result.subject || undefined}>{result.subject}</span>
                                         <span className="text-[10px] text-white/40 uppercase tracking-wider">Subject</span>
                                     </div>
                                     <span className="ml-auto text-green-500 material-symbols-outlined text-sm">check</span>
