@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { GlitchText } from '@/components/glitch-text'
 import { useCopy } from '@/lib/use-copy'
+import { clearDraft, readDraft, saveDraft } from '@/lib/markdown-draft'
 
 const DEFAULT_MARKDOWN = `# Welcome to Labs Markdown Editor
 
@@ -17,6 +19,15 @@ Calculated for speed and focus.
 - distraction free
 - _fast_ updates
 
+## GitHub-flavored extras
+| Syntax | Result |
+| --- | --- |
+| \`~~text~~\` | ~~strikethrough~~ |
+| \`- [x] item\` | task list |
+
+- [x] tables
+- [ ] your next note
+
 \`\`\`javascript
 function hello() {
   console.log("Hello World");
@@ -27,10 +38,25 @@ function hello() {
 > — Leonardo da Vinci
 `
 
+const subscribeNoop = () => () => {}
+
 export default function Editor() {
-  const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN)
+  // The saved draft only exists in the browser, so the prerender shows the sample
+  const savedDraft = useSyncExternalStore(subscribeNoop, readDraft, () => null)
+  const [edited, setEdited] = useState<string | null>(null)
+  const markdown = edited ?? savedDraft ?? DEFAULT_MARKDOWN
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit')
   const { copy, isCopied } = useCopy()
+
+  const updateMarkdown = (value: string) => {
+    setEdited(value)
+    saveDraft(value)
+  }
+
+  const resetMarkdown = () => {
+    setEdited(DEFAULT_MARKDOWN)
+    clearDraft()
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -75,10 +101,16 @@ export default function Editor() {
                       <span>Editor</span>
                       <div className="flex gap-2">
                           <button 
-                              onClick={() => setMarkdown('')}
+                              onClick={() => updateMarkdown('')}
                               className="hover:text-black dark:hover:text-white transition-colors"
                           >
                               Clear
+                          </button>
+                          <button 
+                              onClick={resetMarkdown}
+                              className="hover:text-black dark:hover:text-white transition-colors"
+                          >
+                              Reset
                           </button>
                           <button 
                               onClick={() => copy(markdown)}
@@ -89,12 +121,12 @@ export default function Editor() {
                       </div>
                   </div>
                   <div className="text-[10px] text-gray-400">
-                      UTF-8 • Markdown
+                      Draft saved in this browser
                   </div>
               </div>
               <textarea 
                   value={markdown}
-                  onChange={(e) => setMarkdown(e.target.value)}
+                  onChange={(e) => updateMarkdown(e.target.value)}
                   className="flex-1 w-full p-6 text-sm resize-none focus:ring-0 border-none outline-none font-mono leading-relaxed bg-transparent text-black dark:text-white"
                   placeholder="Type markdown here..."
                   spellCheck={false}
@@ -110,7 +142,7 @@ export default function Editor() {
               </div>
               <div className="flex-1 overflow-y-auto p-6 md:p-8">
                   <div className="markdown-preview max-w-none prose dark:prose-invert">
-                      <ReactMarkdown>{markdown}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
                   </div>
               </div>
             </div>

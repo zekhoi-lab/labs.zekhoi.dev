@@ -253,6 +253,25 @@
 .markdown-preview hr {
   @apply my-6 border-black dark:border-white;
 }
+.markdown-preview table {
+  @apply w-full border-collapse mb-4 text-sm;
+}
+.markdown-preview th,
+.markdown-preview td {
+  @apply border border-black dark:border-white px-3 py-1.5 text-left;
+}
+.markdown-preview th {
+  @apply bg-gray-100 dark:bg-gray-800 font-bold;
+}
+.markdown-preview li.task-list-item {
+  @apply list-none;
+}
+.markdown-preview li.task-list-item input {
+  @apply mr-2 align-middle accent-black dark:accent-white;
+}
+.markdown-preview del {
+  @apply line-through text-gray-500;
+}
 
 /* Error Page Glitch Wrapper (404) */
 .glitch-wrapper {
