@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
 import { useCopy } from '@/lib/use-copy'
+import { getRelativeTime } from '@/lib/relative-time'
 
 // The digit count picks the unit: seconds (up to 11 digits, valid until year 5138),
 // then milliseconds, microseconds and nanoseconds.
@@ -112,17 +113,8 @@ export default function EpochConverter() {
           gmt: date.toUTCString(),
           local: date.toLocaleString() + ' ' + (/\((.*)\)/.exec(new Date().toString())?.[1] || ''),
           iso: date.toISOString(),
-          relative: getRelativeTime(date)
+          relative: getRelativeTime(date, new Date())
       }
-  }
-
-  const getRelativeTime = (date: Date) => {
-      const now = new Date()
-      const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
-      if (diff < 60 && diff > -60) return `${Math.abs(diff)} seconds ${diff < 0 ? 'from now' : 'ago'}`
-      if (diff < 3600 && diff > -3600) return `${Math.floor(Math.abs(diff) / 60)} minutes ${diff < 0 ? 'from now' : 'ago'}`
-      if (diff < 86400 && diff > -86400) return `${Math.floor(Math.abs(diff) / 3600)} hours ${diff < 0 ? 'from now' : 'ago'}`
-      return `${Math.floor(Math.abs(diff) / 86400)} days ${diff < 0 ? 'from now' : 'ago'}`
   }
 
   const dateInfo = convertedDate ? formatWithTimezone(convertedDate) : null

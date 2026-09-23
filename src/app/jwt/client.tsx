@@ -5,12 +5,24 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 
 import { GlitchText } from '@/components/glitch-text'
+import { cn } from '@/lib/utils'
+import { readTimeClaims, timeStatus, type TimeClaimName } from '@/lib/jwt-claims'
+import { getRelativeTime } from '@/lib/relative-time'
+import { useNow } from '@/lib/use-now'
 
 const HMAC_HASHES = new Map([
   ['HS256', 'SHA-256'],
   ['HS384', 'SHA-384'],
   ['HS512', 'SHA-512'],
 ])
+
+const CLAIM_LABELS: Record<TimeClaimName, string> = { exp: 'Expires', nbf: 'Not before', iat: 'Issued' }
+
+const STATUS_BADGES = {
+  'expired': { label: 'Expired', className: 'text-red-600 dark:text-red-400 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20' },
+  'not-yet-valid': { label: 'Not yet valid', className: 'text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20' },
+  'valid': { label: 'Valid', className: 'text-green-600 dark:text-green-400 border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20' },
+}
 
 const base64UrlToBytes = (value: string) => {
   const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
@@ -51,6 +63,12 @@ export default function JwtDebugger() {
         return { header: null, payload: null }
     }
   }, [token])
+
+  // Time claims render on the server as ISO dates; relative times and the
+  // status badge need the browser's clock, which is null until hydration
+  const now = useNow()
+  const timeClaims = useMemo(() => readTimeClaims(payload), [payload])
+  const status = now === null ? null : timeStatus(payload, now)
 
   const alg = typeof header?.alg === 'string' ? header.alg : 'HS256'
   const hashName = HMAC_HASHES.get(alg)
@@ -180,6 +198,30 @@ export default function JwtDebugger() {
                     </div>
                     <div className="flex-1 p-4 overflow-auto bg-white dark:bg-black relative">
                         <ColorizedJson data={payload} colorClass="text-purple-600 dark:text-purple-400" />
+                        {timeClaims.length > 0 && (
+                            <div className="mt-6 pt-4 border-t border-dashed border-gray-300 dark:border-gray-700 space-y-3 text-xs">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold uppercase tracking-widest text-gray-500">Time claims</span>
+                                    {status && (
+                                        <span className={cn("px-2 py-0.5 border font-bold uppercase tracking-wider", STATUS_BADGES[status].className)}>
+                                            {STATUS_BADGES[status].label}
+                                        </span>
+                                    )}
+                                </div>
+                                {timeClaims.map(claim => (
+                                    <div key={claim.name} className="grid grid-cols-[3rem_1fr] gap-x-3">
+                                        <span className="font-bold">{claim.name}</span>
+                                        <div>
+                                            <div className="font-mono">{claim.iso}</div>
+                                            <div className="text-gray-500">
+                                                {CLAIM_LABELS[claim.name]}
+                                                {now !== null && ` · ${getRelativeTime(new Date(claim.seconds * 1000), new Date(now))}`}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
