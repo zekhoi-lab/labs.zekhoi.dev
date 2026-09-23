@@ -114,6 +114,12 @@ const TOOLS: Tool[] = [
     href: "/image"
   },
   {
+    title: "QR Code Generator",
+    description: "Turn text or a URL into a QR code with adjustable error correction, size, and margin. Download as PNG or SVG.",
+    icon: "qr_code_2",
+    href: "/qr"
+  },
+  {
     title: "SQL Formatter",
     description: "Beautify complex SQL queries. Standardize indentations and spacing for better readability.",
     icon: "database",
