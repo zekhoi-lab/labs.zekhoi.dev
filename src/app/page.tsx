@@ -66,6 +66,12 @@ const TOOLS: Tool[] = [
     href: "/regex"
   },
   {
+    title: "Text Utilities",
+    description: "Convert text to camelCase, snake_case, kebab-case, Title Case, and more, make URL slugs, and count words and characters.",
+    icon: "text_fields",
+    href: "/text"
+  },
+  {
     title: "Diff Viewer",
     description: "Compare text or code line by line in a side-by-side view. Upload a file or swap the two sides.",
     icon: "compare",
