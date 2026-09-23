@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-interface ToolCardProps {
+export interface ToolCardProps {
   title: string
   description: string
   icon: string

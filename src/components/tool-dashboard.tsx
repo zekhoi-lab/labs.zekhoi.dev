@@ -1,20 +1,13 @@
 import { ReactNode } from 'react'
 import { Navbar, NavbarProps } from '@/components/navbar'
-import { ToolCard } from '@/components/tool-card'
+import { type ToolCardProps } from '@/components/tool-card'
+import { ToolGrid } from '@/components/tool-grid'
 import { Footer } from '@/components/footer'
-
-interface Tool {
-    title: string
-    description: string
-    icon: string
-    href: string
-    version?: string
-}
 
 interface ToolDashboardProps {
     title: ReactNode
     description: string
-    tools: Tool[]
+    tools: ToolCardProps[]
     theme?: 'default' | 'private'
     navbarProps?: Partial<NavbarProps>
     breadcrumbs?: Array<{ label: string; href?: string }>
@@ -65,17 +58,7 @@ export function ToolDashboard({
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {tools.map((tool) => (
-                        <ToolCard
-                            key={tool.href}
-                            {...tool}
-                        // Pass a "private" flag to ToolCard if needed for specific styling overrides,
-                        // though currently ToolCard handles dark mode via class names which should work 
-                        // if we force a dark theme wrapper.
-                        />
-                    ))}
-                </div>
+                <ToolGrid tools={tools} />
             </main>
 
             <Footer />
