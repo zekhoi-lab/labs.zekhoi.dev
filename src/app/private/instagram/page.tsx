@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import axios from 'axios'
 import { checkInstagram, InstagramCheckResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
+import { useProcessId } from '@/lib/use-process-id'
 
 export default function InstagramChecker() {
     const [input, setInput] = useState('')
@@ -13,12 +14,8 @@ export default function InstagramChecker() {
     const [isScanning, setIsScanning] = useState(false)
     const [stats, setStats] = useState({ total: 0, success: 0, error: 0 })
     const [concurrency, setConcurrency] = useState(3)
-    const [processId, setProcessId] = useState('')
+    const processId = useProcessId('XJ')
     const [fetchMode, setFetchMode] = useState<'client' | 'server'>('server')
-
-    useEffect(() => {
-        setProcessId(`${Math.floor(Math.random() * 9000) + 1000}_XJ`)
-    }, [])
 
     // Line numbers sync
     const textareaRef = useRef<HTMLTextAreaElement>(null)

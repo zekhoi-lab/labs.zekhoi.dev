@@ -4,11 +4,13 @@ import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
 import { useState } from 'react'
 import { scrapeWeb, ScrapeResult } from '../actions'
+import { useProcessId } from '@/lib/use-process-id'
 
 export default function WebScraper() {
     const [url, setUrl] = useState('')
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState<ScrapeResult | null>(null)
+    const processId = useProcessId('SC')
 
     const handleScrape = async () => {
         if (!url) return
@@ -150,7 +152,7 @@ export default function WebScraper() {
                             </div>
                         </div>
                         <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
-                            <span>PROCESS_ID: {Math.floor(Math.random() * 9000) + 1000}_SC</span>
+                            <span>PROCESS_ID: {processId}</span>
                             <span>RENDER: JSDOM</span>
                         </div>
                     </div>

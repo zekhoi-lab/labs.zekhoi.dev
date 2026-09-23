@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
@@ -11,9 +11,7 @@ export default function EpochConverter() {
   // Fix: Use lazy initializer for Date.now() to avoid impurity error
   const [currentEpoch, setCurrentEpoch] = useState<number>(() => Math.floor(Date.now() / 1000))
   const [displayUnit, setDisplayUnit] = useState<'seconds' | 'milliseconds'>('seconds')
-  const [inputValue, setInputValue] = useState<string>('')
-  const [convertedDate, setConvertedDate] = useState<Date | null>(null)
-  const [detectedUnit, setDetectedUnit] = useState<'seconds' | 'milliseconds' | null>(null)
+  const [inputValue, setInputValue] = useState<string>(() => Math.floor(Date.now() / 1000).toString())
   const [humanDateInput, setHumanDateInput] = useState<{
       year: number,
       month: number,
@@ -47,37 +45,16 @@ export default function EpochConverter() {
     return () => clearInterval(timer)
   }, [displayUnit])
 
-  // Provide initial input value matching current slightly for demo if empty?
-  useEffect(() => {
-    // Only run once on mount
-    if (!inputValue) {
-         setInputValue(Math.floor(Date.now() / 1000).toString())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) 
-
-  useEffect(() => {
-     if (inputValue) {
-          const tsInt = parseInt(inputValue)
-          if (!isNaN(tsInt)) {
-             let ts = tsInt
-             // Simple heuristic: > 10000000000 indicates ms (valid for dates after 1970-04-26)
-             // Or typically 13 chars vs 10 chars.
-             if (inputValue.length > 11) {
-                 setDetectedUnit('milliseconds')
-             } else {
-                 ts = ts * 1000
-                 setDetectedUnit('seconds')
-             }
-             setConvertedDate(new Date(ts))
-          } else {
-              setConvertedDate(null)
-              setDetectedUnit(null)
-          }
-     } else {
-         setConvertedDate(null)
-         setDetectedUnit(null)
-     }
+  // Heuristic: more than 11 digits means milliseconds (valid for dates after 1970-04-26)
+  const { convertedDate, detectedUnit } = useMemo(() => {
+      const tsInt = parseInt(inputValue)
+      if (!inputValue || isNaN(tsInt)) {
+          return { convertedDate: null, detectedUnit: null }
+      }
+      if (inputValue.length > 11) {
+          return { convertedDate: new Date(tsInt), detectedUnit: 'milliseconds' as const }
+      }
+      return { convertedDate: new Date(tsInt * 1000), detectedUnit: 'seconds' as const }
   }, [inputValue])
 
   const handleHumanDateConvert = () => {

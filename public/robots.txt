@@ -1,6 +1,8 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /private
+Disallow: /login
 
 # Host
 Host: https://labs.zekhoi.dev

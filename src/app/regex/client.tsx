@@ -1,11 +1,49 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils' // Unused
 
 import { GlitchText } from '@/components/glitch-text'
+
+type RegexFlags = { global: boolean, multiline: boolean, insensitive: boolean }
+type MatchInfo = { count: number, time: number, error?: string }
+
+function runRegex(expression: string, flags: RegexFlags, testString: string): { matches: RegExpMatchArray[], matchInfo: MatchInfo } {
+  const startTime = performance.now()
+  try {
+    const flagString = `${flags.global ? 'g' : ''}${flags.multiline ? 'm' : ''}${flags.insensitive ? 'i' : ''}`
+    const regex = new RegExp(expression, flagString)
+
+    const foundMatches: RegExpMatchArray[] = []
+    if (flags.global) {
+      let match
+      // Prevent infinite loops with zero-length matches
+      let lastIndex = 0
+      while ((match = regex.exec(testString)) !== null) {
+        foundMatches.push(match)
+        if (regex.lastIndex === lastIndex) {
+          regex.lastIndex++ // Advance index if match is zero-length
+        }
+        lastIndex = regex.lastIndex
+      }
+    } else {
+      const match = regex.exec(testString)
+      if (match) foundMatches.push(match)
+    }
+
+    return {
+      matches: foundMatches,
+      matchInfo: {
+        count: foundMatches.length,
+        time: Math.round((performance.now() - startTime) * 10) / 10
+      }
+    }
+  } catch (e) {
+    return { matches: [], matchInfo: { count: 0, time: 0, error: (e as Error).message } }
+  }
+}
 
 export default function RegexTester() {
   const [expression, setExpression] = useState('([A-Z])\\w+')
@@ -15,51 +53,7 @@ export default function RegexTester() {
     insensitive: false
   })
   const [testString, setTestString] = useState('The quick Brown Fox jumps over the lazy Dog.\nRegex is very powerful.\nzekhoi labs 2024.')
-  const [matchInfo, setMatchInfo] = useState<{ count: number, time: number, error?: string }>({ count: 0, time: 0 })
-  const [matches, setMatches] = useState<RegExpMatchArray[]>([])
-
-  const runRegex = useCallback(() => {
-    const startTime = performance.now()
-    try {
-      const flagString = `${flags.global ? 'g' : ''}${flags.multiline ? 'm' : ''}${flags.insensitive ? 'i' : ''}`
-      const regex = new RegExp(expression, flagString)
-      
-      const foundMatches: RegExpMatchArray[] = []
-      if (flags.global) {
-        let match
-        // Prevent infinite loops with zero-length matches
-        let lastIndex = 0
-        while ((match = regex.exec(testString)) !== null) {
-          foundMatches.push(match)
-          if (regex.lastIndex === lastIndex) {
-            regex.lastIndex++ // Advance index if match is zero-length
-          }
-          lastIndex = regex.lastIndex
-        }
-      } else {
-        const match = regex.exec(testString)
-        if (match) foundMatches.push(match)
-      }
-
-      setMatches(foundMatches)
-      setMatchInfo({
-        count: foundMatches.length,
-        time: Math.round((performance.now() - startTime) * 10) / 10
-      })
-    } catch (e) {
-      setMatchInfo({ count: 0, time: 0, error: (e as Error).message })
-      setMatches([])
-    }
-  }, [expression, flags, testString])
-
-  useEffect(() => {
-    runRegex()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expression, flags, testString]) // Removed runRegex to avoid suppression issues if needed, but explicit dep is better. 
-  // Wait, runRegex depends on them. So [runRegex] is technically correct. 
-  // The error "calling setState synchronously" is because we call runRegex() which calls setState().
-  // Using useCallback shouldn't trigger "sync" error unless it's infinite, but this standard pattern is fine. 
-  // The issue could be strictly interpreted. I will ignore it as it's standard behavior for "inputs changed -> update outputs".
+  const { matches, matchInfo } = useMemo(() => runRegex(expression, flags, testString), [expression, flags, testString])
 
   // Simple highlighting logic
   // We need to construct parts of string that are matched vs not matched

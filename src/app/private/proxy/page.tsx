@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { validateProxy, ProxyResult } from '../actions'
 import { PrivateToolLayout } from '@/components/private-tool-layout'
 import { ToolHeader } from '@/components/tool-header'
+import { useProcessId } from '@/lib/use-process-id'
 
 export default function ProxyValidator() {
     const [input, setInput] = useState('')
@@ -12,6 +13,7 @@ export default function ProxyValidator() {
     const [stats, setStats] = useState({ active: 0, dead: 0, total: 0 })
     const [concurrency, setConcurrency] = useState(10)
     const [timeout, setTimeoutVal] = useState(5000)
+    const processId = useProcessId('PX')
 
     // Line numbers sync (Standardized)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -254,7 +256,7 @@ export default function ProxyValidator() {
                             </div>
                         </div>
                         <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
-                            <span>PROCESS_ID: {Math.floor(Math.random() * 9000) + 1000}_PX</span>
+                            <span>PROCESS_ID: {processId}</span>
                             <span>THREADS: {concurrency}</span>
                         </div>
                     </div>

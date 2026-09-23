@@ -88,9 +88,8 @@ export async function lookupWhois(domain: string): Promise<WhoisResult> {
             data.match(/registrar:\s*(.*)/i) ||
             data.match(/Sponsoring Registrar: (.*)/i)
 
-        const nsMatches = [...data.matchAll(/Name Server: (.*)/gi)].map(m => m[1]) ||
-            [...data.matchAll(/nserver:\s*(.*)/gi)].map(m => m[1]) ||
-            [...data.matchAll(/nameserver:\s*(.*)/gi)].map(m => m[1])
+        // Registries label nameservers differently (e.g. "Name Server:", "nserver:")
+        const nsMatches = [...data.matchAll(/^\s*(?:Name Server|nserver|nameserver):\s*(\S.*)$/gim)].map(m => m[1])
 
         return {
             success: true,
