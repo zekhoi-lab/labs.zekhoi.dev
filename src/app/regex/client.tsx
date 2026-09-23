@@ -1,69 +1,112 @@
 'use client'
 
-import { useState, useMemo, useSyncExternalStore } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-// import { cn } from '@/lib/utils' // Unused
 
 import { GlitchText } from '@/components/glitch-text'
 import { useCopy } from '@/lib/use-copy'
+import { findMatches, type FindResult } from './find-matches'
 
-type RegexFlags = { global: boolean, multiline: boolean, insensitive: boolean }
-type MatchInfo = { count: number, time: number, error?: string }
+type RegexFlags = { global: boolean, multiline: boolean, insensitive: boolean, dotAll: boolean, unicode: boolean, sticky: boolean }
+// `text` is the test string the result was computed for
+type RunResult = FindResult & { time: number, text: string }
 
-function runRegex(expression: string, flags: RegexFlags, testString: string): { matches: RegExpMatchArray[], matchInfo: MatchInfo } {
-  const startTime = performance.now()
-  try {
-    const flagString = `${flags.global ? 'g' : ''}${flags.multiline ? 'm' : ''}${flags.insensitive ? 'i' : ''}`
-    const regex = new RegExp(expression, flagString)
+const FLAG_OPTIONS: { key: keyof RegexFlags, label: string }[] = [
+  { key: 'global', label: 'global (g)' },
+  { key: 'multiline', label: 'multiline (m)' },
+  { key: 'insensitive', label: 'insensitive (i)' },
+  { key: 'dotAll', label: 'dotAll (s)' },
+  { key: 'unicode', label: 'unicode (u)' },
+  { key: 'sticky', label: 'sticky (y)' },
+]
 
-    const foundMatches: RegExpMatchArray[] = []
-    if (flags.global) {
-      let match
-      // Prevent infinite loops with zero-length matches
-      let lastIndex = 0
-      while ((match = regex.exec(testString)) !== null) {
-        foundMatches.push(match)
-        if (regex.lastIndex === lastIndex) {
-          regex.lastIndex++ // Advance index if match is zero-length
-        }
-        lastIndex = regex.lastIndex
-      }
-    } else {
-      const match = regex.exec(testString)
-      if (match) foundMatches.push(match)
-    }
+const TIMEOUT_MS = 1000
+const TABLE_ROWS = 100
+const TIMEOUT_MESSAGE = 'Timed out after 1 s — the pattern may backtrack catastrophically on this input'
 
-    return {
-      matches: foundMatches,
-      matchInfo: {
-        count: foundMatches.length,
-        time: Math.round((performance.now() - startTime) * 10) / 10
-      }
-    }
-  } catch (e) {
-    return { matches: [], matchInfo: { count: 0, time: 0, error: (e as Error).message } }
-  }
+// The worker runs findMatches from its own source text, so no bundler worker support is needed
+const WORKER_SOURCE = `const findMatches = (${findMatches.toString()});
+self.onmessage = (event) => {
+  const { id, expression, flags, text } = event.data;
+  const started = performance.now();
+  const result = findMatches(expression, flags, text);
+  self.postMessage({ id, result, time: Math.round((performance.now() - started) * 10) / 10 });
+};`
+
+let workerUrl: string | null = null
+function createWorker() {
+  workerUrl ??= URL.createObjectURL(new Blob([WORKER_SOURCE], { type: 'text/javascript' }))
+  return new Worker(workerUrl)
 }
 
-const subscribeNoop = () => () => {}
+const toFlagString = (flags: RegexFlags) =>
+  `${flags.global ? 'g' : ''}${flags.insensitive ? 'i' : ''}${flags.multiline ? 'm' : ''}${flags.dotAll ? 's' : ''}${flags.unicode ? 'u' : ''}${flags.sticky ? 'y' : ''}`
 
 export default function RegexTester() {
   const [expression, setExpression] = useState('([A-Z])\\w+')
-  const [flags, setFlags] = useState({
+  const [flags, setFlags] = useState<RegexFlags>({
     global: true,
     multiline: true,
-    insensitive: false
+    insensitive: false,
+    dotAll: false,
+    unicode: false,
+    sticky: false,
   })
   const [testString, setTestString] = useState('The quick Brown Fox jumps over the lazy Dog.\nRegex is very powerful.\nzekhoi labs 2024.')
-  const { matches, matchInfo } = useMemo(() => runRegex(expression, flags, testString), [expression, flags, testString])
-  // The timing differs between the prerender and the browser, so it's only shown after hydration
-  const isClient = useSyncExternalStore(subscribeNoop, () => true, () => false)
+  const [result, setResult] = useState<RunResult | null>(null)
   const { copy, isCopied } = useCopy()
+  const flagString = toFlagString(flags)
 
-  // Simple highlighting logic
-  // We need to construct parts of string that are matched vs not matched
-  // This is tricky for overlapping capture groups but for simple full match highlighting:
+  const workerRef = useRef<Worker | null>(null)
+  const pendingRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const jobRef = useRef(0)
+
+  // Matching runs in a worker (debounced) and is abandoned after TIMEOUT_MS, so a
+  // catastrophic pattern can't freeze the page. Only the callbacks set state.
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      // A job still running is for stale input: kill its worker instead of queueing behind it
+      if (pendingRef.current) {
+        clearTimeout(pendingRef.current)
+        pendingRef.current = null
+        workerRef.current?.terminate()
+        workerRef.current = null
+      }
+      const worker = workerRef.current ?? (workerRef.current = createWorker())
+      const id = ++jobRef.current
+
+      pendingRef.current = setTimeout(() => {
+        pendingRef.current = null
+        worker.terminate()
+        if (workerRef.current === worker) workerRef.current = null
+        setResult({ matches: [], truncated: false, error: TIMEOUT_MESSAGE, time: TIMEOUT_MS, text: testString })
+      }, TIMEOUT_MS)
+
+      worker.onmessage = (event: MessageEvent<{ id: number, result: FindResult, time: number }>) => {
+        if (event.data.id !== id) return
+        if (pendingRef.current) clearTimeout(pendingRef.current)
+        pendingRef.current = null
+        setResult({ ...event.data.result, time: event.data.time, text: testString })
+      }
+      worker.postMessage({ id, expression, flags: flagString, text: testString })
+    }, 150)
+    return () => clearTimeout(debounce)
+  }, [expression, flagString, testString])
+
+  // Stop any running match when leaving the page
+  useEffect(() => {
+    const worker = workerRef
+    const pending = pendingRef
+    return () => {
+      if (pending.current) clearTimeout(pending.current)
+      worker.current?.terminate()
+    }
+  }, [])
+
+  // Highlight only a result that belongs to the text currently shown
+  const matches = useMemo(() => (result && result.text === testString ? result.matches : []), [result, testString])
+
   const highlightedText = useMemo(() => {
       if (matches.length === 0) return testString
 
@@ -71,8 +114,6 @@ export default function RegexTester() {
       const parts = []
 
       for (const match of matches) {
-          if (match.index === undefined) continue
-          
           // Unmatched text before
           if (match.index > lastIndex) {
               parts.push(<span key={`text-${lastIndex}`}>{testString.slice(lastIndex, match.index)}</span>)
@@ -81,11 +122,11 @@ export default function RegexTester() {
           // Matched text
           parts.push(
             <span key={`match-${match.index}`} className="bg-gray-200 dark:bg-gray-700 border-b-2 border-black dark:border-white text-black dark:text-white">
-                {match[0]}
+                {match.text}
             </span>
           )
 
-          lastIndex = match.index + match[0].length
+          lastIndex = match.index + match.text.length
       }
 
       // Remaining text
@@ -131,38 +172,22 @@ export default function RegexTester() {
                             placeholder="expression..."
                         />
                         <div className="bg-gray-100 dark:bg-gray-800 px-3 py-3 border-l border-black dark:border-white flex items-center justify-center font-bold text-gray-500 select-none">
-                            /{flags.global ? 'g' : ''}{flags.multiline ? 'm' : ''}{flags.insensitive ? 'i' : ''}
+                            /{flagString}
                         </div>
                     </div>
                     <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 px-3 py-2 text-xs text-gray-500 flex justify-between items-center">
-                        <div className="flex gap-4">
-                            <label className="flex items-center gap-2 cursor-pointer hover:text-black dark:hover:text-white">
-                                <input 
-                                    type="checkbox" 
-                                    checked={flags.global}
-                                    onChange={(e) => setFlags({...flags, global: e.target.checked})}
-                                    className="rounded-none border-gray-300 dark:border-gray-600 text-black dark:text-white focus:ring-0 w-3 h-3 bg-transparent"
-                                />
-                                global (g)
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer hover:text-black dark:hover:text-white">
-                                <input 
-                                    type="checkbox" 
-                                    checked={flags.multiline}
-                                    onChange={(e) => setFlags({...flags, multiline: e.target.checked})}
-                                    className="rounded-none border-gray-300 dark:border-gray-600 text-black dark:text-white focus:ring-0 w-3 h-3 bg-transparent"
-                                />
-                                multiline (m)
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer hover:text-black dark:hover:text-white">
-                                <input 
-                                    type="checkbox" 
-                                    checked={flags.insensitive}
-                                    onChange={(e) => setFlags({...flags, insensitive: e.target.checked})}
-                                    className="rounded-none border-gray-300 dark:border-gray-600 text-black dark:text-white focus:ring-0 w-3 h-3 bg-transparent"
-                                />
-                                insensitive (i)
-                            </label>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            {FLAG_OPTIONS.map(({ key, label }) => (
+                                <label key={key} className="flex items-center gap-2 cursor-pointer hover:text-black dark:hover:text-white">
+                                    <input
+                                        type="checkbox"
+                                        checked={flags[key]}
+                                        onChange={(e) => setFlags({ ...flags, [key]: e.target.checked })}
+                                        className="rounded-none border-gray-300 dark:border-gray-600 text-black dark:text-white focus:ring-0 w-3 h-3 bg-transparent"
+                                    />
+                                    {label}
+                                </label>
+                            ))}
                         </div>
                         <span className="text-[10px] uppercase tracking-wider">Javascript Flavor</span>
                     </div>
@@ -210,18 +235,64 @@ export default function RegexTester() {
 
                     <div className="border-t border-black dark:border-white p-2 bg-gray-50 dark:bg-gray-900 flex justify-between items-center text-xs">
                         <div className="flex gap-4 font-medium">
-                            {matchInfo.error ? (
-                                <span className="text-red-600 font-bold">{matchInfo.error}</span>
+                            {result === null ? (
+                                <span className="text-gray-400">Matching...</span>
+                            ) : result.error ? (
+                                <span className="text-red-600 font-bold">{result.error}</span>
                             ) : (
                                 <>
-                                    <span className="text-green-600 dark:text-green-400">{matchInfo.count} matches</span>
+                                    <span className="text-green-600 dark:text-green-400">{result.matches.length}{result.truncated ? '+' : ''} matches</span>
                                     <span className="text-gray-400">|</span>
-                                    <span>{isClient ? matchInfo.time : 0}ms</span>
+                                    <span>{result.time}ms</span>
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
+
+                {matches.length > 0 && (
+                    <div className="border border-black dark:border-white bg-white dark:bg-black overflow-x-auto">
+                        <table aria-label="Matches" className="w-full text-xs font-mono">
+                            <thead className="bg-gray-50 dark:bg-gray-900 text-[10px] uppercase tracking-widest text-gray-500">
+                                <tr>
+                                    <th className="p-2 text-left w-10">#</th>
+                                    <th className="p-2 text-left w-16">Index</th>
+                                    <th className="p-2 text-left">Match</th>
+                                    <th className="p-2 text-left">Groups</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {matches.slice(0, TABLE_ROWS).map((match, i) => (
+                                    <tr key={`${match.index}-${i}`} className="border-t border-gray-200 dark:border-gray-800 align-top">
+                                        <td className="p-2 text-gray-400">{i + 1}</td>
+                                        <td className="p-2 text-gray-500">{match.index}</td>
+                                        <td className="p-2 font-bold whitespace-pre-wrap break-all">{match.text}</td>
+                                        <td className="p-2 break-all">
+                                            {match.groups.length === 0 && !match.named && <span className="text-gray-400">-</span>}
+                                            {match.groups.map((group, g) => (
+                                                <span key={g} className="inline-block mr-3">
+                                                    <span className="text-gray-400">{'$' + (g + 1)}</span>{' '}
+                                                    {group === null ? <span className="italic text-gray-400">undefined</span> : JSON.stringify(group)}
+                                                </span>
+                                            ))}
+                                            {match.named && Object.entries(match.named).map(([name, value]) => (
+                                                <span key={name} className="inline-block mr-3">
+                                                    <span className="text-purple-600 dark:text-purple-400">{name}</span>{' '}
+                                                    {value === null ? <span className="italic text-gray-400">undefined</span> : JSON.stringify(value)}
+                                                </span>
+                                            ))}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {matches.length > TABLE_ROWS && (
+                            <p className="p-2 border-t border-gray-200 dark:border-gray-800 text-[10px] uppercase tracking-widest text-gray-400">
+                                {matches.length - TABLE_ROWS} more matches not listed
+                            </p>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="lg:col-span-4 space-y-6">
@@ -280,8 +351,8 @@ export default function RegexTester() {
                         <h3 className="font-bold text-sm uppercase tracking-wider">Match Info</h3>
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 space-y-2">
-                         <p>Matches are highlighted in the text area.</p>
-                         <p>Complex capture groups are not yet fully visualized in this simple highlighter.</p>
+                         <p>Matches are highlighted in the text area, and each match&apos;s capture groups are listed below it.</p>
+                         <p>Matching runs in a background worker and stops after 1 second, so a runaway pattern can&apos;t freeze the page.</p>
                     </div>
                 </div>
             </div>
