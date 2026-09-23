@@ -1,33 +1,59 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useSyncExternalStore } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
 
+// The digit count picks the unit: seconds (up to 11 digits, valid until year 5138),
+// then milliseconds, microseconds and nanoseconds.
+const EPOCH_UNITS = [
+  { name: 'seconds', label: 'Sec', maxDigits: 11, toMs: 1000 },
+  { name: 'milliseconds', label: 'Ms', maxDigits: 14, toMs: 1 },
+  { name: 'microseconds', label: 'µs', maxDigits: 17, toMs: 1 / 1000 },
+  { name: 'nanoseconds', label: 'Ns', maxDigits: Infinity, toMs: 1 / 1_000_000 },
+] as const
+
+const fieldValue = (value: number) => (Number.isNaN(value) ? '' : value)
+
+type DateParts = { year: number, month: number, day: number, hour: number, minute: number, second: number }
+
+const EMPTY_DATE_PARTS: DateParts = { year: NaN, month: NaN, day: NaN, hour: NaN, minute: NaN, second: NaN }
+
+const toDateParts = (date: Date): DateParts => ({
+  year: date.getFullYear(),
+  month: date.getMonth() + 1,
+  day: date.getDate(),
+  hour: date.getHours(),
+  minute: date.getMinutes(),
+  second: date.getSeconds(),
+})
+
+// When the page mounted in the browser. The prerendered HTML carries no time at
+// all (server snapshot is null), so hydration matches and the defaults fill in
+// right after. Refreshed on every mount so revisits start from the current time.
+let mountTime: number | null = null
+const subscribeMountTime = (onChange: () => void) => {
+  mountTime = Date.now()
+  onChange()
+  return () => {}
+}
+const getMountTime = () => mountTime
+
 export default function EpochConverter() {
-  // Fix: Use lazy initializer for Date.now() to avoid impurity error
-  const [currentEpoch, setCurrentEpoch] = useState<number>(() => Math.floor(Date.now() / 1000))
+  const mountedAt = useSyncExternalStore(subscribeMountTime, getMountTime, () => null)
+  // Set by the ticking effect below; null until then (and in the prerendered HTML)
+  const [currentEpoch, setCurrentEpoch] = useState<number | null>(null)
   const [displayUnit, setDisplayUnit] = useState<'seconds' | 'milliseconds'>('seconds')
-  const [inputValue, setInputValue] = useState<string>(() => Math.floor(Date.now() / 1000).toString())
-  const [humanDateInput, setHumanDateInput] = useState<{
-      year: number,
-      month: number,
-      day: number,
-      hour: number,
-      minute: number,
-      second: number
-  }>({
-      year: new Date().getFullYear(),
-      month: new Date().getMonth() + 1,
-      day: new Date().getDate(),
-      hour: new Date().getHours(),
-      minute: new Date().getMinutes(),
-      second: new Date().getSeconds()
-  })
+  // null until edited: defaults to the mount time
+  const [inputValue, setInputValue] = useState<string | null>(null)
+  const epochInput = inputValue ?? (mountedAt === null ? '' : Math.floor(mountedAt / 1000).toString())
+  const [humanDateInput, setHumanDateInput] = useState<DateParts | null>(null)
+  const humanDate = humanDateInput ?? (mountedAt === null ? EMPTY_DATE_PARTS : toDateParts(new Date(mountedAt)))
   const [humanToEpochOutput, setHumanToEpochOutput] = useState<{ seconds: number, milliseconds: number } | null>(null)
+  const [humanDateError, setHumanDateError] = useState<string | null>(null)
 
   // Update current epoch every second (or faster for ms)
   useEffect(() => {
@@ -45,21 +71,33 @@ export default function EpochConverter() {
     return () => clearInterval(timer)
   }, [displayUnit])
 
-  // Heuristic: more than 11 digits means milliseconds (valid for dates after 1970-04-26)
-  const { convertedDate, detectedUnit } = useMemo(() => {
-      const tsInt = parseInt(inputValue)
-      if (!inputValue || isNaN(tsInt)) {
-          return { convertedDate: null, detectedUnit: null }
+  const { convertedDate, detectedUnit, inputError } = useMemo(() => {
+      const trimmed = epochInput.trim()
+      if (!trimmed) {
+          return { convertedDate: null, detectedUnit: null, inputError: null }
       }
-      if (inputValue.length > 11) {
-          return { convertedDate: new Date(tsInt), detectedUnit: 'milliseconds' as const }
+      if (!/^-?\d+$/.test(trimmed)) {
+          return { convertedDate: null, detectedUnit: null, inputError: 'Enter a whole number' }
       }
-      return { convertedDate: new Date(tsInt * 1000), detectedUnit: 'seconds' as const }
-  }, [inputValue])
+      const digits = trimmed.replace('-', '').length
+      const unit = EPOCH_UNITS.find(u => digits <= u.maxDigits) ?? EPOCH_UNITS[EPOCH_UNITS.length - 1]
+      const date = new Date(Number(trimmed) * unit.toMs)
+      // Dates beyond ±8.64e15 ms are invalid; toISOString() would throw on them
+      if (isNaN(date.getTime())) {
+          return { convertedDate: null, detectedUnit: unit, inputError: 'Timestamp is out of range' }
+      }
+      return { convertedDate: date, detectedUnit: unit, inputError: null }
+  }, [epochInput])
 
   const handleHumanDateConvert = () => {
-      const { year, month, day, hour, minute, second } = humanDateInput
+      const { year, month, day, hour, minute, second } = humanDate
       const date = new Date(year, month - 1, day, hour, minute, second)
+      if (Object.values(humanDate).some(Number.isNaN) || isNaN(date.getTime())) {
+          setHumanToEpochOutput(null)
+          setHumanDateError('Fill in every field with a valid number')
+          return
+      }
+      setHumanDateError(null)
       setHumanToEpochOutput({
           seconds: Math.floor(date.getTime() / 1000),
           milliseconds: date.getTime()
@@ -139,7 +177,7 @@ export default function EpochConverter() {
 
                 <p className="text-xs font-bold uppercase tracking-widest mb-4 opacity-75 md:pt-0">Current Unix Epoch</p>
                 <div className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter tabular-nums font-mono select-all overflow-hidden text-ellipsis">
-                    {currentEpoch}
+                    {currentEpoch ?? '—'}
                 </div>
                 <div className="mt-4 text-sm opacity-50 font-mono">
                     {displayUnit} since Jan 01 1970 (UTC)
@@ -165,24 +203,28 @@ export default function EpochConverter() {
                         <div className="flex-1 flex items-center min-w-0">
                             <input 
                                 type="text" 
-                                value={inputValue} 
+                                value={epochInput} 
                                 onChange={(e) => setInputValue(e.target.value)}
                                 className="flex-1 border-none focus:ring-0 font-mono text-lg p-2 bg-white dark:bg-black text-black dark:text-white min-w-0"
                                 placeholder="Epoch timestamp..." 
                             />
-                            {inputValue && detectedUnit && (
+                            {epochInput && detectedUnit && (
                                 <span className="px-3 text-[10px] uppercase font-bold text-gray-400 whitespace-nowrap">
-                                    {detectedUnit === 'seconds' ? 'Sec' : 'Ms'}
+                                    {detectedUnit.label}
                                 </span>
                             )}
                         </div>
                         <button 
-                            onClick={() => setInputValue(currentEpoch.toString())}
+                            onClick={() => setInputValue(String(currentEpoch ?? Math.floor(Date.now() / 1000)))}
                             className="text-xs uppercase font-bold tracking-wider px-4 py-3 sm:py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors bg-gray-50 dark:bg-gray-900 sm:bg-transparent border-t sm:border-t-0 sm:border-l border-black dark:border-white sm:border-gray-100 dark:sm:border-gray-800 whitespace-nowrap"
                         >
                             Current
                         </button>
                     </div>
+
+                    {inputError && (
+                        <p className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-4">{inputError}</p>
+                    )}
 
                     {dateInfo && (
                         <div className="space-y-4 text-sm font-mono border-t border-gray-100 dark:border-gray-800 pt-4">
@@ -225,8 +267,8 @@ export default function EpochConverter() {
                              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Year</label>
                              <input 
                                 type="number" 
-                                value={humanDateInput.year}
-                                onChange={(e) => setHumanDateInput({...humanDateInput, year: parseInt(e.target.value)})}
+                                value={fieldValue(humanDate.year)}
+                                onChange={(e) => setHumanDateInput({...humanDate, year: parseInt(e.target.value)})}
                                 className="w-full border border-black dark:border-white p-2 text-center font-mono focus:ring-0 focus:bg-gray-50 dark:focus:bg-gray-900 bg-white dark:bg-black text-black dark:text-white" 
                              />
                         </div>
@@ -234,8 +276,8 @@ export default function EpochConverter() {
                              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mon</label>
                              <input 
                                 type="number" 
-                                value={humanDateInput.month}
-                                onChange={(e) => setHumanDateInput({...humanDateInput, month: parseInt(e.target.value)})}
+                                value={fieldValue(humanDate.month)}
+                                onChange={(e) => setHumanDateInput({...humanDate, month: parseInt(e.target.value)})}
                                 className="w-full border border-black dark:border-white p-2 text-center font-mono focus:ring-0 focus:bg-gray-50 dark:focus:bg-gray-900 bg-white dark:bg-black text-black dark:text-white" 
                              />
                         </div>
@@ -243,8 +285,8 @@ export default function EpochConverter() {
                              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Day</label>
                              <input 
                                 type="number" 
-                                value={humanDateInput.day}
-                                onChange={(e) => setHumanDateInput({...humanDateInput, day: parseInt(e.target.value)})}
+                                value={fieldValue(humanDate.day)}
+                                onChange={(e) => setHumanDateInput({...humanDate, day: parseInt(e.target.value)})}
                                 className="w-full border border-black dark:border-white p-2 text-center font-mono focus:ring-0 focus:bg-gray-50 dark:focus:bg-gray-900 bg-white dark:bg-black text-black dark:text-white" 
                              />
                         </div>
@@ -254,8 +296,8 @@ export default function EpochConverter() {
                              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hr</label>
                              <input 
                                 type="number" 
-                                value={humanDateInput.hour}
-                                onChange={(e) => setHumanDateInput({...humanDateInput, hour: parseInt(e.target.value)})}
+                                value={fieldValue(humanDate.hour)}
+                                onChange={(e) => setHumanDateInput({...humanDate, hour: parseInt(e.target.value)})}
                                 className="w-full border border-black dark:border-white p-2 text-center font-mono focus:ring-0 focus:bg-gray-50 dark:focus:bg-gray-900 bg-white dark:bg-black text-black dark:text-white" 
                              />
                         </div>
@@ -263,8 +305,8 @@ export default function EpochConverter() {
                              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Min</label>
                              <input 
                                 type="number" 
-                                value={humanDateInput.minute}
-                                onChange={(e) => setHumanDateInput({...humanDateInput, minute: parseInt(e.target.value)})}
+                                value={fieldValue(humanDate.minute)}
+                                onChange={(e) => setHumanDateInput({...humanDate, minute: parseInt(e.target.value)})}
                                 className="w-full border border-black dark:border-white p-2 text-center font-mono focus:ring-0 focus:bg-gray-50 dark:focus:bg-gray-900 bg-white dark:bg-black text-black dark:text-white" 
                              />
                         </div>
@@ -272,8 +314,8 @@ export default function EpochConverter() {
                              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Sec</label>
                              <input 
                                 type="number" 
-                                value={humanDateInput.second}
-                                onChange={(e) => setHumanDateInput({...humanDateInput, second: parseInt(e.target.value)})}
+                                value={fieldValue(humanDate.second)}
+                                onChange={(e) => setHumanDateInput({...humanDate, second: parseInt(e.target.value)})}
                                 className="w-full border border-black dark:border-white p-2 text-center font-mono focus:ring-0 focus:bg-gray-50 dark:focus:bg-gray-900 bg-white dark:bg-black text-black dark:text-white" 
                              />
                         </div>
@@ -285,6 +327,10 @@ export default function EpochConverter() {
                     >
                         Convert to Epoch
                     </button>
+
+                    {humanDateError && (
+                        <p className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-6">{humanDateError}</p>
+                    )}
 
                     {humanToEpochOutput && (
                         <div className="flex flex-col gap-2">

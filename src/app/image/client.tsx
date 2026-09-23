@@ -23,20 +23,17 @@ export default function ImageOptimizer() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Cleanup object URLs
-  useEffect(() => {
-    return () => {
-      if (previewOriginal) URL.revokeObjectURL(previewOriginal)
-      if (previewResult) URL.revokeObjectURL(previewResult)
-    }
-  }, [previewOriginal, previewResult])
+  // Revoke each object URL once it's replaced or the page unmounts. One effect
+  // per URL, so a new result doesn't revoke the original that's still shown.
+  useEffect(() => () => {
+    if (previewOriginal) URL.revokeObjectURL(previewOriginal)
+  }, [previewOriginal])
+  useEffect(() => () => {
+    if (previewResult) URL.revokeObjectURL(previewResult)
+  }, [previewResult])
 
   const handleFileSelect = (uploadedFile: File) => {
     if (!uploadedFile.type.startsWith('image/')) return
-    
-    // Cleanup old previews
-    if (previewOriginal) URL.revokeObjectURL(previewOriginal)
-    if (previewResult) URL.revokeObjectURL(previewResult)
     
     setFile(uploadedFile)
     setPreviewOriginal(URL.createObjectURL(uploadedFile))
@@ -57,7 +54,6 @@ export default function ImageOptimizer() {
       width: width ? parseInt(width) : undefined,
       height: height ? parseInt(height) : undefined,
       success(res) {
-        if (previewResult) URL.revokeObjectURL(previewResult)
         setResult(res as File)
         setPreviewResult(URL.createObjectURL(res))
         setIsProcessing(false)
@@ -68,6 +64,9 @@ export default function ImageOptimizer() {
       },
     })
   }
+
+  const sizeChange = result && file ? Math.round(((result.size - file.size) / file.size) * 100) : 0
+  const baseName = file ? file.name.replace(/\.[^.]+$/, '') || 'image' : 'image'
 
   const formatSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -230,8 +229,11 @@ export default function ImageOptimizer() {
                   <span className="font-bold">Optimized</span>
                   <div className="flex gap-3">
                     {result && file && (
-                      <span className="text-green-600 dark:text-green-400 font-bold">
-                        {Math.round(((result.size - file.size) / file.size) * 100)}%
+                      <span className={cn(
+                        "font-bold",
+                        result.size < file.size ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                      )}>
+                        {sizeChange > 0 ? '+' : ''}{sizeChange}%
                       </span>
                     )}
                     <span className="text-gray-500">{result ? formatSize(result.size) : '-'}</span>
@@ -253,10 +255,10 @@ export default function ImageOptimizer() {
                 <button 
                   disabled={!result}
                   onClick={() => {
-                     if (result) {
+                     if (result && previewResult) {
                        const a = document.createElement('a')
-                       a.href = URL.createObjectURL(result)
-                       a.download = `optimized.${format.split('/')[1]}`
+                       a.href = previewResult
+                       a.download = `${baseName}-optimized.${(result.type || format).split('/')[1]}`
                        a.click()
                      }
                   }}

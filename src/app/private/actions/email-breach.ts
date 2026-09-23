@@ -40,6 +40,7 @@ export async function checkEmailBreach(email: string): Promise<EmailBreachResult
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
             },
+            timeout: 10000,
             validateStatus: (status) => status < 500 // Handle 404 as valid response
         })
 
@@ -52,6 +53,18 @@ export async function checkEmailBreach(email: string): Promise<EmailBreachResult
                 breached: false,
                 count: 0,
                 sources: []
+            }
+        }
+
+        if (response.status !== 200) {
+            return {
+                success: false,
+                breached: false,
+                count: 0,
+                sources: [],
+                error: response.status === 429
+                    ? 'The breach API is rate limiting requests. Wait a minute and try again.'
+                    : `The breach API returned HTTP ${response.status}.`
             }
         }
 

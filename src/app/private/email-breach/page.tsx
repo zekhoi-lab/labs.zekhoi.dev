@@ -19,6 +19,7 @@ export default function EmailBreach() {
             setResult(data)
         } catch (e) {
             console.error(e)
+            setResult({ success: false, breached: false, count: 0, sources: [], error: 'Request failed. Check your connection and try again.' })
         } finally {
             setLoading(false)
         }
@@ -57,7 +58,17 @@ export default function EmailBreach() {
                     </button>
                 </div>
 
-                {result && (
+                {result && !result.success && (
+                    <div className="mb-12 border border-yellow-500/50 p-8 bg-black">
+                        <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-2">Status</span>
+                        <h2 className="text-3xl font-bold text-yellow-500">LOOKUP FAILED</h2>
+                        <p className="mt-4 text-xs text-white/60 font-mono">
+                            {result.error || 'The breach database could not be reached.'} No result was returned, so this is not a clean result.
+                        </p>
+                    </div>
+                )}
+
+                {result && result.success && (
                     <div className="mb-12 border border-white/20 p-8 flex items-center justify-between bg-black">
                         <div>
                             <span className="block text-[10px] text-white/40 uppercase tracking-widest mb-2">Status</span>
@@ -75,7 +86,7 @@ export default function EmailBreach() {
                 )}
 
                 <section className="space-y-0 border-t border-white/10">
-                    {result && result.breached ? (
+                    {result && result.success && result.breached ? (
                         result.sources.map((source, i) => (
                             <div key={i} className="relative pl-8 py-8 border-b border-white/10 hover:bg-white/[0.02] transition-colors group">
                                 <span className="absolute left-0 top-10 w-2 h-2 bg-red-500 rounded-full group-hover:scale-150 transition-transform"></span>
@@ -96,13 +107,13 @@ export default function EmailBreach() {
                                 </div>
                             </div>
                         ))
-                    ) : result && !result.breached ? (
+                    ) : result && result.success ? (
                         <div className="py-12 text-center text-white/40 text-sm uppercase tracking-widest">
                             No breaches found for this email address.
                         </div>
                     ) : (
                         <div className="py-12 text-center text-white/40 text-sm uppercase tracking-widest">
-                            {loading ? 'Searching database...' : 'Awaiting Input'}
+                            {loading ? 'Searching database...' : result ? 'Try again in a moment' : 'Awaiting Input'}
                         </div>
                     )}
                 </section>

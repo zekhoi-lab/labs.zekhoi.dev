@@ -19,6 +19,7 @@ export default function WhoisMonitor() {
             setResult(data)
         } catch (e) {
             console.error(e)
+            setResult({ success: false, error: 'Request failed. Check your connection and try again.' })
         } finally {
             setLoading(false)
         }

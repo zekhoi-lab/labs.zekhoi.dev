@@ -5,6 +5,20 @@ import { ToolHeader } from '@/components/tool-header'
 import { useState, useRef, useEffect } from 'react'
 import { scanPort, PortScanResult } from '../actions'
 
+// "80", "20-25", "22,80,443" or a mix of them; null if any part is malformed
+function parsePorts(input: string): number[] | null {
+    const ports = new Set<number>()
+    for (const part of input.split(',').map(p => p.trim()).filter(Boolean)) {
+        const match = /^(\d+)(?:\s*-\s*(\d+))?$/.exec(part)
+        if (!match) return null
+        const start = Number(match[1])
+        const end = match[2] === undefined ? start : Number(match[2])
+        if (start < 1 || end > 65535 || start > end) return null
+        for (let port = start; port <= end; port++) ports.add(port)
+    }
+    return ports.size > 0 ? [...ports].sort((a, b) => a - b) : null
+}
+
 export default function PortScanner() {
     const [target, setTarget] = useState('')
     const [range, setRange] = useState('1-100')
@@ -31,45 +45,43 @@ export default function PortScanner() {
         setLogs([])
         addLog(`Initializing scan for target: ${target}`)
 
-        const [start, end] = range.split('-').map(Number)
-        if (isNaN(start) || isNaN(end) || start > end) {
-            addLog('Error: Invalid port range')
+        const ports = parsePorts(range)
+        if (!ports) {
+            addLog('Error: Invalid ports. Use e.g. 80, 20-25 or 22,80,443 (1-65535)')
             setScanning(false)
             return
         }
 
-        const totalPorts = end - start + 1
-        setProgress({ current: 0, total: totalPorts })
-        addLog(`Scanning ${totalPorts} ports...`)
+        setProgress({ current: 0, total: ports.length })
+        addLog(`Scanning ${ports.length} ports...`)
 
         const batchSize = 10
-        for (let i = start; i <= end; i += batchSize) {
-            const batch = []
-            for (let j = 0; j < batchSize && i + j <= end; j++) {
-                batch.push(i + j)
-            }
+        try {
+            for (let i = 0; i < ports.length; i += batchSize) {
+                const batch = ports.slice(i, i + batchSize)
+                const batchResults = await Promise.all(batch.map(port => scanPort(target, port)))
 
-            const promises = batch.map(port => scanPort(target, port))
-            const batchResults = await Promise.all(promises)
-
-            const failed = batchResults.find(res => res.error)
-            if (failed) {
-                addLog(`Scan aborted: ${failed.error}`)
-                setScanning(false)
-                return
-            }
-
-            batchResults.forEach(res => {
-                if (res.status === 'open') {
-                    setResults(prev => [...prev, res])
-                    addLog(`Port ${res.port} OPEN (${res.service})`)
+                const failed = batchResults.find(res => res.error)
+                if (failed) {
+                    addLog(`Scan aborted: ${failed.error}`)
+                    return
                 }
-            })
-            setProgress(prev => ({ ...prev, current: Math.min(prev.current + batchSize, totalPorts) }))
-        }
 
-        addLog('Scan complete.')
-        setScanning(false)
+                batchResults.forEach(res => {
+                    if (res.status === 'open') {
+                        setResults(prev => [...prev, res])
+                        addLog(`Port ${res.port} OPEN (${res.service})`)
+                    }
+                })
+                setProgress(prev => ({ ...prev, current: Math.min(prev.current + batch.length, ports.length) }))
+            }
+            addLog('Scan complete.')
+        } catch (e) {
+            console.error(e)
+            addLog('Scan failed: request error. Check your connection and try again.')
+        } finally {
+            setScanning(false)
+        }
     }
 
     return (
@@ -102,10 +114,10 @@ export default function PortScanner() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest text-white/60">Port Range</label>
+                                <label className="text-[10px] uppercase tracking-widest text-white/60">Ports</label>
                                 <input
                                     className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm text-white placeholder:text-white/20 font-mono outline-none"
-                                    placeholder="1-100"
+                                    placeholder="1-100 or 22,80,443"
                                     type="text"
                                     value={range}
                                     onChange={(e) => setRange(e.target.value)}

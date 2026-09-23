@@ -21,14 +21,12 @@ export default function ColorConverter() {
 
   const handleHexChange = (val: string) => {
     setHex(val)
-    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-      const rgb = ColorUtils.hexToRgb(val)
-      if (rgb) {
-        setRgb(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`)
-        const newHsl = ColorUtils.rgbToHsl(rgb.r, rgb.g, rgb.b)
-        setHsl(`hsl(${newHsl.h}, ${newHsl.s}%, ${newHsl.l}%)`)
-        setActiveColor(rgb)
-      }
+    const rgb = ColorUtils.hexToRgb(val)
+    if (rgb) {
+      setRgb(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`)
+      const newHsl = ColorUtils.rgbToHsl(rgb.r, rgb.g, rgb.b)
+      setHsl(`hsl(${newHsl.h}, ${newHsl.s}%, ${newHsl.l}%)`)
+      setActiveColor(rgb)
     }
   }
 
@@ -60,6 +58,8 @@ export default function ColorConverter() {
   const contrastBlack = ColorUtils.getContrastRatio(luminance, 0.0)
   
   const hslValues = ColorUtils.rgbToHsl(activeColor.r, activeColor.g, activeColor.b)
+  // Preview from the parsed color, not the raw input (which may be "fff" or mid-edit)
+  const activeHex = ColorUtils.rgbToHex(activeColor.r, activeColor.g, activeColor.b)
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -167,7 +167,7 @@ export default function ColorConverter() {
           <div className="lg:col-span-5">
             <div className="sticky top-28 space-y-8">
               <div className="fragment-border bg-white dark:bg-black p-2 border border-black dark:border-gray-700">
-                <div className="preview-box aspect-square flex flex-col items-center justify-center border border-black dark:border-gray-700" style={{ backgroundColor: hex }}>
+                <div className="preview-box aspect-square flex flex-col items-center justify-center border border-black dark:border-gray-700" style={{ backgroundColor: activeHex }}>
                   <div className="absolute inset-0 pattern-dots opacity-10 mix-blend-overlay"></div>
                   
                   {/* Contrast text check */}
@@ -176,17 +176,17 @@ export default function ColorConverter() {
                     contrastWhite > contrastBlack ? "text-white" : "text-black"
                   )}>
                     <div className="text-xs tracking-[0.5em] uppercase opacity-70 mb-2">Preview</div>
-                    <div className="text-4xl font-bold uppercase">{hex}</div>
+                    <div className="text-4xl font-bold uppercase">{activeHex}</div>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="border border-black dark:border-gray-700 p-4 aspect-video flex flex-col justify-between" style={{ backgroundColor: hex }}>
+                <div className="border border-black dark:border-gray-700 p-4 aspect-video flex flex-col justify-between" style={{ backgroundColor: activeHex }}>
                   <span className={cn("text-[10px] uppercase tracking-widest opacity-60", contrastWhite > contrastBlack ? "text-white" : "text-black")}>Pattern A</span>
                   <div className="w-full h-8 pattern-grid opacity-20 border-t border-black/20 pt-2 mt-2"></div>
                 </div>
-                <div className="border border-black dark:border-gray-700 p-4 aspect-video flex flex-col justify-between" style={{ backgroundColor: hex }}>
+                <div className="border border-black dark:border-gray-700 p-4 aspect-video flex flex-col justify-between" style={{ backgroundColor: activeHex }}>
                   <span className={cn("text-[10px] uppercase tracking-widest opacity-60", contrastWhite > contrastBlack ? "text-white" : "text-black")}>Pattern B</span>
                   <div className="w-full h-8 pattern-dots opacity-20 border-t border-black/20 pt-2 mt-2"></div>
                 </div>

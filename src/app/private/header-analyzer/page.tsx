@@ -20,6 +20,7 @@ export default function HeaderAnalyzer() {
             setResult(data)
         } catch (e) {
             console.error(e)
+            setResult({ success: false, error: 'Request failed. Check your connection and try again.' })
         } finally {
             setLoading(false)
         }
@@ -71,7 +72,7 @@ export default function HeaderAnalyzer() {
                             </div>
                             <div className="space-y-2">
                                 <div className="text-xs text-white/60">{(result.issues || []).length} Warnings Detected</div>
-                                <div className="text-xs text-green-500">{Object.keys(result.headers || {}).length - (result.issues || []).length} Headers Correctly Configured</div>
+                                <div className="text-xs text-green-500">{(result.present || []).length} Security Headers Present</div>
                             </div>
                         </div>
                         <div className="border border-white/20 p-6 space-y-4">

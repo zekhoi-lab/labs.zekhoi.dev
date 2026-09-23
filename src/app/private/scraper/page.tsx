@@ -21,6 +21,7 @@ export default function WebScraper() {
             setResult(data)
         } catch (e) {
             console.error(e)
+            setResult({ success: false, error: 'Request failed. Check your connection and try again.' })
         } finally {
             setLoading(false)
         }
@@ -105,7 +106,7 @@ export default function WebScraper() {
                         </div>
                         <div className="flex items-center gap-2">
                             <span className={`w-2 h-2 bg-white ${loading ? 'animate-pulse' : ''}`}></span>
-                            <span>{result?.success ? 'SUCCESS' : loading ? 'PROCESSING' : 'WAITING'}</span>
+                            <span>{loading ? 'PROCESSING' : result?.success ? 'SUCCESS' : result ? 'FAILED' : 'WAITING'}</span>
                         </div>
                     </div>
 
@@ -143,6 +144,10 @@ export default function WebScraper() {
                                                 </div>
                                             )}
                                         </>
+                                    ) : result && !result.success ? (
+                                        <div className="p-8 text-center text-red-500">
+                                            Error: {result.error}
+                                        </div>
                                     ) : (
                                         <div className="p-8 text-center text-white/20 italic">
                                             No data extracted yet.

@@ -6,6 +6,18 @@ import { Footer } from '@/components/footer'
 
 import { GlitchText } from '@/components/glitch-text'
 
+const HMAC_HASHES = new Map([
+  ['HS256', 'SHA-256'],
+  ['HS384', 'SHA-384'],
+  ['HS512', 'SHA-512'],
+])
+
+const base64UrlToBytes = (value: string) => {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=')
+  return Uint8Array.from(atob(padded), c => c.charCodeAt(0))
+}
+
 export default function JwtDebugger() {
   const [token, setToken] = useState<string>('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
   const [secret, setSecret] = useState<string>('')
@@ -22,7 +34,7 @@ export default function JwtDebugger() {
         const decodePart = (part: string) => {
             try {
                 const base64 = part.replace(/-/g, '+').replace(/_/g, '/')
-                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                 }).join(''));
                 return JSON.parse(jsonPayload)
@@ -40,10 +52,15 @@ export default function JwtDebugger() {
     }
   }, [token])
 
+  const alg = typeof header?.alg === 'string' ? header.alg : 'HS256'
+  const hashName = HMAC_HASHES.get(alg)
+
   // Verify Signature
   useEffect(() => {
+    let cancelled = false
+
     const verify = async () => {
-        if (!token || !secret) {
+        if (!token || !secret || !hashName) {
             setIsValidSignature(null)
             return
         }
@@ -56,57 +73,33 @@ export default function JwtDebugger() {
 
         try {
             const encoder = new TextEncoder()
-            let keyData: Uint8Array
-
-            if (isSecretBase64) {
-                try {
-                    const binaryString = window.atob(secret)
-                    const bytes = new Uint8Array(binaryString.length)
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i)
-                    }
-                    keyData = bytes
-                } catch {
-                     setIsValidSignature(false)
-                     return
-                }
-            } else {
-                keyData = encoder.encode(secret)
-            }
+            const keyData = isSecretBase64 ? base64UrlToBytes(secret) : encoder.encode(secret)
 
             const key = await window.crypto.subtle.importKey(
                 'raw',
-                keyData as unknown as BufferSource, // Type assertion for compatibility
-                { name: 'HMAC', hash: 'SHA-256' },
+                keyData as BufferSource,
+                { name: 'HMAC', hash: hashName },
                 false,
                 ['verify']
             )
 
-            const data = encoder.encode(`${parts[0]}.${parts[1]}`)
-            
-            const signatureBase64 = parts[2].replace(/-/g, '+').replace(/_/g, '/')
-            const binarySignature = window.atob(signatureBase64)
-            const signatureBytes = new Uint8Array(binarySignature.length)
-            for (let i = 0; i < binarySignature.length; i++) {
-                signatureBytes[i] = binarySignature.charCodeAt(i)
-            }
-
             const isValid = await window.crypto.subtle.verify(
                 'HMAC',
                 key,
-                signatureBytes,
-                data
+                base64UrlToBytes(parts[2]) as BufferSource,
+                encoder.encode(`${parts[0]}.${parts[1]}`) as BufferSource
             )
 
-            setIsValidSignature(isValid)
+            if (!cancelled) setIsValidSignature(isValid)
         } catch (e) {
             console.error('Verification failed', e)
-            setIsValidSignature(false)
+            if (!cancelled) setIsValidSignature(false)
         }
     }
 
     verify()
-  }, [token, secret, isSecretBase64])
+    return () => { cancelled = true }
+  }, [token, secret, isSecretBase64, hashName])
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -203,7 +196,7 @@ export default function JwtDebugger() {
                         <p className="uppercase text-[10px] tracking-widest text-black dark:text-white mb-2">Algorithm</p>
                         <div className="relative">
                             <select className="w-full bg-white dark:bg-black border border-black dark:border-white px-3 py-2 pr-10 text-sm focus:ring-0 focus:border-black dark:focus:border-white opacity-100 appearance-none cursor-default" disabled>
-                                <option>HS256 (HMAC + SHA-256)</option>
+                                <option>{hashName ? `${alg} (HMAC + ${hashName})` : `${alg} (not supported)`}</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
                                 <span className="material-symbols-outlined text-sm">expand_more</span>
@@ -212,11 +205,11 @@ export default function JwtDebugger() {
                     </div>
 
                     <div className="space-y-2">
-                        <p className="uppercase text-[10px] tracking-widest text-black dark:text-white mb-2">HMACSHA256</p>
+                        <p className="uppercase text-[10px] tracking-widest text-black dark:text-white mb-2">{hashName ? `HMAC${hashName.replace('-', '')}` : alg}</p>
                         <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 font-mono text-xs break-all text-gray-400 select-all">
                             base64UrlEncode(header) + &quot;.&quot; +<br/>
                             base64UrlEncode(payload),<br/>
-                            <span className="text-blue-500 dark:text-blue-400 font-bold">your-256-bit-secret</span>
+                            <span className="text-blue-500 dark:text-blue-400 font-bold">{`your-${hashName ? hashName.slice(4) : '256'}-bit-secret`}</span>
                         </div>
                     </div>
 
@@ -243,19 +236,25 @@ export default function JwtDebugger() {
                     </div>
 
                     <div className="mt-auto pt-6 border-t border-dashed border-gray-300 dark:border-gray-700">
-                        {isValidSignature === true && (
+                        {hashName && isValidSignature === true && (
                             <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 animate-in slide-in-from-bottom-2">
                                 <span className="material-symbols-outlined text-lg">check_circle</span>
                                 <span className="text-xs font-bold uppercase tracking-wide">Signature Verified</span>
                             </div>
                         )}
-                        {isValidSignature === false && (
+                        {hashName && isValidSignature === false && (
                             <div className="flex items-center gap-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 animate-in slide-in-from-bottom-2">
                                 <span className="material-symbols-outlined text-lg">cancel</span>
                                 <span className="text-xs font-bold uppercase tracking-wide">Invalid Signature</span>
                             </div>
                         )}
-                        {isValidSignature === null && (
+                        {!hashName && (
+                            <div className="flex items-center gap-2 text-gray-500 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3">
+                                <span className="material-symbols-outlined text-lg">block</span>
+                                <span className="text-xs font-bold uppercase tracking-wide">{alg} can&apos;t be verified here (HS256/384/512 only)</span>
+                            </div>
+                        )}
+                        {hashName && isValidSignature === null && (
                             <div className="flex items-center gap-2 text-gray-400 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3">
                                 <span className="material-symbols-outlined text-lg">info</span>
                                 <span className="text-xs font-bold uppercase tracking-wide">Enter secret to verify</span>
@@ -272,29 +271,35 @@ export default function JwtDebugger() {
   )
 }
 
+const JSON_TOKEN = /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g
+
+const tokenClass = (token: string, colorClass: string) => {
+    if (/^"/.test(token)) {
+        return /:$/.test(token) ? 'text-black dark:text-white font-bold' : colorClass
+    }
+    if (/true|false/.test(token)) return 'text-blue-600 dark:text-blue-400'
+    if (/null/.test(token)) return 'text-gray-500'
+    if (/^-?\d/.test(token)) return colorClass
+    return 'text-black dark:text-white'
+}
+
+// Tokens are rendered as React text nodes (never as HTML) because the decoded
+// claims come straight from a pasted, untrusted token.
 const ColorizedJson = ({ data, colorClass }: { data: object | null, colorClass: string }) => {
     if (!data) return null
     const jsonStr = JSON.stringify(data, null, 2)
-    
-    const html = jsonStr.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-      let cls = 'text-black dark:text-white'
-      if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-              cls = 'text-black dark:text-white font-bold'
-          } else {
-              cls = colorClass
-          }
-      } else if (/true|false/.test(match)) {
-          cls = 'text-blue-600 dark:text-blue-400'
-      } else if (/null/.test(match)) {
-          cls = 'text-gray-500'
-      } else if (/^-?\d/.test(match)) {
-           cls = colorClass
-      }
-      return `<span class="${cls}">${match}</span>`
-  })
 
-  return (
-      <pre className="text-sm font-mono whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: html }} />
-  )
+    const nodes: React.ReactNode[] = []
+    let lastIndex = 0
+    for (const match of jsonStr.matchAll(JSON_TOKEN)) {
+        const index = match.index ?? 0
+        if (index > lastIndex) nodes.push(jsonStr.slice(lastIndex, index))
+        nodes.push(<span key={index} className={tokenClass(match[0], colorClass)}>{match[0]}</span>)
+        lastIndex = index + match[0].length
+    }
+    nodes.push(jsonStr.slice(lastIndex))
+
+    return (
+        <pre className="text-sm font-mono whitespace-pre-wrap">{nodes}</pre>
+    )
 }

@@ -57,9 +57,13 @@ export default function UrlParser() {
       // Construct URL from current parsed state + new parts
       const current = { ...parsed, ...newParts }
       
+      // Edited fields may lack their delimiters ("profile" instead of "#profile")
+      const pathname = current.pathname && !current.pathname.startsWith('/') ? `/${current.pathname}` : current.pathname
+      const hash = current.hash && !current.hash.startsWith('#') ? `#${current.hash}` : current.hash
+
       let newUrlStr = `${current.protocol || 'https'}://${current.host}`
       if (current.port) newUrlStr += `:${current.port}`
-      newUrlStr += current.pathname
+      newUrlStr += pathname
       
       // Params
       if (current.searchParams.length > 0) {
@@ -68,7 +72,7 @@ export default function UrlParser() {
         newUrlStr += `?${sp.toString()}`
       }
       
-      newUrlStr += current.hash
+      newUrlStr += hash
       
       // Try to validate
       new URL(newUrlStr) // throws if invalid

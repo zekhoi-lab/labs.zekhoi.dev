@@ -29,14 +29,22 @@ function passwordMatches(input: string): boolean {
   return timingSafeEqual(a, b)
 }
 
-export async function login(password: string) {
+export type LoginResult = {
+  success: boolean
+  error?: 'limit'
+  attempts?: number
+  retryAfter?: number
+  ip?: string
+}
+
+export async function login(password: string): Promise<LoginResult> {
   const headersList = await headers()
   const ip = getClientIp(headersList)
 
   const limitCheck = rateLimiter.check(ip)
 
   if (!limitCheck.success) {
-    return { success: false, error: 'limit' }
+    return { success: false, error: 'limit', retryAfter: limitCheck.retryAfter, ip }
   }
 
   // Simulate network delay for "loading" state effect

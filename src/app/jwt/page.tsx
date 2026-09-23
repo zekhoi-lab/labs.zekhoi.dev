@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     siteName: 'Labs by zekhoi',
     locale: 'en_US',
     type: 'website',
+    images: '/opengraph-image',
   },
   alternates: {
     canonical: 'https://labs.zekhoi.dev/jwt',

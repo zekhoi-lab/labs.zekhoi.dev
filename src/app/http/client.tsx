@@ -42,10 +42,13 @@ export default function HttpClient() {
         if (k) urlObj.searchParams.append(k, v)
       })
 
-      // Construct headers
+      const hasBody = ['POST', 'PUT', 'PATCH'].includes(method)
+
+      // Construct headers. Content-Type only goes with a body: on GET it would
+      // turn a simple CORS request into a preflighted one.
       const headersObj = new Headers()
       headers.forEach(([k, v]) => {
-        if (k) headersObj.append(k, v)
+        if (k && (hasBody || k.toLowerCase() !== 'content-type')) headersObj.append(k, v)
       })
 
       // Auth
@@ -60,7 +63,7 @@ export default function HttpClient() {
         headers: headersObj,
       }
 
-      if (['POST', 'PUT', 'PATCH'].includes(method)) {
+      if (hasBody) {
         options.body = body
       }
 
@@ -84,7 +87,7 @@ export default function HttpClient() {
         status: 0,
         statusText: 'Error',
         headers: [],
-        body: String(err),
+        body: `${String(err)}\n\nThe request did not complete. Common causes: the server does not allow cross-origin requests from this page (CORS), the URL is unreachable, or an http:// URL was blocked as mixed content.`,
         time: 0,
         size: 0
       })
@@ -334,8 +337,7 @@ export default function HttpClient() {
                     </div>
                     {!(response.status >= 200 && response.status < 300) && (
                       <div className="text-red-600 dark:text-red-400 font-mono text-sm">
-
-                        {(response.body as unknown as Record<string, unknown>).title as string || (response.body as unknown as Record<string, unknown>).message as string || 'Request failed'}
+                        {getErrorMessage(response.body)}
                       </div>
                     )}
                     <div className="flex items-center gap-2">
@@ -353,8 +355,7 @@ export default function HttpClient() {
              <div className="flex-1 overflow-auto p-6 bg-white dark:bg-black">
                {response ? (
                  <pre className="text-xs leading-relaxed whitespace-pre-wrap text-black dark:text-gray-300 font-mono">
-                    {/* Basic syntax highlighting simulation or just text */}
-                    {JSON.stringify(tryParseJson(response.body), null, 2) || response.body}
+                    {formatBody(response.body)}
                  </pre>
                ) : (
                  <div className="flex items-center justify-center h-full text-gray-400 text-xs uppercase tracking-widest">
@@ -365,7 +366,7 @@ export default function HttpClient() {
 
              {response && (
                <div className="border-t border-black dark:border-white bg-gray-50 dark:bg-gray-900 px-4 py-2 flex justify-between items-center shrink-0">
-                 <span className="text-[9px] uppercase tracking-widest opacity-40 text-black dark:text-white">JSON Rendered</span>
+                 <span className="text-[9px] uppercase tracking-widest opacity-40 text-black dark:text-white">{tryParseJson(response.body) === undefined ? 'Raw Text' : 'JSON Rendered'}</span>
                  <button 
                   onClick={() => navigator.clipboard.writeText(response.body)}
                   className="text-[9px] uppercase tracking-widest font-bold hover:underline text-black dark:text-white">
@@ -381,6 +382,23 @@ export default function HttpClient() {
   )
 }
 
-function tryParseJson(str: string) {
-  try { return JSON.parse(str) } catch { return null }
+// undefined means "not JSON"; a JSON body can legitimately be null
+function tryParseJson(str: string): unknown {
+  try { return JSON.parse(str) } catch { return undefined }
+}
+
+function formatBody(body: string) {
+  const json = tryParseJson(body)
+  return json === undefined ? body : JSON.stringify(json, null, 2)
+}
+
+function getErrorMessage(body: string) {
+  const json = tryParseJson(body)
+  if (json && typeof json === 'object') {
+    const { title, message, error } = json as Record<string, unknown>
+    for (const value of [title, message, error]) {
+      if (typeof value === 'string' && value) return value
+    }
+  }
+  return 'Request failed'
 }

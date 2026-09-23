@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useSyncExternalStore } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { login } from '@/app/actions/auth'
 import { cn } from '@/lib/utils'
+import { useOnlineStatus } from '@/lib/use-online-status'
 
 type LoginState = 'idle' | 'loading' | 'invalid' | 'limit' | 'success'
 
@@ -13,22 +14,11 @@ export function LoginForm() {
   const [state, setState] = useState<LoginState>('idle')
   const [password, setPassword] = useState('')
   const [attempts, setAttempts] = useState(0)
-  const isOnline = useSyncExternalStore(
-    () => {
-      window.addEventListener('online', () => { })
-      window.addEventListener('offline', () => { })
-      return () => {
-        window.removeEventListener('online', () => { })
-        window.removeEventListener('offline', () => { })
-      }
-    },
-    () => navigator.onLine,
-    () => true
-  )
+  const isOnline = useOnlineStatus()
   const [timeLeft, setTimeLeft] = useState(60)
   const [latency, setLatency] = useState(12)
   const [progress, setProgress] = useState(0)
-  const [clientIp, setClientIp] = useState('127.0.0.1')
+  const [clientIp, setClientIp] = useState('')
   const [errorId, setErrorId] = useState('ERR-0000')
   const [sessionId, setSessionId] = useState('SID-0000')
   const [errorMessage, setErrorMessage] = useState('ERROR_INVALID_TOKEN')
@@ -65,7 +55,8 @@ export function LoginForm() {
       } else {
         if (result.error === 'limit') {
           setState('limit')
-          setTimeLeft(60)
+          setTimeLeft(result.retryAfter || 60)
+          setClientIp(result.ip || '')
         } else {
           setAttempts(result.attempts || attempts + 1)
           setErrorMessage('ERROR_INVALID_TOKEN')
@@ -113,12 +104,6 @@ export function LoginForm() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setErrorId(`ERR-${Math.floor(Math.random() * 9000 + 1000)}`)
     setSessionId(`SID-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.floor(Math.random() * 900 + 100)}`)
-
-    // Fetch real IP
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(data => setClientIp(data.ip))
-      .catch(() => setClientIp('127.0.0.1')) // Fallback
   }, [])
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -184,7 +169,7 @@ export function LoginForm() {
             <div className="text-center py-4 border-y border-dashed border-gray-300 dark:border-gray-700">
               <span className="text-xs font-mono text-gray-500 dark:text-gray-500 block mb-1">COOLDOWN SEQUENCE ACTIVE</span>
               <div className="font-mono text-3xl font-bold tracking-widest text-gray-900 dark:text-gray-100">
-                RETRY_IN: <span className="text-red-600 dark:text-red-500">{timeLeft}S</span>
+                RETRY_IN: <span className="text-red-600 dark:text-red-500">{timeLeft >= 60 ? `${Math.floor(timeLeft / 60)}M ${timeLeft % 60}S` : `${timeLeft}S`}</span>
               </div>
             </div>
 

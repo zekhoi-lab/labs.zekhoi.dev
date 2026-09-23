@@ -9,6 +9,55 @@ import { cn } from '@/lib/utils'
 
 type Dialect = 'sql' | 'postgresql' | 'mysql' | 'sqlite' | 'mariadb' | 'bigquery'
 
+// Strips comments and collapses whitespace, but copies quoted strings and
+// identifiers ('…', "…", `…`) verbatim so their contents never change.
+// Backslashes are treated as escapes inside quotes: when that's wrong for a
+// dialect, the rest of the query is only left unminified, never altered.
+function minifySql(sql: string): string {
+  let out = ''
+  let pendingSpace = false
+  let i = 0
+
+  const emit = (text: string) => {
+    if (pendingSpace && out) out += ' '
+    pendingSpace = false
+    out += text
+  }
+
+  while (i < sql.length) {
+    const ch = sql[i]
+    const next = sql[i + 1]
+
+    if (ch === "'" || ch === '"' || ch === '`') {
+      let j = i + 1
+      while (j < sql.length) {
+        if (sql[j] === '\\') { j += 2; continue }
+        if (sql[j] === ch) {
+          if (sql[j + 1] === ch) { j += 2; continue } // doubled quote escape
+          break
+        }
+        j++
+      }
+      emit(sql.slice(i, j + 1))
+      i = j + 1
+    } else if (ch === '-' && next === '-') {
+      while (i < sql.length && sql[i] !== '\n') i++
+      pendingSpace = true
+    } else if (ch === '/' && next === '*') {
+      const end = sql.indexOf('*/', i + 2)
+      i = end === -1 ? sql.length : end + 2
+      pendingSpace = true
+    } else if (/\s/.test(ch)) {
+      pendingSpace = true
+      i++
+    } else {
+      emit(ch)
+      i++
+    }
+  }
+  return out
+}
+
 export default function SqlFormatter() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
@@ -32,20 +81,8 @@ export default function SqlFormatter() {
   const handleMinify = () => {
     try {
       setError('')
-      // Basic minification: remove comments and extra whitespace
-      // Note: This is a naive regex approach. 
-      // A robust SQL minifier is complex. 
-      // We'll trust sql-formatter for structure, maybe just formatting with linesAsSeparateStatements: false?
-      // sql-formatter doesn't have a "minify" mode.
-      // So we'll use a simple regex replacement for now.
-      
-      const minified = input
-        .replace(/--.*$/gm, '') // Remove line comments
-        .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
-        .replace(/\s+/g, ' ') // Collapse whitespace
-        .trim()
-      
-      setOutput(minified)
+      // sql-formatter has no minify mode
+      setOutput(minifySql(input))
     } catch (err) {
       setError((err as Error).message)
     }

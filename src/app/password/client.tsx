@@ -7,6 +7,31 @@ import { Footer } from '@/components/footer'
 
 import { GlitchText } from '@/components/glitch-text'
 
+const CHARSETS = {
+  uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  lowercase: 'abcdefghijklmnopqrstuvwxyz',
+  numbers: '0123456789',
+  symbols: '!@#$%^&*()_+~`|}{[]:;?><,./-=',
+}
+
+const CRACK_TIME_WIDTH: Record<string, string> = {
+  'Instant': '10%',
+  'Seconds': '30%',
+  'Minutes/Hours': '60%',
+  'Centuries': '100%',
+}
+
+// Uniform integer in [0, max) from the browser CSPRNG. Values past the largest
+// multiple of max are rejected so there is no modulo bias.
+const randomInt = (max: number) => {
+  const limit = Math.floor(0x100000000 / max) * max
+  const buffer = new Uint32Array(1)
+  do {
+    crypto.getRandomValues(buffer)
+  } while (buffer[0] >= limit)
+  return buffer[0] % max
+}
+
 export default function PasswordGenerator() {
   const [password, setPassword] = useState('')
   const [length, setLength] = useState(16)
@@ -18,24 +43,30 @@ export default function PasswordGenerator() {
   const [copied, setCopied] = useState(false)
 
   const generatePassword = useCallback(() => {
-    const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz'
-    const numberChars = '0123456789'
-    const symbolChars = '!@#$%^&*()_+~`|}{[]:;?><,./-='
+    const pools = [
+      includeUppercase && CHARSETS.uppercase,
+      includeLowercase && CHARSETS.lowercase,
+      includeNumbers && CHARSETS.numbers,
+      includeSymbols && CHARSETS.symbols,
+    ].filter((pool): pool is string => Boolean(pool))
 
-    let chars = ''
-    if (includeUppercase) chars += uppercaseChars
-    if (includeLowercase) chars += lowercaseChars
-    if (includeNumbers) chars += numberChars
-    if (includeSymbols) chars += symbolChars
+    // Fallback if nothing selected (the UI prevents this)
+    if (pools.length === 0) pools.push(CHARSETS.lowercase)
+    const allChars = pools.join('')
 
-    // Fallback if nothing selected (should prevent this in UI, but safety first)
-    if (chars === '') chars = lowercaseChars
-
-    let newPassword = ''
-    for (let i = 0; i < length; i++) {
-        newPassword += chars.charAt(Math.floor(Math.random() * chars.length))
+    // One character from every selected set, the rest from the combined pool,
+    // then a Fisher-Yates shuffle so the guaranteed ones aren't always first.
+    const chars = pools.map(pool => pool[randomInt(pool.length)])
+    while (chars.length < length) {
+      chars.push(allChars[randomInt(allChars.length)])
     }
+    for (let i = chars.length - 1; i > 0; i--) {
+      const j = randomInt(i + 1)
+      const swap = chars[i]
+      chars[i] = chars[j]
+      chars[j] = swap
+    }
+    const newPassword = chars.join('')
 
     setPassword(newPassword)
     setHistory(prev => {
@@ -56,21 +87,21 @@ export default function PasswordGenerator() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Calculate entropy roughly
-  const calculateEntropy = () => {
-    let poolSize = 0
-    if (includeUppercase) poolSize += 26
-    if (includeLowercase) poolSize += 26
-    if (includeNumbers) poolSize += 10
-    if (includeSymbols) poolSize += 30 // Approx
-    if (poolSize === 0) return 0
-    
-    const entropy = Math.log2(Math.pow(poolSize, length))
-    return Math.floor(entropy)
+  // Keep at least one character set selected
+  const selectedCount = [includeUppercase, includeLowercase, includeNumbers, includeSymbols].filter(Boolean).length
+  const toggleSet = (setter: (value: boolean) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.checked && selectedCount === 1) return
+    setter(e.target.checked)
   }
 
-  const entropy = calculateEntropy()
+  const poolSize =
+    (includeUppercase ? CHARSETS.uppercase.length : 0) +
+    (includeLowercase ? CHARSETS.lowercase.length : 0) +
+    (includeNumbers ? CHARSETS.numbers.length : 0) +
+    (includeSymbols ? CHARSETS.symbols.length : 0)
+  const entropy = poolSize ? Math.floor(length * Math.log2(poolSize)) : 0
   const crackTime = entropy < 28 ? 'Instant' : entropy < 40 ? 'Seconds' : entropy < 60 ? 'Minutes/Hours' : 'Centuries'
+  const strength = entropy >= 80 ? 'Strong' : entropy >= 60 ? 'Moderate' : 'Weak'
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -121,7 +152,7 @@ export default function PasswordGenerator() {
                         <input 
                             type="checkbox" 
                             checked={includeUppercase}
-                            onChange={(e) => setIncludeUppercase(e.target.checked)}
+                            onChange={toggleSet(setIncludeUppercase)}
                             className="w-5 h-5 border-2 border-black dark:border-white rounded-none text-black dark:text-white focus:ring-0 focus:ring-offset-0 transition-colors cursor-pointer bg-transparent checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white"
                         />
                     </label>
@@ -130,11 +161,7 @@ export default function PasswordGenerator() {
                         <input 
                             type="checkbox" 
                             checked={includeLowercase}
-                            onChange={(e) => {
-                                // Prevent unchecking if it's the last one
-                                if (!e.target.checked && !includeUppercase && !includeNumbers && !includeSymbols) return;
-                                setIncludeLowercase(e.target.checked)
-                            }}
+                            onChange={toggleSet(setIncludeLowercase)}
                             className="w-5 h-5 border-2 border-black dark:border-white rounded-none text-black dark:text-white focus:ring-0 focus:ring-offset-0 transition-colors cursor-pointer bg-transparent checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white"
                         />
                     </label>
@@ -143,7 +170,7 @@ export default function PasswordGenerator() {
                         <input 
                             type="checkbox" 
                             checked={includeNumbers}
-                            onChange={(e) => setIncludeNumbers(e.target.checked)}
+                            onChange={toggleSet(setIncludeNumbers)}
                             className="w-5 h-5 border-2 border-black dark:border-white rounded-none text-black dark:text-white focus:ring-0 focus:ring-offset-0 transition-colors cursor-pointer bg-transparent checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white"
                         />
                     </label>
@@ -152,7 +179,7 @@ export default function PasswordGenerator() {
                         <input 
                             type="checkbox" 
                             checked={includeSymbols}
-                            onChange={(e) => setIncludeSymbols(e.target.checked)}
+                            onChange={toggleSet(setIncludeSymbols)}
                             className="w-5 h-5 border-2 border-black dark:border-white rounded-none text-black dark:text-white focus:ring-0 focus:ring-offset-0 transition-colors cursor-pointer bg-transparent checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white"
                         />
                     </label>
@@ -171,7 +198,7 @@ export default function PasswordGenerator() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 via-green-500 to-green-600"></div>
                     <div className="text-xs font-bold uppercase tracking-widest text-green-600 mb-4 animate-[flicker_2s_linear_infinite] flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">shield</span>
-                        Strong Security
+                        {strength} Security
                     </div>
                     <div className="font-mono text-3xl md:text-5xl font-bold break-all w-full leading-tight select-all selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
                         {password}
@@ -218,7 +245,7 @@ export default function PasswordGenerator() {
                                     <span className="font-bold capitalize">{crackTime}</span>
                                 </div>
                                 <div className="w-full bg-gray-100 dark:bg-gray-800 h-1">
-                                    <div className="bg-black dark:bg-white h-1 w-full"></div>
+                                    <div className="bg-black dark:bg-white h-1 transition-all duration-500" style={{ width: CRACK_TIME_WIDTH[crackTime] }}></div>
                                 </div>
                             </div>
                         </div>

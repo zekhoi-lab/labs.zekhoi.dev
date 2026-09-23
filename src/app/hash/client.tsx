@@ -17,6 +17,9 @@ export default function HashGenerator() {
   })
 
   useEffect(() => {
+    // Digests resolve asynchronously; ignore results for input that has since changed
+    let cancelled = false
+
     const generateHashes = async () => {
         if (!input) {
             setHashes({
@@ -51,10 +54,11 @@ export default function HashGenerator() {
             }
         }
 
-        setHashes(newHashes)
+        if (!cancelled) setHashes(newHashes)
     }
 
     generateHashes()
+    return () => { cancelled = true }
   }, [input])
 
   const copyToClipboard = (text: string) => {

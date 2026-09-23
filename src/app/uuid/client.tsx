@@ -6,41 +6,77 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils'
 
+type Version = 'v4' | 'v5' | 'v6' | 'v7'
+
 interface HistoryItem {
   id: string
-  version: 'v4' | 'v5' | 'v6' | 'v7'
+  version: Version
+}
+
+const DEFAULT_VERSION: Version = 'v4'
+const DEFAULT_V5_NAME = 'labs.zekhoi.dev'
+const DEFAULT_V5_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8' // DNS namespace
+
+// null when the v5 inputs are missing or the namespace isn't a valid UUID
+function createUuid(version: Version, name: string, namespace: string): string | null {
+  try {
+    switch (version) {
+      case 'v5': return name && namespace ? uuidv5(name, namespace) : null
+      case 'v6': return uuidv6()
+      case 'v7': return uuidv7()
+      default: return uuidv4()
+    }
+  } catch (e) {
+    console.error("UUID Generation Error", e)
+    return null
+  }
 }
 
 import { GlitchText } from '@/components/glitch-text'
 
 export default function UuidGenerator() {
   const [uuid, setUuid] = useState<string>('')
-  const [version, setVersion] = useState<'v4' | 'v5' | 'v6' | 'v7'>('v4')
-  // const [quantity, setQuantity] = useState<number>(1) // Unused
+  const [version, setVersion] = useState<Version>(DEFAULT_VERSION)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [copied, setCopied] = useState(false)
   
   // v5 specific state
-  const [v5Name, setV5Name] = useState<string>('labs.zekhoi.dev')
-  const [v5Namespace, setV5Namespace] = useState<string>('6ba7b810-9dad-11d1-80b4-00c04fd430c8') // DNS namespace default
+  const [v5Name, setV5Name] = useState<string>(DEFAULT_V5_NAME)
+  const [v5Namespace, setV5Namespace] = useState<string>(DEFAULT_V5_NAMESPACE)
 
   const [isLoaded, setIsLoaded] = useState(false)
-  
-  // 1. Load history from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('uuid-history')
-    if (saved) {
-        try {
-            const parsed = JSON.parse(saved)
-            if (Array.isArray(parsed)) {
-                setTimeout(() => setHistory(parsed), 0)
-            }
-        } catch {
-            // Ignore invalid json
-        }
+
+  const generateUuid = useCallback((v: Version, name: string, namespace: string) => {
+    const newUuid = createUuid(v, name, namespace)
+    if (newUuid) {
+      setUuid(newUuid)
+      setHistory(prev => {
+        const filtered = prev.filter(item => item.id !== newUuid)
+        return [{ id: newUuid, version: v }, ...filtered].slice(0, 10) // Keep last 10
+      })
+    } else {
+      setUuid("Invalid Input")
     }
-    setTimeout(() => setIsLoaded(true), 0)
+    setCopied(false)
   }, [])
+
+  // 1. Load history from localStorage on mount, then generate the first UUID
+  // (after loading, so the saved history isn't overwritten)
+  useEffect(() => {
+    let saved: HistoryItem[] = []
+    try {
+      const parsed = JSON.parse(localStorage.getItem('uuid-history') || '[]')
+      if (Array.isArray(parsed)) saved = parsed
+    } catch {
+      // Ignore invalid json
+    }
+    const timer = setTimeout(() => {
+      setHistory(saved)
+      setIsLoaded(true)
+      generateUuid(DEFAULT_VERSION, DEFAULT_V5_NAME, DEFAULT_V5_NAMESPACE)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [generateUuid])
 
   // 2. Save history to localStorage whenever it changes, but ONLY AFTER loading
   useEffect(() => {
@@ -49,56 +85,12 @@ export default function UuidGenerator() {
     }
   }, [history, isLoaded])
 
-  const generateUuid = useCallback(() => {
-    let newUuid = ''
-    try {
-        switch (version) {
-            case 'v4': newUuid = uuidv4(); break;
-            case 'v5': 
-                if (!v5Name || !v5Namespace) {
-                    // Don't generate if inputs missing, or maybe show error?
-                    // For now, let's just return early or use defaults if empty?
-                    // Best to default or return.
-                    if (v5Namespace && v5Name) {
-                         newUuid = uuidv5(v5Name, v5Namespace); 
-                    }
-                } else {
-                     newUuid = uuidv5(v5Name, v5Namespace);
-                }
-                break;
-            case 'v6': newUuid = uuidv6(); break;
-            case 'v7': newUuid = uuidv7(); break;
-            default: newUuid = uuidv4();
-        }
-    } catch (e) {
-        console.error("UUID Generation Error", e)
-        newUuid = "Invalid Input" // Fallback display
-    }
-
-    if (newUuid && newUuid !== "Invalid Input") {
-        setUuid(newUuid)
-        
-        setHistory(prev => {
-          const newItem: HistoryItem = { id: newUuid, version }
-          const filtered = prev.filter(item => item.id !== newUuid)
-          return [newItem, ...filtered].slice(0, 10) // Keep last 10
-        })
-    } else if (newUuid === "Invalid Input") {
-        setUuid("Invalid Input")
-    }
-    
+  // v5 is deterministic: show the result while typing, but only record it in
+  // history when it's generated explicitly
+  const previewV5 = (name: string, namespace: string) => {
+    setUuid(createUuid('v5', name, namespace) ?? "Invalid Input")
     setCopied(false)
-  }, [version, v5Name, v5Namespace])
-
-  // 3. Generate initial UUID ONLY AFTER history is loaded to prevent overwriting
-  useEffect(() => {
-    if (isLoaded) {
-      const timer = setTimeout(() => {
-        generateUuid()
-      }, 0)
-      return () => clearTimeout(timer)
-    }
-  }, [isLoaded, generateUuid])
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -114,7 +106,7 @@ export default function UuidGenerator() {
   const getVersionLabel = (v: string) => {
       switch(v) {
           case 'v4': return 'Version 4 (Random)';
-          case 'v5': return 'Version 5 (Name-based MD5)';
+          case 'v5': return 'Version 5 (Name-based SHA-1)';
           case 'v6': return 'Version 6 (Reordered Time)';
           case 'v7': return 'Version 7 (Unix Epoch)';
           default: return '';
@@ -168,7 +160,11 @@ export default function UuidGenerator() {
                   <div className="relative">
                     <select 
                       value={version}
-                      onChange={(e) => setVersion(e.target.value as 'v4' | 'v5' | 'v6' | 'v7')}
+                      onChange={(e) => {
+                        const v = e.target.value as Version
+                        setVersion(v)
+                        generateUuid(v, v5Name, v5Namespace)
+                      }}
                       className="w-full appearance-none bg-white dark:bg-black border border-black dark:border-white px-4 py-3 pr-8 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white cursor-pointer font-mono text-sm"
                     >
                       <option value="v4">Version 4 (Random)</option>
@@ -183,7 +179,7 @@ export default function UuidGenerator() {
                 </div>
 
                 <button 
-                  onClick={generateUuid}
+                  onClick={() => generateUuid(version, v5Name, v5Namespace)}
                   className="w-full bg-black dark:bg-white text-white dark:text-black border border-black dark:border-white px-6 py-3 font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 group hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-y-0 active:translate-x-0 active:shadow-none h-[46px]"
                 >
                   <span className="material-symbols-outlined text-lg group-hover:rotate-180 transition-transform duration-500">refresh</span>
@@ -198,7 +194,10 @@ export default function UuidGenerator() {
                           <input 
                               type="text" 
                               value={v5Namespace}
-                              onChange={(e) => setV5Namespace(e.target.value)}
+                              onChange={(e) => {
+                                  setV5Namespace(e.target.value)
+                                  previewV5(v5Name, e.target.value)
+                              }}
                               className="w-full bg-white dark:bg-black border border-black dark:border-white px-4 py-3 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white font-mono text-xs placeholder:text-gray-300"
                               placeholder="e.g. 6ba7b810-9dad-11d1-80b4-00c04fd430c8"
                           />
@@ -208,7 +207,10 @@ export default function UuidGenerator() {
                           <input 
                               type="text" 
                               value={v5Name}
-                              onChange={(e) => setV5Name(e.target.value)}
+                              onChange={(e) => {
+                                  setV5Name(e.target.value)
+                                  previewV5(e.target.value, v5Namespace)
+                              }}
                               className="w-full bg-white dark:bg-black border border-black dark:border-white px-4 py-3 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white font-mono text-xs placeholder:text-gray-300"
                               placeholder="e.g. labs.zekhoi.dev"
                           />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useSyncExternalStore } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils' // Unused
@@ -45,6 +45,8 @@ function runRegex(expression: string, flags: RegexFlags, testString: string): { 
   }
 }
 
+const subscribeNoop = () => () => {}
+
 export default function RegexTester() {
   const [expression, setExpression] = useState('([A-Z])\\w+')
   const [flags, setFlags] = useState({
@@ -54,6 +56,8 @@ export default function RegexTester() {
   })
   const [testString, setTestString] = useState('The quick Brown Fox jumps over the lazy Dog.\nRegex is very powerful.\nzekhoi labs 2024.')
   const { matches, matchInfo } = useMemo(() => runRegex(expression, flags, testString), [expression, flags, testString])
+  // The timing differs between the prerender and the browser, so it's only shown after hydration
+  const isClient = useSyncExternalStore(subscribeNoop, () => true, () => false)
 
   // Simple highlighting logic
   // We need to construct parts of string that are matched vs not matched
@@ -210,7 +214,7 @@ export default function RegexTester() {
                                 <>
                                     <span className="text-green-600 dark:text-green-400">{matchInfo.count} matches</span>
                                     <span className="text-gray-400">|</span>
-                                    <span>{matchInfo.time}ms</span>
+                                    <span>{isClient ? matchInfo.time : 0}ms</span>
                                 </>
                             )}
                         </div>

@@ -1,12 +1,13 @@
 'use server'
 
 import { requireAuth } from '@/lib/auth'
-import { safeFetch } from '@/lib/net-guard'
+import { resolvePublicHost, safeFetch } from '@/lib/net-guard'
 
 export interface HeaderAnalysisResult {
     success: boolean
     headers?: Record<string, string>
     issues?: string[]
+    present?: string[]
     score?: number
     server?: string
     ip?: string
@@ -19,7 +20,14 @@ export async function analyzeHeaders(url: string): Promise<HeaderAnalysisResult>
 
     try {
         if (!url.startsWith('http')) url = 'https://' + url
-        const res = await safeFetch(url, { method: 'HEAD', cache: 'no-store' })
+        const ip = await resolvePublicHost(new URL(url).hostname)
+
+        let res = await safeFetch(url, { method: 'HEAD', cache: 'no-store' })
+        if (res.status === 405 || res.status === 501) {
+            // Some servers reject HEAD; the headers of a GET are what we need
+            res = await safeFetch(url, { method: 'GET', cache: 'no-store' })
+            await res.body?.cancel()
+        }
         const headers: Record<string, string> = {}
         res.headers.forEach((v, k) => (headers[k] = v))
 
@@ -33,10 +41,13 @@ export async function analyzeHeaders(url: string): Promise<HeaderAnalysisResult>
         }
 
         const issues: string[] = []
+        const present: string[] = []
         let score = 100
 
         for (const [header, msg] of Object.entries(securityHeaders)) {
-            if (!headers[header]) {
+            if (headers[header]) {
+                present.push(header)
+            } else {
                 issues.push(msg)
                 score -= 15
             }
@@ -46,12 +57,13 @@ export async function analyzeHeaders(url: string): Promise<HeaderAnalysisResult>
             success: true,
             headers,
             issues,
+            present,
             score: Math.max(0, score),
             server: headers['server'] || 'Unknown',
-            ip: 'Hidden',
+            ip,
             status: `${res.status} ${res.statusText}`
         }
     } catch (err) {
-        return { success: false, error: String(err) }
+        return { success: false, error: err instanceof Error ? err.message : String(err) }
     }
 }

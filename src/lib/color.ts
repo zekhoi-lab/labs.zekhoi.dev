@@ -1,14 +1,19 @@
+// Accepts #rrggbb and the #rgb shorthand, with or without the leading #
 export function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
+  const result = /^#?([a-f\d]{3}|[a-f\d]{6})$/i.exec(hex.trim());
+  if (!result) return null;
+  const digits = result[1].length === 3 ? result[1].replace(/./g, '$&$&') : result[1];
+  return {
+    r: parseInt(digits.slice(0, 2), 16),
+    g: parseInt(digits.slice(2, 4), 16),
+    b: parseInt(digits.slice(4, 6), 16)
+  };
 }
 
+const clampByte = (value: number) => Math.min(255, Math.max(0, Math.round(value)));
+
 export function rgbToHex(r: number, g: number, b: number): string {
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  return "#" + [r, g, b].map(v => clampByte(v).toString(16).padStart(2, '0')).join('');
 }
 
 export function rgbToHsl(r: number, g: number, b: number): { h: number, s: number, l: number } {
@@ -79,18 +84,20 @@ export function getContrastRatio(l1: number, l2: number): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+// rgb(1, 2, 3), rgba(1, 2, 3, 0.5) or rgb(1 2 3 / 50%); alpha is ignored
 export function parseRgbString(str: string): { r: number, g: number, b: number } | null {
-  const match = str.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-  if (match) {
-    return { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) };
-  }
-  return null;
+  const match = str.trim().match(/^rgba?\(\s*(\d{1,3})[\s,]+(\d{1,3})[\s,]+(\d{1,3})\s*(?:[,/]\s*[\d.]+%?\s*)?\)$/i);
+  if (!match) return null;
+  const [r, g, b] = match.slice(1, 4).map(Number);
+  if (r > 255 || g > 255 || b > 255) return null;
+  return { r, g, b };
 }
 
+// hsl(210, 50%, 40%), hsla(...) or hsl(210deg 50% 40%); alpha is ignored
 export function parseHslString(str: string): { h: number, s: number, l: number } | null {
-  const match = str.match(/hsl\((\d+),\s*(\d+)%?,\s*(\d+)%?\)/);
-  if (match) {
-    return { h: parseInt(match[1]), s: parseInt(match[2]), l: parseInt(match[3]) };
-  }
-  return null;
+  const match = str.trim().match(/^hsla?\(\s*(\d{1,3})(?:deg)?[\s,]+(\d{1,3})%?[\s,]+(\d{1,3})%?\s*(?:[,/]\s*[\d.]+%?\s*)?\)$/i);
+  if (!match) return null;
+  const [h, s, l] = match.slice(1, 4).map(Number);
+  if (h > 360 || s > 100 || l > 100) return null;
+  return { h, s, l };
 }

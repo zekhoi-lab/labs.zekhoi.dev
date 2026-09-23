@@ -1,12 +1,14 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useSyncExternalStore } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import cronstrue from 'cronstrue'
 import { CronExpressionParser } from 'cron-parser'
 import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
+
+const subscribeNoop = () => () => {}
 
 export default function CrontabGenerator() {
   const [minute, setMinute] = useState('*')
@@ -32,6 +34,18 @@ export default function CrontabGenerator() {
       }
     }
   }, [cronString])
+
+  // Upcoming runs depend on the current time, so they're only computed in the
+  // browser; the prerendered HTML shows none, which keeps hydration consistent.
+  const isClient = useSyncExternalStore(subscribeNoop, () => true, () => false)
+  const nextRuns = React.useMemo(() => {
+    if (!isClient || !isValid) return []
+    try {
+      return CronExpressionParser.parse(cronString).take(5).map(date => date.toDate())
+    } catch {
+      return []
+    }
+  }, [isClient, isValid, cronString])
 
   const applyPreset = (preset: string) => {
     switch (preset) {
@@ -74,7 +88,7 @@ export default function CrontabGenerator() {
 
         <div className="bg-black dark:bg-white text-white dark:text-black p-6 border border-black dark:border-white flex items-center justify-between mb-8">
             <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-600">Next Execution</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-600">Schedule</p>
               <p className="text-lg md:text-xl font-medium italic">“{description}”</p>
             </div>
             <div className="hidden md:block">
@@ -122,10 +136,26 @@ export default function CrontabGenerator() {
           </div>
         </div>
 
+        <div className="mt-8 border border-black dark:border-white p-6">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-gray-500">Next 5 Runs <span className="text-gray-400 font-normal normal-case tracking-normal">(your local time)</span></h3>
+          {nextRuns.length > 0 ? (
+            <ol className="space-y-2 font-mono text-sm">
+              {nextRuns.map((date, i) => (
+                <li key={date.getTime()} className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2 last:border-b-0 last:pb-0">
+                  <span className="text-gray-400">#{i + 1}</span>
+                  <span>{date.toLocaleString()}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-xs text-gray-400 uppercase tracking-widest">{!isValid ? 'Fix the expression to see upcoming runs' : isClient ? 'No upcoming runs' : 'Calculating…'}</p>
+          )}
+        </div>
+
         <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-6 text-gray-400">Quick Presets</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-             {['@hourly', '@daily', '@weekly', '@monthly'].map(preset => (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+             {['@hourly', '@daily', '@weekly', '@monthly', '@yearly'].map(preset => (
                 <button 
                   key={preset}
                   onClick={() => applyPreset(preset)}

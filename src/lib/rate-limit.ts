@@ -19,24 +19,25 @@ class RateLimiter {
     return RateLimiter.instance
   }
 
-  public check(ip: string): { success: boolean; count: number } {
+  public check(ip: string): { success: boolean; count: number; retryAfter: number } {
     const now = Date.now()
     const record = this.storage.get(ip)
 
     if (!record) {
-      return { success: true, count: 0 }
+      return { success: true, count: 0, retryAfter: 0 }
     }
 
     if (now > record.expiresAt) {
       this.storage.delete(ip)
-      return { success: true, count: 0 }
+      return { success: true, count: 0, retryAfter: 0 }
     }
 
     if (record.count >= MAX_ATTEMPTS) {
-      return { success: false, count: record.count }
+      // Seconds until the window that started with the first failure expires
+      return { success: false, count: record.count, retryAfter: Math.ceil((record.expiresAt - now) / 1000) }
     }
 
-    return { success: true, count: record.count }
+    return { success: true, count: record.count, retryAfter: 0 }
   }
 
   public increment(ip: string): number {

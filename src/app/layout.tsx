@@ -62,21 +62,12 @@ export const metadata: Metadata = {
     title: "Labs by zekhoi | Essential Developer Utilities",
     description: "Fast, privacy-focused developer tools. No ads, no tracking, just utilities built for speed.",
     siteName: "Labs by zekhoi",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Labs by zekhoi - Developer Tools",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Labs by zekhoi | Essential Developer Utilities",
     description: "Fast, privacy-focused developer tools. No ads, no tracking, just utilities built for speed.",
     creator: "@zekhoi",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
