@@ -32,6 +32,12 @@ const PRIVATE_TOOLS = [
         href: "/private/whois"
     },
     {
+        title: "DNS & Email Security",
+        description: "Look up a domain's DNS records and check its SPF, DMARC, DKIM, and MX setup.",
+        icon: "dns",
+        href: "/private/dns"
+    },
+    {
         title: "Port Scanner",
         description: "TCP connect scan of a public host for open ports, labelled with common service names.",
         icon: "router",
