@@ -3,10 +3,12 @@
 import { useState, useRef } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-// import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
 import { useCopy } from '@/lib/use-copy'
+import { locateJsonError, type JsonErrorLocation } from '@/lib/json-error'
+import { JsonTree } from '@/components/json-tree'
 
 export default function JsonFormatter() {
   const [input, setInput] = useState<string>('{"name":"zekhoi labs","type":"Developer Tools","features":["UUID","JSON","JWT"],"active":true,"version":1.0}')
@@ -14,37 +16,36 @@ export default function JsonFormatter() {
   const [error, setError] = useState<string | null>(null)
   const [indent, setIndent] = useState<number>(2)
   const [mode, setMode] = useState<'format' | 'minify'>('format')
+  // Wrapped so a parsed `null` or `false` is distinguishable from "nothing parsed"
+  const [parsed, setParsed] = useState<{ value: unknown } | null>(null)
+  const [errorLocation, setErrorLocation] = useState<JsonErrorLocation | null>(null)
+  const [outputView, setOutputView] = useState<'text' | 'tree'>('text')
   const { copy, isCopied } = useCopy()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const processJson = (jsonString: string, indentSize: number, currentMode: 'format' | 'minify') => {
-      try {
-          if (!jsonString.trim()) {
-              setOutput('')
-              setError(null)
-              return
-          }
-
-          const parsed = JSON.parse(jsonString)
-          if (currentMode === 'minify') {
-              setOutput(JSON.stringify(parsed))
-          } else {
-              setOutput(JSON.stringify(parsed, null, indentSize))
-          }
+      if (!jsonString.trim()) {
+          setOutput('')
           setError(null)
+          setParsed(null)
+          setErrorLocation(null)
+          return
+      }
+
+      try {
+          const value = JSON.parse(jsonString)
+          setOutput(currentMode === 'minify' ? JSON.stringify(value) : JSON.stringify(value, null, indentSize))
+          setParsed({ value })
+          setError(null)
+          setErrorLocation(null)
       } catch (e) {
-          setError((e as Error).message)
-          // We don't clear output on error to allow user to see what they had before or maybe keep previous valid?
-          // Actually clearing output typically confusing. 
-          // But strict formatter usually shows empty or error.
-          // Let's leave output as is or maybe clear it? 
-          // If input is invalid, output is invalid.
-          // Let's keep output but maybe show error prominently.
-          // Or better, don't update output if invalid?
-          // If we don't update output, user might think it worked.
-          // Let's blank output on error so they know it failed.
-          setOutput('') 
+          const message = (e as Error).message
+          // Blank the output on error so a stale result can't pass for the new one
+          setOutput('')
+          setParsed(null)
+          setError(message)
+          setErrorLocation(locateJsonError(message, jsonString))
       }
   }
 
@@ -168,7 +169,23 @@ export default function JsonFormatter() {
                         <span className="material-symbols-outlined text-sm">output</span>
                         Output JSON
                     </h2>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        <div className="flex border border-black dark:border-white mr-2">
+                            {(['text', 'tree'] as const).map((view) => (
+                                <button
+                                    key={view}
+                                    type="button"
+                                    onClick={() => setOutputView(view)}
+                                    disabled={view === 'tree' && !parsed}
+                                    className={cn(
+                                        "px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-30",
+                                        outputView === view ? "bg-black text-white dark:bg-white dark:text-black" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    )}
+                                >
+                                    {view === 'text' ? 'Text' : 'Tree'}
+                                </button>
+                            ))}
+                        </div>
                         <button 
                             onClick={handleCopy}
                             className="hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black p-1 transition-colors" 
@@ -192,7 +209,19 @@ export default function JsonFormatter() {
                             <span className="material-symbols-outlined">error</span>
                             Invalid JSON
                         </div>
-                        {error}
+                        {errorLocation && (
+                            <div className="mb-2 font-bold">Line {errorLocation.line}, column {errorLocation.column}</div>
+                        )}
+                        <div>{error}</div>
+                        {errorLocation && (
+                            <pre className="mt-4 p-3 border border-red-200 dark:border-red-900 bg-white dark:bg-black text-xs overflow-x-auto">
+                                {errorLocation.lineText}{'\n'}{' '.repeat(Math.max(0, errorLocation.column - 1))}^
+                            </pre>
+                        )}
+                    </div>
+                ) : outputView === 'tree' && parsed ? (
+                    <div className="flex-1 p-4 overflow-auto bg-transparent text-black dark:text-white">
+                        <JsonTree value={parsed.value} />
                     </div>
                 ) : (
                     <textarea 
