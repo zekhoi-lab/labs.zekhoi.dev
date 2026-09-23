@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils' // Unused
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 type RegexFlags = { global: boolean, multiline: boolean, insensitive: boolean }
 type MatchInfo = { count: number, time: number, error?: string }
@@ -58,6 +59,7 @@ export default function RegexTester() {
   const { matches, matchInfo } = useMemo(() => runRegex(expression, flags, testString), [expression, flags, testString])
   // The timing differs between the prerender and the browser, so it's only shown after hydration
   const isClient = useSyncExternalStore(subscribeNoop, () => true, () => false)
+  const { copy, isCopied } = useCopy()
 
   // Simple highlighting logic
   // We need to construct parts of string that are matched vs not matched
@@ -181,11 +183,11 @@ export default function RegexTester() {
                                 <span className="material-symbols-outlined text-sm">delete</span>
                             </button>
                             <button 
-                                onClick={() => navigator.clipboard.writeText(testString)}
+                                onClick={() => copy(testString)}
                                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700" 
                                 title="Copy"
                             >
-                                <span className="material-symbols-outlined text-sm">content_copy</span>
+                                <span className="material-symbols-outlined text-sm">{isCopied() ? 'check' : 'content_copy'}</span>
                             </button>
                         </div>
                     </div>

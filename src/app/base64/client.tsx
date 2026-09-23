@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 export default function Base64Converter() {
   const [input, setInput] = useState<string>('zekhoi labs')
@@ -49,9 +50,7 @@ export default function Base64Converter() {
       }
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
+  const { copy, isCopied } = useCopy()
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -128,7 +127,7 @@ export default function Base64Converter() {
                 <div className="bg-white dark:bg-black border border-black dark:border-white p-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                    <div className="border-b border-black dark:border-white bg-gray-50 dark:bg-gray-900 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500 flex justify-between items-center">
                        <span>Output</span>
-                       <button onClick={() => copyToClipboard(output)} className="hover:text-black dark:hover:text-white">Copy</button>
+                       <button onClick={() => copy(output)} className="hover:text-black dark:hover:text-white">{isCopied() ? 'Copied' : 'Copy'}</button>
                    </div>
                     
                     {error ? (

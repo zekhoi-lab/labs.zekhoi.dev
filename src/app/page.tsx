@@ -1,6 +1,3 @@
-'use client'
-
-
 import { ToolDashboard } from '@/components/tool-dashboard'
 import { GlitchText } from '@/components/glitch-text'
 
@@ -15,10 +12,10 @@ interface Tool {
 const TOOLS: Tool[] = [
   {
     title: "UUID Generator",
-    description: "Instantly generate cryptographically strong v4 UUIDs. Supports bulk generation, custom formatting, and one-click copying.",
+    description: "Generate v4, v5, v6, and v7 UUIDs in your browser, with one-click copying and a recent history.",
     icon: "fingerprint",
     href: "/uuid",
-    version: "v4"
+    version: "v4-v7"
   },
   {
     title: "Password Generator",
@@ -28,19 +25,19 @@ const TOOLS: Tool[] = [
   },
   {
     title: "JSON Formatter",
-    description: "Validate, minify, and beautify JSON. Features syntax highlighting, error detection, and collapsible tree views.",
+    description: "Validate, minify, and beautify JSON with clear error messages. Load a file, then copy or download the result.",
     icon: "data_object",
     href: "/json"
   },
   {
     title: "Base64 Converter",
-    description: "Seamlessly encode and decode text or files to Base64. Handles large inputs with ease and privacy.",
+    description: "Encode and decode text to and from Base64, with full UTF-8 support for emoji and special characters.",
     icon: "code",
     href: "/base64"
   },
   {
     title: "JWT Debugger",
-    description: "Decode and inspect JSON Web Tokens (JWTs). Verify signatures and visualize header/payload claims clearly.",
+    description: "Decode and inspect JSON Web Tokens. View header and payload claims and verify HS256/384/512 signatures.",
     icon: "verified_user",
     href: "/jwt"
   },
@@ -52,7 +49,7 @@ const TOOLS: Tool[] = [
   },
   {
     title: "Hash Generator",
-    description: "Compute secure hashes using MD5, SHA-1, SHA-256, and SHA-512 algorithms. Fast and entirely client-side.",
+    description: "Compute SHA-1, SHA-256, SHA-384, and SHA-512 hashes with the Web Crypto API. Fast and entirely client-side.",
     icon: "tag",
     href: "/hash"
   },
@@ -64,7 +61,7 @@ const TOOLS: Tool[] = [
   },
   {
     title: "Diff Viewer",
-    description: "Compare text or code snippets to spot differences. Offers side-by-side and unified views with syntax highlighting.",
+    description: "Compare text or code line by line in a side-by-side view. Upload a file or swap the two sides.",
     icon: "compare",
     href: "/diff"
   },
@@ -76,14 +73,14 @@ const TOOLS: Tool[] = [
   },
   {
     title: "Color Converter",
-    description: "Translate colors between HEX, RGB, HSL, and CMYK. visualize palettes and fine-tune values effortlessly.",
+    description: "Convert colors between HEX, RGB, and HSL, and check luminance and contrast against black and white.",
     icon: "colorize",
     href: "/color"
   },
   {
     title: "Markdown Editor",
     description: "Write and preview markdown in real-time. A distraction-free environment with instant rendering.",
-    icon: "terminal",
+    icon: "edit_note",
     href: "/editor"
   },
   {
@@ -94,8 +91,8 @@ const TOOLS: Tool[] = [
   },
   {
     title: "Crontab Generator",
-    description: "Construct and verify cron schedules with a visual interface. Translates complex cron syntax into plain English.",
-    icon: "schedule",
+    description: "Build and validate cron schedules field by field. Translates cron syntax into plain English and lists the next runs.",
+    icon: "event_repeat",
     href: "/crontab"
   },
   {

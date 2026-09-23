@@ -8,10 +8,15 @@ export interface ProxyResult {
     proxy: string
     status: string
     latency: number
-    anonymity: string
+    speed: string
     country?: string
     city?: string
     ip?: string
+}
+
+// Only a latency tier: this check can't tell whether a proxy hides your IP
+function speedTier(latency: number): string {
+    return latency < 300 ? 'Fast' : latency < 1000 ? 'Medium' : 'Slow'
 }
 
 export async function validateProxy(proxy: string, timeout: number = 5000): Promise<ProxyResult> {
@@ -19,20 +24,20 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
 
     const parts = proxy.split(':')
     if (parts.length < 2) {
-        return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
+        return { proxy, status: 'Invalid Format', latency: 0, speed: 'Unknown', country: '-' }
     }
 
     const proxyHost = parts[0]
     const proxyPort = parseInt(parts[1])
     if (!Number.isInteger(proxyPort) || proxyPort < 1 || proxyPort > 65535) {
-        return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
+        return { proxy, status: 'Invalid Format', latency: 0, speed: 'Unknown', country: '-' }
     }
 
     let proxyAddress: string
     try {
         proxyAddress = await resolvePublicHost(proxyHost)
     } catch {
-        return { proxy, status: 'Blocked (Private Address)', latency: 0, anonymity: '-', country: '-' }
+        return { proxy, status: 'Blocked (Private Address)', latency: 0, speed: '-', country: '-' }
     }
     let authHeader: string | undefined
 
@@ -70,7 +75,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
                     try {
                         const json = JSON.parse(data)
                         if (json.status === 'fail') {
-                            resolve({ proxy, status: 'Active (API Limit)', latency, anonymity: 'Anonymous', country: '-', city: '-' })
+                            resolve({ proxy, status: 'Active (API Limit)', latency, speed: speedTier(latency), country: '-', city: '-' })
                             return
                         }
 
@@ -78,16 +83,16 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
                             proxy,
                             status: 'Active',
                             latency,
-                            anonymity: latency < 300 ? 'Elite' : latency < 1000 ? 'Anonymous' : 'Transparent',
+                            speed: speedTier(latency),
                             country: json.country || 'Unknown',
                             city: json.city || 'Unknown',
                             ip: json.query
                         })
                     } catch {
-                        resolve({ proxy, status: 'Active (Parse Error)', latency, anonymity: 'Unknown', country: '-' })
+                        resolve({ proxy, status: 'Active (Parse Error)', latency, speed: 'Unknown', country: '-' })
                     }
                 } else {
-                    resolve({ proxy, status: `Dead (${res.statusCode})`, latency: 0, anonymity: '-', country: '-' })
+                    resolve({ proxy, status: `Dead (${res.statusCode})`, latency: 0, speed: '-', country: '-' })
                 }
             })
         })
@@ -97,7 +102,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
                 proxy,
                 status: 'Dead',
                 latency: 0,
-                anonymity: '-',
+                speed: '-',
                 country: '-'
             })
         })
@@ -108,7 +113,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
                 proxy,
                 status: 'Timeout',
                 latency: 0,
-                anonymity: '-',
+                speed: '-',
                 country: '-'
             })
         })

@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col overflow-hidden relative selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+    <div className="bg-white dark:bg-black font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col overflow-hidden relative selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
       <div className="absolute inset-0 scanlines z-0 pointer-events-none"></div>
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center p-4 sm:p-8">
         <div className="absolute top-8 right-8 flex items-center gap-2 font-mono text-xs tracking-widest opacity-60">

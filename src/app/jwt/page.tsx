@@ -3,7 +3,7 @@ import JwtDebugger from './client'
 
 export const metadata: Metadata = {
   title: 'JWT Debugger | Decode & Inspect Tokens',
-  description: 'Decode, verify, and debug JSON Web Tokens (JWT) instantly. Inspect headers, payloads, and signatures. Offline-first and privacy-focused.',
+  description: 'Decode and debug JSON Web Tokens (JWT) instantly. Inspect headers and payloads, and verify HS256/384/512 signatures. Runs entirely in your browser.',
   keywords: ['jwt debugger', 'decode jwt', 'jwt token', 'json web token', 'jwt inspector', 'verify jwt signature', 'developer tools'],
   openGraph: {
     title: 'JWT Debugger | Decode & Inspect Tokens',

@@ -5,10 +5,12 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
+import { useCopy } from '@/lib/use-copy'
 
 export default function UrlParser() {
   const [fullUrl, setFullUrl] = useState('https://api.zekhoi.dev:8080/v1/auth/callback?code=77c92b&state=active#profile')
   const [isValid, setIsValid] = useState(true)
+  const { copy, isCopied } = useCopy()
 
   // Helper to parse URL
   const parse = (input: string) => {
@@ -135,10 +137,10 @@ export default function UrlParser() {
               />
               <div className="absolute right-4 bottom-4 flex gap-2">
                 <button 
-                  onClick={() => navigator.clipboard.writeText(fullUrl)}
+                  onClick={() => copy(fullUrl)}
                   className="p-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black border border-transparent transition-colors text-black dark:text-white"
                 >
-                  <span className="material-symbols-outlined text-lg">content_copy</span>
+                  <span className="material-symbols-outlined text-lg">{isCopied() ? 'check' : 'content_copy'}</span>
                 </button>
                 <button 
                   onClick={() => handleFullUrlChange('')}

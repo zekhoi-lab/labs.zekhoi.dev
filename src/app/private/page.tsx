@@ -8,32 +8,32 @@ import { useRouter } from 'next/navigation'
 const PRIVATE_TOOLS = [
     {
         title: "Instagram Checker",
-        description: "Account status verification & metadata extraction via private API endpoints.",
+        description: "Bulk-check whether Instagram usernames exist using public profile metadata, with optional proxy rotation.",
         icon: "person_search",
         href: "/private/instagram",
         version: "Internal"
     },
     {
         title: "Proxy Validator",
-        description: "Real-time anonymity levels, latency checks, and geological routing validation.",
+        description: "Check HTTP proxies for reachability, latency, and exit IP location.",
         icon: "vpn_lock",
         href: "/private/proxy"
     },
     {
         title: "Email Breaches",
-        description: "Deep-web OSINT leak search. Identify compromised credentials across known databases.",
+        description: "Look up an email address in known public data breaches via the XposedOrNot API.",
         icon: "history_edu",
         href: "/private/email-breach"
     },
     {
-        title: "Domain WHOIS Monitor",
-        description: "Continuous tracking of ownership records, nameserver changes, and expiry alerts.",
+        title: "Domain WHOIS Lookup",
+        description: "Look up a domain's registrar, expiry date, and nameservers from the registry WHOIS server.",
         icon: "domain_verification",
         href: "/private/whois"
     },
     {
         title: "Port Scanner",
-        description: "Vulnerability testing for open ports with service version detection and OS fingerprinting.",
+        description: "TCP connect scan of a public host for open ports, labelled with common service names.",
         icon: "router",
         href: "/private/port-scanner"
     },
@@ -45,13 +45,13 @@ const PRIVATE_TOOLS = [
     },
     {
         title: "SSL Cert Checker",
-        description: "Validity and expiration monitoring for certificate chains across multiple subdomains.",
+        description: "Check a host's TLS certificate: trust, hostname match, expiry, chain, and alternative names.",
         icon: "gpp_maybe",
         href: "/private/ssl"
     },
     {
         title: "Web Scraper",
-        description: "Automated data extraction with headless browser support and proxy rotation.",
+        description: "Fetch a page's HTML and extract its title, meta description, and links.",
         icon: "data_thresholding",
         href: "/private/scraper"
     }
@@ -69,10 +69,11 @@ export default function PrivatePage() {
     return (
         <ToolDashboard
             title={<GlitchText text="Private Tools" />}
-            description="Restricted access internal utilities. High-performance modules for network analysis, OSINT, and security auditing. All operations are logged and end-to-end encrypted."
+            description="Restricted-access utilities for network analysis, OSINT, and security checks. Requests run from the server and can only reach public hosts."
             tools={PRIVATE_TOOLS}
             theme="private"
             navbarProps={{
+                showThemeToggle: false,
                 rightContent: (
                     <div className="flex items-center gap-6">
                         <div className="hidden sm:flex items-center gap-2">

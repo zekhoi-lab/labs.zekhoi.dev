@@ -3,7 +3,7 @@ import CrontabGenerator from './client'
 
 export const metadata: Metadata = {
   title: 'Crontab Generator | Visualize Cron Schedule',
-  description: 'Create and validate cron schedules easily. Translate complex cron expressions into human-readable text. Visual editor included.',
+  description: 'Create and validate cron schedules easily. Translate cron expressions into human-readable text and see the next run times.',
   keywords: ['crontab generator', 'cron schedule', 'cron expression', 'cron validator', 'cron job maker', 'schedule tasks'],
   openGraph: {
     title: 'Crontab Generator | Visualize Cron Schedule',

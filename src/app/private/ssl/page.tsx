@@ -31,7 +31,7 @@ export default function SSLChecker() {
         <PrivateToolLayout>
             <ToolHeader
                 title="SSL Cert Checker"
-                description="Deep inspection of SSL/TLS configurations. Validate certificate chains, expiration dates, and ciphersuite strength against current security standards."
+                description="Connects to a host on port 443 and checks its certificate: whether it is trusted and matches the hostname, when it expires, its chain, and its alternative names."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
                     { label: 'SSL Checker' }

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   keywords: ['http client', 'api tester', 'rest client', 'postman alternative', 'send api request', 'debug api'],
   openGraph: {
     title: 'Online HTTP Client | Test API Endpoints',
-    description: 'The lightweight way to test APIs. Debug endpoints, analyze responses, and fix issues faster. Free and open source.',
+    description: 'The lightweight way to test APIs. Debug endpoints, analyze responses, and fix issues faster, right from your browser.',
     url: 'https://labs.zekhoi.dev/http',
     siteName: 'Labs by zekhoi',
     locale: 'en_US',

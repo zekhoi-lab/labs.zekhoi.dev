@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 import * as ColorUtils from '@/lib/color'
 import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
+import { useCopy } from '@/lib/use-copy'
 
 export default function ColorConverter() {
   const [hex, setHex] = useState('#000000')
@@ -16,6 +17,7 @@ export default function ColorConverter() {
   // but for input fields we need to allow partial edits.
   // We'll use hex as the "committed" color for preview.
   const [activeColor, setActiveColor] = useState({ r: 0, g: 0, b: 0 })
+  const { copy, isCopied } = useCopy()
 
 
 
@@ -94,10 +96,10 @@ export default function ColorConverter() {
                     spellCheck={false}
                   />
                   <button 
-                    onClick={() => navigator.clipboard.writeText(hex)}
+                    onClick={() => copy(hex, 'hex')}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
                   >
-                    <span className="material-symbols-outlined text-xl">content_copy</span>
+                    <span className="material-symbols-outlined text-xl">{isCopied('hex') ? 'check' : 'content_copy'}</span>
                   </button>
                 </div>
               </div>
@@ -114,10 +116,10 @@ export default function ColorConverter() {
                       spellCheck={false}
                     />
                     <button 
-                       onClick={() => navigator.clipboard.writeText(rgb)}
+                       onClick={() => copy(rgb, 'rgb')}
                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
                     >
-                      <span className="material-symbols-outlined text-xl">content_copy</span>
+                      <span className="material-symbols-outlined text-xl">{isCopied('rgb') ? 'check' : 'content_copy'}</span>
                     </button>
                   </div>
                 </div>
@@ -132,10 +134,10 @@ export default function ColorConverter() {
                       spellCheck={false}
                     />
                     <button 
-                       onClick={() => navigator.clipboard.writeText(hsl)}
+                       onClick={() => copy(hsl, 'hsl')}
                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
                     >
-                      <span className="material-symbols-outlined text-xl">content_copy</span>
+                      <span className="material-symbols-outlined text-xl">{isCopied('hsl') ? 'check' : 'content_copy'}</span>
                     </button>
                   </div>
                 </div>

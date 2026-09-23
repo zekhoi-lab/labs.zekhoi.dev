@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 export default function HashGenerator() {
   const [input, setInput] = useState<string>('zekhoi labs')
@@ -61,9 +62,7 @@ export default function HashGenerator() {
     return () => { cancelled = true }
   }, [input])
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
+  const { copy, isCopied } = useCopy()
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -108,11 +107,11 @@ export default function HashGenerator() {
                         <div className="flex justify-between items-center mb-3">
                             <h3 className="font-bold text-sm uppercase tracking-wider">{algo}</h3>
                             <button 
-                                onClick={() => copyToClipboard(hash)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black p-1 rounded-sm"
+                                onClick={() => copy(hash, algo)}
+                                className={`${isCopied(algo) ? 'opacity-100' : 'opacity-0'} group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black p-1 rounded-sm`}
                                 title="Copy"
                             >
-                                <span className="material-symbols-outlined text-sm">content_copy</span>
+                                <span className="material-symbols-outlined text-sm">{isCopied(algo) ? 'check' : 'content_copy'}</span>
                             </button>
                         </div>
                         <div className="bg-gray-50 dark:bg-gray-900 p-3 break-all font-mono text-xs text-gray-600 dark:text-gray-300 border border-gray-100 dark:border-gray-800 group-hover:border-black dark:group-hover:border-white transition-colors">

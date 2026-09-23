@@ -3,7 +3,7 @@ import DiffViewer from './client'
 
 export const metadata: Metadata = {
   title: 'Diff Viewer & Text Compare Tool',
-  description: 'Compare text and code files to find differences instantly. Supports side-by-side and unified views. Highlight syntax for better readability.',
+  description: 'Compare text and code to find differences instantly, line by line in a side-by-side view. Runs in your browser.',
   keywords: ['diff viewer', 'text compare', 'code comparison', 'diff checker', 'file difference', 'online diff tool'],
   openGraph: {
     title: 'Diff Viewer & Text Compare Tool',

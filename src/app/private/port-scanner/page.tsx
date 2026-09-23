@@ -88,7 +88,7 @@ export default function PortScanner() {
         <PrivateToolLayout>
             <ToolHeader
                 title="Port Scanner"
-                description="Internal network analysis utility. High-performance multi-threaded scanning module with service version detection and state validation. Restricted access authorized only."
+                description="TCP connect scan of a public host. Internal and private addresses are blocked. Open ports are labelled with their common service."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
                     { label: 'Port Scanner' }

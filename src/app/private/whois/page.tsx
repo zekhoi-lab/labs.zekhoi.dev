@@ -28,11 +28,11 @@ export default function WhoisMonitor() {
     return (
         <PrivateToolLayout>
             <ToolHeader
-                title="Domain WHOIS Monitor"
-                description="Real-time domain registration tracking. Monitor expiration dates, registrar changes, and DNS modifications. Automated alerts for status changes."
+                title="Domain WHOIS Lookup"
+                description="Queries the registry WHOIS server for a domain and shows its registrar, expiry date, nameservers, and the raw record."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
-                    { label: 'WHOIS Monitor' }
+                    { label: 'WHOIS Lookup' }
                 ]}
             />
 

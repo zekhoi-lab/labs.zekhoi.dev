@@ -31,7 +31,7 @@ export default function WebScraper() {
         <PrivateToolLayout>
             <ToolHeader
                 title="Web Scraper"
-                description="Advanced content extraction engine with JavaScript rendering capabilities. Supports CSS selectors, XPath, and automated pagination handling."
+                description="Fetches a page's HTML (JavaScript is not executed) and extracts its title, meta description, and links."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
                     { label: 'Web Scraper' }
@@ -55,19 +55,6 @@ export default function WebScraper() {
                                     onChange={(e) => setUrl(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest text-white/60">Parameters</label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <input
-                                        className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
-                                        placeholder="Pages: 1" type="number" disabled
-                                    />
-                                    <input
-                                        className="w-full bg-white/5 border border-white/10 focus:border-white focus:ring-0 px-4 py-3 text-sm placeholder:text-white/20 text-white font-mono outline-none"
-                                        placeholder="Delay: 1s" type="number" disabled
-                                    />
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -158,7 +145,7 @@ export default function WebScraper() {
                         </div>
                         <div className="p-2 border-t border-white/20 bg-white/5 text-[10px] text-white/40 font-mono flex justify-between">
                             <span>PROCESS_ID: {processId}</span>
-                            <span>RENDER: JSDOM</span>
+                            <span>MODE: STATIC_HTML</span>
                         </div>
                     </div>
                 </div>

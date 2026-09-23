@@ -26,28 +26,35 @@ export default function DiffViewer() {
     let leftCount = 1
     let rightCount = 1
 
-    diffs.forEach(part => {
-      // Handling weird split behavior of diffLines which includes newlines
-      // Re-split strictly
-      const cleanLines = part.value.replace(/\n$/, '').split('\n')
-      
+    // diffLines includes the trailing newline in each part
+    const splitLines = (value: string) => value.replace(/\n$/, '').split('\n')
+    const empty = { number: null, text: '', type: 'empty' as const }
+
+    for (let p = 0; p < diffs.length; p++) {
+      const part = diffs[p]
+      const lines = splitLines(part.value)
+
       if (part.removed) {
-        cleanLines.forEach(line => {
-          left.push({ number: leftCount++, text: line, type: 'removed' })
-          right.push({ number: null, text: '', type: 'empty' })
-        })
+        // A removal followed by an addition is an edit: put the old and new
+        // lines on the same rows instead of stacking them
+        const added = diffs[p + 1]?.added ? splitLines(diffs[++p].value) : []
+        const rows = Math.max(lines.length, added.length)
+        for (let r = 0; r < rows; r++) {
+          left.push(r < lines.length ? { number: leftCount++, text: lines[r], type: 'removed' } : empty)
+          right.push(r < added.length ? { number: rightCount++, text: added[r], type: 'added' } : empty)
+        }
       } else if (part.added) {
-        cleanLines.forEach(line => {
-          left.push({ number: null, text: '', type: 'empty' })
+        lines.forEach(line => {
+          left.push(empty)
           right.push({ number: rightCount++, text: line, type: 'added' })
         })
       } else {
-        cleanLines.forEach(line => {
+        lines.forEach(line => {
           left.push({ number: leftCount++, text: line, type: 'common' })
           right.push({ number: rightCount++, text: line, type: 'common' })
         })
       }
-    })
+    }
 
     return { leftLines: left, rightLines: right }
   }, [diffs])

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   keywords: ['sql formatter', 'sql beautifier', 'pretty print sql', 'sql minifier', 'format sql', 'db tools'],
   openGraph: {
     title: 'SQL Formatter | Beautify & Minify SQL',
-    description: 'Clean up your SQL queries with one click. Supports multiple dialects and indentation styles. Fast and private.',
+    description: 'Clean up your SQL queries with one click. Supports multiple SQL dialects. Fast and private.',
     url: 'https://labs.zekhoi.dev/sql',
     siteName: 'Labs by zekhoi',
     locale: 'en_US',

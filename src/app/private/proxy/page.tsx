@@ -34,7 +34,7 @@ export default function ProxyValidator() {
         setStats({ active: 0, dead: 0, total: proxies.length })
 
         // Pre-fill results to maintain order
-        setResults(proxies.map(p => ({ proxy: p, status: 'Queued', latency: 0, anonymity: 'Unknown' })))
+        setResults(proxies.map(p => ({ proxy: p, status: 'Queued', latency: 0, speed: 'Unknown' })))
 
         let currentIndex = 0
         let isRunning = true
@@ -117,7 +117,7 @@ export default function ProxyValidator() {
         <PrivateToolLayout>
             <ToolHeader
                 title="Proxy Validator"
-                description="High-speed proxy verification engine. Checks anonymity levels, latency, and geolocation. Optimized for bulk list processing with multi-threaded validation."
+                description="Checks a list of HTTP proxies in parallel: whether each one works, its latency, and the exit IP and location it reports."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
                     { label: 'Proxy Validator' }
@@ -219,7 +219,7 @@ export default function ProxyValidator() {
                                     <div className="col-span-1">#</div>
                                     <div className="col-span-3">Proxy</div>
                                     <div className="col-span-1">Lat</div>
-                                    <div className="col-span-1">Type</div>
+                                    <div className="col-span-1">Speed</div>
                                     <div className="col-span-2">Exit IP</div>
                                     <div className="col-span-2">Loc</div>
                                     <div className="col-span-2 text-right">Status</div>
@@ -233,7 +233,7 @@ export default function ProxyValidator() {
                                             <div className="col-span-1 text-white/40">{(i + 1).toString().padStart(2, '0')}</div>
                                             <div className="col-span-3 truncate px-1 select-all min-w-0" title={res.proxy}>{res.proxy}</div>
                                             <div className="col-span-1 text-xs truncate min-w-0" title={res.latency > 0 ? `${res.latency}ms` : 'Pending'}>{res.latency > 0 ? `${res.latency}ms` : '-'}</div>
-                                            <div className="col-span-1 text-xs text-white/60 truncate min-w-0" title={res.anonymity || 'Unknown'}>{res.anonymity || '-'}</div>
+                                            <div className="col-span-1 text-xs text-white/60 truncate min-w-0" title={res.speed || 'Unknown'}>{res.speed || '-'}</div>
                                             <div className="col-span-2 text-xs text-white/60 truncate min-w-0" title={res.ip || '-'}>{res.ip || '-'}</div>
                                             <div className="col-span-2 text-xs text-white/60 truncate min-w-0" title={res.city ? `${res.city}, ${res.country}` : res.country || '-'}>
                                                 {res.city && res.country ? `${res.city}, ${res.country}` : (res.country || '-')}

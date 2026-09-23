@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 const CHARSETS = {
   uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -40,7 +41,7 @@ export default function PasswordGenerator() {
   const [includeNumbers, setIncludeNumbers] = useState(true)
   const [includeSymbols, setIncludeSymbols] = useState(true)
   const [history, setHistory] = useState<string[]>([])
-  const [copied, setCopied] = useState(false)
+  const { copy, isCopied } = useCopy()
 
   const generatePassword = useCallback(() => {
     const pools = [
@@ -73,19 +74,12 @@ export default function PasswordGenerator() {
         const newHistory = [newPassword, ...prev]
         return newHistory.slice(0, 3) // Keep last 3 per UI design
     })
-    setCopied(false)
   }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols])
 
   // Generate on mount or when settings change
   useEffect(() => {
     generatePassword() // eslint-disable-line react-hooks/set-state-in-effect
   }, [generatePassword]) 
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   // Keep at least one character set selected
   const selectedCount = [includeUppercase, includeLowercase, includeNumbers, includeSymbols].filter(Boolean).length
@@ -205,11 +199,11 @@ export default function PasswordGenerator() {
                     </div>
                     <div className="mt-8 flex gap-4">
                         <button 
-                            onClick={() => copyToClipboard(password)}
+                            onClick={() => copy(password, 'current')}
                             className="flex items-center gap-2 px-6 py-3 border border-black dark:border-white hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all uppercase tracking-widest text-xs font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
                         >
-                            <span className="material-symbols-outlined text-sm">{copied ? 'check' : 'content_copy'}</span>
-                            {copied ? 'Copied' : 'Copy'}
+                            <span className="material-symbols-outlined text-sm">{isCopied('current') ? 'check' : 'content_copy'}</span>
+                            {isCopied('current') ? 'Copied' : 'Copy'}
                         </button>
                     </div>
                 </div>
@@ -219,9 +213,9 @@ export default function PasswordGenerator() {
                         <h3 className="font-bold text-sm uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">History</h3>
                         <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400 font-mono">
                             {history.map((hist, idx) => (
-                                <li key={idx} onClick={() => copyToClipboard(hist)} className="flex justify-between items-center group cursor-pointer hover:text-black dark:hover:text-white">
+                                <li key={idx} onClick={() => copy(hist, `history-${idx}`)} className="flex justify-between items-center group cursor-pointer hover:text-black dark:hover:text-white">
                                     <span className="truncate max-w-[180px]">{hist}</span>
-                                    <span className="material-symbols-outlined text-[16px] opacity-0 group-hover:opacity-100 transition-opacity">content_copy</span>
+                                    <span className={`material-symbols-outlined text-[16px] ${isCopied(`history-${idx}`) ? 'opacity-100' : 'opacity-0'} group-hover:opacity-100 transition-opacity`}>{isCopied(`history-${idx}`) ? 'check' : 'content_copy'}</span>
                                 </li>
                             ))}
                         </ul>

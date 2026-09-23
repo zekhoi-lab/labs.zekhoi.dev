@@ -7,6 +7,7 @@ import cronstrue from 'cronstrue'
 import { CronExpressionParser } from 'cron-parser'
 import { GlitchText } from '@/components/glitch-text'
 import { cn } from '@/lib/utils'
+import { useCopy } from '@/lib/use-copy'
 
 const subscribeNoop = () => () => {}
 
@@ -16,6 +17,7 @@ export default function CrontabGenerator() {
   const [day, setDay] = useState('*')
   const [month, setMonth] = useState('*')
   const [weekday, setWeekday] = useState('*')
+  const { copy, isCopied } = useCopy()
   
   const cronString = `${minute} ${hour} ${day} ${month} ${weekday}`
   
@@ -127,11 +129,11 @@ export default function CrontabGenerator() {
               <span className="text-4xl md:text-6xl font-bold tracking-widest select-all text-black dark:text-white">{cronString}</span>
             </div>
             <button 
-              onClick={() => navigator.clipboard.writeText(cronString)}
+              onClick={() => copy(cronString)}
               className="action-button absolute right-4 bottom-4 md:right-8 md:bottom-8 bg-black dark:bg-white text-white dark:text-black px-6 py-3 flex items-center gap-2 font-bold uppercase text-xs tracking-widest transition-all"
             >
-              <span className="material-symbols-outlined text-sm">content_copy</span>
-              Copy
+              <span className="material-symbols-outlined text-sm">{isCopied() ? 'check' : 'content_copy'}</span>
+              {isCopied() ? 'Copied' : 'Copy'}
             </button>
           </div>
         </div>

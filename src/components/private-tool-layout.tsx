@@ -25,6 +25,7 @@ export function PrivateToolLayout({ children, rightContent }: PrivateToolLayoutP
             <Navbar
                 title="labs.zekhoi.dev"
                 icon="terminal"
+                showThemeToggle={false}
                 rightContent={
                     rightContent || (
                         <div className="flex items-center gap-6 text-xs uppercase tracking-widest">

@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 // The digit count picks the unit: seconds (up to 11 digits, valid until year 5138),
 // then milliseconds, microseconds and nanoseconds.
@@ -104,9 +105,7 @@ export default function EpochConverter() {
       })
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
+  const { copy, isCopied } = useCopy()
 
   const formatWithTimezone = (date: Date) => {
       return {
@@ -334,19 +333,19 @@ export default function EpochConverter() {
 
                     {humanToEpochOutput && (
                         <div className="flex flex-col gap-2">
-                             <div className="bg-gray-50 dark:bg-gray-900 p-3 border border-gray-200 dark:border-gray-800 flex justify-between items-center group cursor-pointer hover:border-black dark:hover:border-white transition-colors" onClick={() => copyToClipboard(humanToEpochOutput.seconds.toString())}>
+                             <div className="bg-gray-50 dark:bg-gray-900 p-3 border border-gray-200 dark:border-gray-800 flex justify-between items-center group cursor-pointer hover:border-black dark:hover:border-white transition-colors" onClick={() => copy(humanToEpochOutput.seconds.toString(), 'seconds')}>
                                  <div>
                                     <span className="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Epoch (Seconds)</span>
                                     <div className="font-mono font-bold text-sm">{humanToEpochOutput.seconds}</div>
                                  </div>
-                                 <span className="material-symbols-outlined text-sm text-gray-400 group-hover:text-black dark:group-hover:text-white">content_copy</span>
+                                 <span className="material-symbols-outlined text-sm text-gray-400 group-hover:text-black dark:group-hover:text-white">{isCopied('seconds') ? 'check' : 'content_copy'}</span>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-900 p-3 border border-gray-200 dark:border-gray-800 flex justify-between items-center group cursor-pointer hover:border-black dark:hover:border-white transition-colors" onClick={() => copyToClipboard(humanToEpochOutput.milliseconds.toString())}>
+                            <div className="bg-gray-50 dark:bg-gray-900 p-3 border border-gray-200 dark:border-gray-800 flex justify-between items-center group cursor-pointer hover:border-black dark:hover:border-white transition-colors" onClick={() => copy(humanToEpochOutput.milliseconds.toString(), 'milliseconds')}>
                                  <div>
                                     <span className="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Epoch (Milliseconds)</span>
                                     <div className="font-mono font-bold text-sm">{humanToEpochOutput.milliseconds}</div>
                                  </div>
-                                 <span className="material-symbols-outlined text-sm text-gray-400 group-hover:text-black dark:group-hover:text-white">content_copy</span>
+                                 <span className="material-symbols-outlined text-sm text-gray-400 group-hover:text-black dark:group-hover:text-white">{isCopied('milliseconds') ? 'check' : 'content_copy'}</span>
                             </div>
                         </div>
                     )}

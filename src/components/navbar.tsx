@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useOnlineStatus } from '@/lib/use-online-status'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 import { Breadcrumb, BreadcrumbItem } from '@/components/breadcrumb'
 
@@ -13,6 +14,7 @@ export interface NavbarProps {
   breadcrumbs?: BreadcrumbItem[]
   centerContent?: React.ReactNode
   rightContent?: React.ReactNode
+  showThemeToggle?: boolean
 }
 
 export function Navbar({
@@ -22,6 +24,7 @@ export function Navbar({
   breadcrumbs,
   centerContent,
   rightContent,
+  showThemeToggle = true,
 }: NavbarProps) {
   const isOnline = useOnlineStatus()
   const currentStatusLabel = statusLabel || (isOnline ? 'System Normal' : 'System Offline')
@@ -50,6 +53,7 @@ export function Navbar({
             isOnline={isOnline}
             currentStatusLabel={currentStatusLabel}
           />
+          {showThemeToggle && <ThemeToggle />}
           {rightContent}
         </div>
       </div>

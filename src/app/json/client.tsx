@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer'
 // import { cn } from '@/lib/utils'
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 export default function JsonFormatter() {
   const [input, setInput] = useState<string>('{"name":"zekhoi labs","type":"Developer Tools","features":["UUID","JSON","JWT"],"active":true,"version":1.0}')
@@ -13,6 +14,7 @@ export default function JsonFormatter() {
   const [error, setError] = useState<string | null>(null)
   const [indent, setIndent] = useState<number>(2)
   const [mode, setMode] = useState<'format' | 'minify'>('format')
+  const { copy, isCopied } = useCopy()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -79,9 +81,7 @@ export default function JsonFormatter() {
       reader.readAsText(file)
   }
 
-  const handleCopy = () => {
-      navigator.clipboard.writeText(output)
-  }
+  const handleCopy = () => copy(output)
   
   const handleDownload = () => {
         if (!output) return
@@ -112,7 +112,7 @@ export default function JsonFormatter() {
             <GlitchText text="JSON Formatter" />
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
-            Validate, format, and minify JSON data with instant error highlighting.
+            Validate, format, and minify JSON data with clear error messages.
           </p>
         </div>
 
@@ -174,7 +174,7 @@ export default function JsonFormatter() {
                             className="hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black p-1 transition-colors" 
                             title="Copy"
                         >
-                            <span className="material-symbols-outlined text-sm">content_copy</span>
+                            <span className="material-symbols-outlined text-sm">{isCopied() ? 'check' : 'content_copy'}</span>
                         </button>
                         <button 
                             onClick={handleDownload}

@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import ReactMarkdown from 'react-markdown'
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 const DEFAULT_MARKDOWN = `# Welcome to Labs Markdown Editor
 
@@ -29,6 +30,7 @@ function hello() {
 export default function Editor() {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN)
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit')
+  const { copy, isCopied } = useCopy()
 
   return (
     <div className="min-h-screen flex flex-col relative bg-white dark:bg-black text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -79,10 +81,10 @@ export default function Editor() {
                               Clear
                           </button>
                           <button 
-                              onClick={() => navigator.clipboard.writeText(markdown)}
+                              onClick={() => copy(markdown)}
                               className="hover:text-black dark:hover:text-white transition-colors"
                           >
-                              Copy
+                              {isCopied() ? 'Copied' : 'Copy'}
                           </button>
                       </div>
                   </div>

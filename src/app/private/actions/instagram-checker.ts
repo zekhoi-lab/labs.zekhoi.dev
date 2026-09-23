@@ -7,14 +7,13 @@ import * as cheerio from 'cheerio'
 import { requireAuth } from '@/lib/auth'
 import { resolvePublicHost } from '@/lib/net-guard'
 
-// Configure axios-retry
-axiosRetry(axios, {
-    retries: 3,
+// A dedicated instance so this retry policy doesn't apply to other actions' axios
+// calls. 429s aren't retried here: the page retries them through the next proxy.
+const http = axios.create()
+axiosRetry(http, {
+    retries: 2,
     retryDelay: axiosRetry.exponentialDelay,
-    retryCondition: (error) => {
-        // Retry on 429 (Rate Limit) in addition to default network/5xx errors
-        return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 429
-    }
+    retryCondition: axiosRetry.isNetworkOrIdempotentRequestError
 })
 
 export interface InstagramCheckResult {
@@ -92,7 +91,7 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
     const proxyNode = normalizedProxy ? 'Proxy' : 'Direct'
 
     try {
-        const response = await axios.get(url, {
+        const response = await http.get(url, {
             httpsAgent: agent,
             headers: {
                 Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",

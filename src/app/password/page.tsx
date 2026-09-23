@@ -3,11 +3,11 @@ import PasswordGenerator from './client'
 
 export const metadata: Metadata = {
   title: 'Strong Password Generator | Secure & Random',
-  description: 'Generate uncrackable, cryptographically strong passwords instantly. Customize length, symbols, and ambiguity. 100% client-side for maximum security.',
+  description: 'Generate cryptographically strong random passwords instantly. Customize the length and character sets. 100% client-side.',
   keywords: ['password generator', 'strong password', 'random password', 'secure password', 'password creator', 'client-side password'],
   openGraph: {
     title: 'Strong Password Generator | Secure & Random',
-    description: 'Create military-grade passwords locally in your browser. No servers, no logs, just security. Fully customizable.',
+    description: 'Create strong random passwords locally in your browser with the Web Crypto API. No servers, no logs.',
     url: 'https://labs.zekhoi.dev/password',
     siteName: 'Labs by zekhoi',
     locale: 'en_US',

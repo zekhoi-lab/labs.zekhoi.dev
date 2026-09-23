@@ -33,12 +33,13 @@ function createUuid(version: Version, name: string, namespace: string): string |
 }
 
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 export default function UuidGenerator() {
   const [uuid, setUuid] = useState<string>('')
   const [version, setVersion] = useState<Version>(DEFAULT_VERSION)
   const [history, setHistory] = useState<HistoryItem[]>([])
-  const [copied, setCopied] = useState(false)
+  const { copy, isCopied } = useCopy()
   
   // v5 specific state
   const [v5Name, setV5Name] = useState<string>(DEFAULT_V5_NAME)
@@ -57,7 +58,6 @@ export default function UuidGenerator() {
     } else {
       setUuid("Invalid Input")
     }
-    setCopied(false)
   }, [])
 
   // 1. Load history from localStorage on mount, then generate the first UUID
@@ -89,13 +89,6 @@ export default function UuidGenerator() {
   // history when it's generated explicitly
   const previewV5 = (name: string, namespace: string) => {
     setUuid(createUuid('v5', name, namespace) ?? "Invalid Input")
-    setCopied(false)
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   const clearHistory = () => {
@@ -136,11 +129,11 @@ export default function UuidGenerator() {
         <div className="bg-white dark:bg-black border border-black dark:border-white p-4 sm:p-6 md:p-12 mb-8 relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
           <div className="absolute top-4 right-4 flex gap-2">
             <button 
-              onClick={() => copyToClipboard(uuid)}
+              onClick={() => copy(uuid, 'current')}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-black dark:hover:border-white" 
               title="Copy to clipboard"
             >
-              <span className="material-symbols-outlined text-lg">{copied ? 'check' : 'content_copy'}</span>
+              <span className="material-symbols-outlined text-lg">{isCopied('current') ? 'check' : 'content_copy'}</span>
             </button>
           </div>
           
@@ -237,12 +230,12 @@ export default function UuidGenerator() {
             {history.map((item, index) => (
               <li 
                 key={item.id + index}
-                onClick={() => copyToClipboard(item.id)}
+                onClick={() => copy(item.id, `history-${index}`)}
                 className="group flex items-center justify-between p-3 bg-white dark:bg-black border border-transparent hover:border-gray-200 dark:hover:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all cursor-pointer"
               >
                 <span className="opacity-50 group-hover:opacity-100 transition-opacity truncate max-w-[200px] sm:max-w-md">{item.id}</span>
                 <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 text-gray-400 group-hover:text-black dark:group-hover:text-white">
-                  {item.version}
+                  {isCopied(`history-${index}`) ? 'copied' : item.version}
                 </span>
               </li>
             ))}

@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { format as formatSql } from 'sql-formatter'
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 import { cn } from '@/lib/utils'
 
 type Dialect = 'sql' | 'postgresql' | 'mysql' | 'sqlite' | 'mariadb' | 'bigquery'
@@ -63,6 +64,7 @@ export default function SqlFormatter() {
   const [output, setOutput] = useState('')
   const [dialect, setDialect] = useState<Dialect>('postgresql')
   const [error, setError] = useState('')
+  const { copy, isCopied } = useCopy()
 
   const handleFormat = () => {
     try {
@@ -188,11 +190,11 @@ export default function SqlFormatter() {
           </div>
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => navigator.clipboard.writeText(output)}
+              onClick={() => copy(output)}
               className="bg-white dark:bg-black border border-black dark:border-white text-black dark:text-white px-6 py-3 text-sm font-bold uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-900 transition-all flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-sm">content_copy</span>
-              Copy
+              <span className="material-symbols-outlined text-sm">{isCopied() ? 'check' : 'content_copy'}</span>
+              {isCopied() ? 'Copied' : 'Copy'}
             </button>
             <button 
                onClick={() => { setInput(''); setOutput(''); setError(''); }}

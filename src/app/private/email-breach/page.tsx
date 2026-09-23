@@ -29,7 +29,7 @@ export default function EmailBreach() {
         <PrivateToolLayout>
             <ToolHeader
                 title="Email Breaches"
-                description="Deep web surveillance system. Cross-references email addresses against 15TB+ of leaked database records. Instant notification of compromised credentials."
+                description="Checks an email address against known public data breaches using the XposedOrNot API, and lists each breach with the data it exposed."
                 breadcrumbs={[
                     { label: 'Private Tools', href: '/private' },
                     { label: 'Email Breaches' }

@@ -5,6 +5,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { cn } from '@/lib/utils'
 import { GlitchText } from '@/components/glitch-text'
+import { useCopy } from '@/lib/use-copy'
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 type Tab = 'params' | 'headers' | 'auth' | 'body'
@@ -22,6 +23,7 @@ export default function HttpClient() {
   const [authToken, setAuthToken] = useState('')
   const [authBasicUser, setAuthBasicUser] = useState('')
   const [authBasicPass, setAuthBasicPass] = useState('')
+  const { copy, isCopied } = useCopy()
 
   const [response, setResponse] = useState<{
     status: number
@@ -368,9 +370,9 @@ export default function HttpClient() {
                <div className="border-t border-black dark:border-white bg-gray-50 dark:bg-gray-900 px-4 py-2 flex justify-between items-center shrink-0">
                  <span className="text-[9px] uppercase tracking-widest opacity-40 text-black dark:text-white">{tryParseJson(response.body) === undefined ? 'Raw Text' : 'JSON Rendered'}</span>
                  <button 
-                  onClick={() => navigator.clipboard.writeText(response.body)}
+                  onClick={() => copy(response.body)}
                   className="text-[9px] uppercase tracking-widest font-bold hover:underline text-black dark:text-white">
-                    Copy Response
+                    {isCopied() ? 'Copied' : 'Copy Response'}
                  </button>
                </div>
              )}
