@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAuth } from '@/lib/auth'
+import { safeFetch } from '@/lib/net-guard'
 
 export interface ScrapeResult {
     success: boolean
@@ -12,9 +14,11 @@ export interface ScrapeResult {
 }
 
 export async function scrapeWeb(url: string): Promise<ScrapeResult> {
+    await requireAuth()
+
     try {
         if (!url.startsWith('http')) url = 'https://' + url
-        const res = await fetch(url, {
+        const res = await safeFetch(url, {
             headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ZekhoiBot/1.0)' }
         })
         const html = await res.text()

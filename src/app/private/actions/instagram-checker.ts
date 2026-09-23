@@ -4,6 +4,8 @@ import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import * as cheerio from 'cheerio'
+import { requireAuth } from '@/lib/auth'
+import { resolvePublicHost } from '@/lib/net-guard'
 
 // Configure axios-retry
 axiosRetry(axios, {
@@ -155,6 +157,22 @@ async function fetchProfileApi(username: string, proxy?: string): Promise<Intern
 }
 
 export async function checkInstagram(username: string, proxy?: string): Promise<InstagramCheckResult> {
+    await requireAuth()
+
+    // Usernames are limited to letters, digits, periods and underscores
+    username = username.trim().replace(/^@/, '')
+    if (!/^[A-Za-z0-9._]{1,30}$/.test(username)) {
+        return { success: true, username, status: 'Error', httpCode: 0, message: 'Invalid username' }
+    }
+
+    if (proxy?.trim()) {
+        try {
+            await resolvePublicHost(new URL(normalizeProxy(proxy)).hostname)
+        } catch {
+            return { success: true, username, status: 'Error', httpCode: 0, message: 'Invalid or blocked proxy' }
+        }
+    }
+
     const apiRes = await fetchProfileApi(username, proxy)
 
     if (apiRes.exists && apiRes.htmlData) {

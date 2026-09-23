@@ -1,6 +1,8 @@
 'use server'
 
 import tls from 'tls'
+import { requireAuth } from '@/lib/auth'
+import { resolvePublicHost } from '@/lib/net-guard'
 
 
 export interface SSLResult {
@@ -15,11 +17,25 @@ export interface SSLResult {
     error?: string
 }
 
+function first(value: string | string[] | undefined): string | undefined {
+    return Array.isArray(value) ? value[0] : value
+}
+
 export async function checkSSL(host: string): Promise<SSLResult> {
+    await requireAuth()
+
+    host = host.trim()
+    let address: string
+    try {
+        address = await resolvePublicHost(host)
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
+
     return new Promise<SSLResult>((resolve) => {
         try {
             const socket = tls.connect({
-                host,
+                host: address,
                 port: 443,
                 servername: host,
                 rejectUnauthorized: false
@@ -34,8 +50,8 @@ export async function checkSSL(host: string): Promise<SSLResult> {
                     daysRemaining,
                     validFrom: cert.valid_from,
                     validTo: cert.valid_to,
-                    issuer: cert.issuer.O || cert.issuer.CN,
-                    subject: cert.subject.CN,
+                    issuer: first(cert.issuer.O) || first(cert.issuer.CN),
+                    subject: first(cert.subject.CN),
                     protocol: socket.getProtocol() || undefined,
                     grade: daysRemaining > 60 ? 'A+' : daysRemaining > 30 ? 'B' : 'F'
                 })

@@ -2,6 +2,7 @@
 
 
 import axios from 'axios'
+import { requireAuth } from '@/lib/auth'
 
 export interface BreachSource {
     name: string
@@ -32,8 +33,10 @@ interface xposedBreach {
 }
 
 export async function checkEmailBreach(email: string): Promise<EmailBreachResult> {
+    await requireAuth()
+
     try {
-        const response = await axios.get(`https://api.xposedornot.com/v1/check-email/${email}`, {
+        const response = await axios.get(`https://api.xposedornot.com/v1/check-email/${encodeURIComponent(email.trim())}`, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
             },

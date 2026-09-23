@@ -52,6 +52,13 @@ export default function PortScanner() {
             const promises = batch.map(port => scanPort(target, port))
             const batchResults = await Promise.all(promises)
 
+            const failed = batchResults.find(res => res.error)
+            if (failed) {
+                addLog(`Scan aborted: ${failed.error}`)
+                setScanning(false)
+                return
+            }
+
             batchResults.forEach(res => {
                 if (res.status === 'open') {
                     setResults(prev => [...prev, res])

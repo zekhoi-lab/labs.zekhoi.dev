@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { SESSION_COOKIE, verifySessionToken } from '@/lib/session'
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
 
     // Protect all routes starting with /private
     if (pathname.startsWith('/private')) {
-        const authToken = request.cookies.get('auth_token')
+        const authToken = request.cookies.get(SESSION_COOKIE)?.value
 
-        if (!authToken || authToken.value !== 'valid_token') {
+        if (!(await verifySessionToken(authToken))) {
             const loginUrl = new URL('/login', request.url)
             return NextResponse.redirect(loginUrl)
         }

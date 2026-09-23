@@ -1,6 +1,8 @@
 'use server'
 
 import http from 'http'
+import { requireAuth } from '@/lib/auth'
+import { resolvePublicHost } from '@/lib/net-guard'
 
 export interface ProxyResult {
     proxy: string
@@ -13,6 +15,8 @@ export interface ProxyResult {
 }
 
 export async function validateProxy(proxy: string, timeout: number = 5000): Promise<ProxyResult> {
+    await requireAuth()
+
     const parts = proxy.split(':')
     if (parts.length < 2) {
         return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
@@ -20,6 +24,16 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
 
     const proxyHost = parts[0]
     const proxyPort = parseInt(parts[1])
+    if (!Number.isInteger(proxyPort) || proxyPort < 1 || proxyPort > 65535) {
+        return { proxy, status: 'Invalid Format', latency: 0, anonymity: 'Unknown', country: '-' }
+    }
+
+    let proxyAddress: string
+    try {
+        proxyAddress = await resolvePublicHost(proxyHost)
+    } catch {
+        return { proxy, status: 'Blocked (Private Address)', latency: 0, anonymity: '-', country: '-' }
+    }
     let authHeader: string | undefined
 
     if (parts.length === 4) {
@@ -31,7 +45,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
         const start = Date.now()
 
         const options: http.RequestOptions = {
-            hostname: proxyHost,
+            hostname: proxyAddress,
             port: proxyPort,
             path: 'http://ip-api.com/json',
             method: 'GET',
@@ -39,7 +53,7 @@ export async function validateProxy(proxy: string, timeout: number = 5000): Prom
                 'Host': 'ip-api.com',
                 ...(authHeader ? { 'Proxy-Authorization': authHeader } : {})
             },
-            timeout: timeout
+            timeout: Math.min(Math.max(timeout, 1000), 30000)
         }
 
         const req = http.request(options, (res) => {

@@ -1,6 +1,7 @@
 'use server'
 
 import net from 'net'
+import { requireAuth } from '@/lib/auth'
 
 
 export interface WhoisResult {
@@ -34,6 +35,8 @@ async function queryWhois(domain: string, server: string): Promise<string> {
 }
 
 export async function lookupWhois(domain: string): Promise<WhoisResult> {
+    await requireAuth()
+
     try {
         // Step 0: Robust Input Cleaning
         let target = domain.trim().toLowerCase()

@@ -1,5 +1,7 @@
 'use server'
 
+import { requireAuth } from '@/lib/auth'
+import { safeFetch } from '@/lib/net-guard'
 
 export interface HeaderAnalysisResult {
     success: boolean
@@ -13,9 +15,11 @@ export interface HeaderAnalysisResult {
 }
 
 export async function analyzeHeaders(url: string): Promise<HeaderAnalysisResult> {
+    await requireAuth()
+
     try {
         if (!url.startsWith('http')) url = 'https://' + url
-        const res = await fetch(url, { method: 'HEAD', cache: 'no-store' })
+        const res = await safeFetch(url, { method: 'HEAD', cache: 'no-store' })
         const headers: Record<string, string> = {}
         res.headers.forEach((v, k) => (headers[k] = v))
 

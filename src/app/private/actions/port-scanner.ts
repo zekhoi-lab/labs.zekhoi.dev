@@ -1,15 +1,31 @@
 'use server'
 
 import net from 'net'
+import { requireAuth } from '@/lib/auth'
+import { resolvePublicHost } from '@/lib/net-guard'
 
 
 export interface PortScanResult {
     port: number
     status: 'open' | 'closed'
     service?: string
+    error?: string
 }
 
 export async function scanPort(host: string, port: number): Promise<PortScanResult> {
+    await requireAuth()
+
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+        return { port, status: 'closed', error: 'Invalid port' }
+    }
+
+    let address: string
+    try {
+        address = await resolvePublicHost(host)
+    } catch (err) {
+        return { port, status: 'closed', error: err instanceof Error ? err.message : String(err) }
+    }
+
     return new Promise<PortScanResult>((resolve) => {
         const socket = new net.Socket()
         socket.setTimeout(2000)
@@ -28,7 +44,7 @@ export async function scanPort(host: string, port: number): Promise<PortScanResu
             resolve({ port, status: 'closed' })
         })
 
-        socket.connect(port, host)
+        socket.connect(port, address)
     })
 }
 
