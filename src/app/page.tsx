@@ -78,6 +78,12 @@ const TOOLS: Tool[] = [
     href: "/url"
   },
   {
+    title: "CIDR Calculator",
+    description: "Work out the network, broadcast, host range, netmask, and wildcard of any IPv4 block.",
+    icon: "lan",
+    href: "/cidr"
+  },
+  {
     title: "Color Converter",
     description: "Convert colors between HEX, RGB, and HSL, and check luminance and contrast against black and white.",
     icon: "colorize",
