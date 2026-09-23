@@ -30,6 +30,12 @@ const TOOLS: Tool[] = [
     href: "/json"
   },
   {
+    title: "YAML ↔ JSON",
+    description: "Convert YAML to JSON and back as you type, with the line and column of any syntax error.",
+    icon: "sync_alt",
+    href: "/yaml"
+  },
+  {
     title: "Base64 Converter",
     description: "Encode and decode text to and from Base64, with full UTF-8 support for emoji and special characters.",
     icon: "code",

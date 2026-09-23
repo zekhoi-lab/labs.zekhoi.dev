@@ -29,7 +29,8 @@
     "react-markdown": "^10.1.0",
     "sql-formatter": "^15.7.0",
     "tailwind-merge": "^3.4.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
