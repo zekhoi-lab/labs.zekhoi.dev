@@ -42,8 +42,16 @@ src/lib/theme.ts                   light/dark/system preference + the pre-paint 
 src/lib/use-copy.ts                copy to clipboard with a temporary "copied" state
 src/lib/use-online-status.ts       navigator.onLine that re-renders on online/offline events
 src/lib/use-process-id.ts          stable decorative IDs without impure render calls
+src/lib/use-now.ts                 shared 1 s clock for the browser; null during prerender
+src/lib/relative-time.ts           "5 minutes ago" formatting (epoch, JWT)
+src/lib/tool-search.ts             dashboard search filter
+src/lib/json-error.ts              line/column of a JSON.parse error (JSON, YAML)
+src/lib/yaml-json.ts, cidr.ts, qr.ts, text-case.ts, jwt-claims.ts, markdown-draft.ts
+                                   pure logic behind the YAML, CIDR, QR, text, JWT, and markdown tools
+src/lib/email-security.ts          SPF/DMARC/DKIM/MX rules over an injectable DNS resolver
+src/app/regex/find-matches.ts      self-contained matcher that the regex Web Worker runs from its source
 src/app/opengraph-image.tsx        generated og:image for the whole site
-src/components/                    Navbar (with ThemeToggle), Footer, ToolDashboard, ToolCard, ToolHeader, PrivateToolLayout, GlitchText
+src/components/                    Navbar (with ThemeToggle), Footer, ToolDashboard + ToolGrid (search), ToolCard, ToolHeader, PrivateToolLayout, GlitchText, JsonTree
 ```
 
 ## Adding a public tool
@@ -81,6 +89,8 @@ src/components/                    Navbar (with ThemeToggle), Footer, ToolDashbo
   - Don't call `setState` synchronously in an effect body. Derive values with `useMemo` or compute them in event handlers.
   - Don't call impure functions (`Math.random`, `Date.now`) during render.
 - Pages are prerendered, so anything that differs between the build and the browser (time, randomness, `localStorage`, `window`) must not be rendered on the first pass or hydration fails (React error #418). Read it through `useSyncExternalStore` with a server snapshot, as in `src/lib/use-process-id.ts` and `src/app/epoch/client.tsx`, or set it in an effect or event handler.
+- Put a tool's logic in `src/lib/*.ts` (no JSX, no `@/` imports of client modules), and pass network or storage access in as a parameter (see `email-security.ts`), so it can be tested on its own. Pages stay thin.
+- Work that can hang the page (user-supplied regexes) runs in a Web Worker built from a self-contained function's source, with a timeout that terminates it (see `src/app/regex/`). No bundler worker setup is needed.
 - Tool cards, headers and metadata must only describe features that actually exist.
 
 ## Generated files
